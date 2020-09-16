@@ -1,0 +1,19 @@
+@import "~@elastic/eui/src/global_styling/variables/index";
+@import "~@elastic/eui/src/components/nav_drawer/variables";
+
+.euiNavDrawer {
+  height: 100% !important;
+  top: 0 !important;
+  z-index: 1 !important;
+  + .euiPage .euiPageBody {
+    margin-left: $euiNavDrawerWidthCollapsed;
+  }
+}
+.euiNavDrawer-isLocked {
+  + .euiPage .euiPageBody {
+    //Shrink the content from the left so it's no longer overlapped by the nav drawer
+    margin-left: $euiNavDrawerWidthExpanded;
+    -webkit-transition: margin $euiAnimSpeedFast $euiAnimSlightResistance;
+    transition: margin $euiAnimSpeedFast $euiAnimSlightResistance;
+  }
+}

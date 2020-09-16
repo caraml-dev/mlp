@@ -1,0 +1,71 @@
+mlp:
+  image:
+    pullPolicy: IfNotPresent
+    registry: gojektech
+    repository: mlp
+    tag: 0.1.0-*
+  replicaCount: "1"
+  resources:
+    requests:
+      cpu: "1"
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  livenessProbe:
+    path: "/v1/internal/live"
+  readinessProbe:
+    path: "/v1/internal/ready"
+  service:
+    externalPort: 8080
+    internalPort: 8080
+  apiHost: "http://mlp.dev/v1"
+  gitlabRedirectUrl: "http://mlp.dev/settings/connected-accounts"
+  mlflowTrackingUrl: "http://mlflow.mlp.dev"
+  environment: "production"
+  encryption:
+    # encryption.key must be specified using --set flag.
+    key: ""
+  authorization:
+    enabled: true
+    serverUrl: http://mlp-authorization-keto
+  ingress:
+    enabled: false
+
+dbMigrations:
+  image:
+    tag: v4.7.1
+
+gitlab:
+  enabled: true
+  host: https://gitlab.com
+  oauthScopes: read_user
+  clientId: #clientId
+  clientSecret: #clientSecret
+
+postgresql:
+  resources:
+    requests:
+      memory: 2Gi
+      cpu: 1
+  persistence:
+    size: 10Gi
+  postgresqlUsername: mlp
+  postgresqlDatabase: mlp
+  # metrics:
+  #   enabled: true
+  #   serviceMonitor:
+  #     enabled: true
+  # replication:
+  #   enabled: true
+  #   user: repl_user
+  #   password: repl_password
+  #   slaveReplicas: 2
+  #   ## Set synchronous commit mode: on, off, remote_apply, remote_write and local
+  #   ## ref: https://www.postgresql.org/docs/9.6/runtime-config-wal.html#GUC-WAL-LEVEL
+  #   synchronousCommit: "on"
+  #   ## From the number of `slaveReplicas` defined above, set the number of those that will have synchronous replication
+  #   ## NOTE: It cannot be > slaveReplicas
+  #   numSynchronousReplicas: 2
+  #   ## Replication Cluster application name. Useful for defining multiple replication policies
+  #   applicationName: mlp

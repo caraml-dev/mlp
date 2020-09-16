@@ -1,0 +1,98 @@
+// don't stretch all the way
+@media only screen and (min-width: 960px) {
+  .euiPage {
+    max-width: 89%;
+    margin: 0 auto;
+  }
+}
+
+// header breadcrumbs
+.euiHeader .euiBreadcrumb {
+  .euiButtonEmpty {
+    &:active {
+      background-color: transparent;
+    }
+  }
+}
+
+// set the page height to 100%
+body,
+#root,
+div[role="group"][tabindex],
+.eui-fullHeight {
+  height: 100%;
+}
+
+// table actions
+.euiTableRowCell .tableAction {
+  display: block;
+  margin-right: 10px;
+  font-size: 0.75rem;
+  word-break: keep-all;
+  white-space: nowrap;
+  svg {
+    margin-right: 3px;
+  }
+  &.secondary {
+    color: #017d73;
+  }
+  &.danger {
+    color: #bd271e;
+  }
+  &.warning {
+    color: #f5a700;
+  }
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .euiTableRowCell .tableAction {
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin-right: 0;
+    text-align: center;
+    svg {
+      margin-right: 0;
+    }
+    span {
+      display: none;
+    }
+  }
+}
+
+// fix header title on mobile
+.euiTitle {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// fix icon positioning on tables (with links)
+.euiTableCellContent {
+  .cell-first-column,
+  svg {
+    margin-right: 7px;
+  }
+
+  .euiHealth svg {
+    margin-right: 0;
+  }
+}
+
+// fix inline progress bar
+.euiProgress-beforePre {
+  margin-bottom: -2px;
+}
+
+// fix form callout
+.formWarning {
+  margin-bottom: 20px;
+}
+
+// make placeholder text color more vague
+.euiFieldText::placeholder {
+  color: #d3d3d3;
+}

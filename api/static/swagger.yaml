@@ -1,0 +1,227 @@
+swagger: "2.0"
+info:
+  title: "MLP API"
+  description: "API Guide for accessing MLP API"
+  version: "0.4.0"
+host: "localhost:8080"
+basePath: "/v1"
+tags:
+  - name: "project"
+    description: "Project Management API. Project is used to namespace model, secret, and user access"
+  - name: "secret"
+    description: "Secret Management API. Secret is stored securely inside merlin and can be used to run prediction job"
+schemes:
+  - "http"
+paths:
+  "/projects":
+    get:
+      tags: ["project"]
+      summary: "List existing projects"
+      description: "Projects can be filtered by optional `name` parameter"
+      parameters:
+        - in: "query"
+          name: "name"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Project"
+    post:
+      tags: ["project"]
+      summary: "Create new project"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Project object that has to be added"
+          required: true
+          schema:
+            $ref: "#/definitions/Project"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/Project"
+        400:
+          description: "Invalid request format"
+        409:
+          description: "Project with the same name already exists"
+  "/projects/{project_id}":
+    get:
+      tags: ["project"]
+      summary: "Get project"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          description: "project id of the project to be retrieved"
+          type: "integer"
+          required: true
+      responses:
+        200:
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/Project"
+        404:
+          description: "Project Not Found"
+    put:
+      tags: ["project"]
+      summary: "Update project"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          description: "project id of the project to be updated"
+          type: "integer"
+          required: true
+        - in: "body"
+          name: "body"
+          description: "Project object that has to be updated"
+          required: true
+          schema:
+            $ref: "#/definitions/Project"
+      responses:
+        200:
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/Project"
+        400:
+          description: "Invalid request format"
+
+  "/projects/{project_id}/secrets":
+    post:
+      tags: ["secret"]
+      summary: "Create secret"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          type: "integer"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/Secret"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/Secret"
+    get:
+      tags: ["secret"]
+      summary: "List secret"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          type: "integer"
+          required: true
+      responses:
+        201:
+          description: "Ok"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Secret"
+
+  "/projects/{project_id}/secrets/{secret_id}":
+    patch:
+      tags: ["secret"]
+      summary: "Update secret"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          type: "integer"
+          required: true
+        - in: "path"
+          name: "secret_id"
+          type: "integer"
+          required: true
+        - in: "body"
+          name: "body"
+          schema:
+            $ref: "#/definitions/Secret"
+      responses:
+        200:
+          description: "Updated"
+          schema:
+            $ref: "#/definitions/Secret"
+    delete:
+      tags: ["secret"]
+      summary: "Delete secret"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          type: "integer"
+          required: true
+        - in: "path"
+          name: "secret_id"
+          type: "integer"
+          required: true
+      responses:
+        204:
+          description: "No content"
+
+definitions:
+  Project:
+    type: "object"
+    required:
+      - name
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+      name:
+        type: "string"
+      mlflow_tracking_url:
+        type: "string"
+      administrators:
+        type: "array"
+        items:
+          type: "string"
+      readers:
+        type: "array"
+        items:
+          type: "string"
+      team:
+        type: "string"
+      stream:
+        type: "string"
+      labels:
+        type: "array"
+        items:
+          $ref: "#/definitions/Label"
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+
+  Label:
+    type: "object"
+    properties:
+      key:
+        type: "string"
+      value:
+        type: "string"
+
+  Secret:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+      name:
+        type: "string"
+      data:
+        type: "string"
+
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+
+security:
+  - Bearer: []

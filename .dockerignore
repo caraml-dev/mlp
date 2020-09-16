@@ -1,0 +1,14 @@
+.git/
+.github/
+.gitignore
+
+bin/
+chart/
+db-migrations/
+ui/**/build/
+ui/**/node_modules/
+
+.dockerignore
+Dockerfile
+
+README.md
