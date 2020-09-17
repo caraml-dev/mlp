@@ -31,3 +31,17 @@ jobs:
         POSTGRES_PASSWORD: mlp
         KETO_URL: http://localhost:4466
       run: make it-test-api-ci
+
+  build-push-docker:
+    runs-on: ubuntu-latest
+    needs: integration-test
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build and push docker image
+      uses: docker/build-push-action@v1
+      with:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_TOKEN }}
+        registry: ghcr.io
+        tag_with_ref: true
+        tag_with_sha: true
