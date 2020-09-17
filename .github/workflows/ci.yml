@@ -7,17 +7,24 @@ jobs:
       postgres:
         image: postgres:12.4
         env:
-          POSTGRES_USER: mlp
           POSTGRES_DB: mlp
+          POSTGRES_USER: mlp
           POSTGRES_PASSWORD: mlp
         ports:
         - 5432:5432
       keto:
         image: oryd/keto:v0.4.3-alpha.2
+        env:
+          DSN: memory
+        ports:
+        - 4466:4466
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-go@v2
       with:
         go-version: 1.13
     - name: Integration test
+      env:
+        POSTGRES_HOST: localhost
+        KETO_URL: http://localhost:4466
       run: make it-test-api-ci
