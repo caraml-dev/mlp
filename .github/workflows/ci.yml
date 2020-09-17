@@ -26,5 +26,8 @@ jobs:
     - name: Integration test
       env:
         POSTGRES_HOST: localhost
+        POSTGRES_DB: mlp
+        POSTGRES_USER: mlp
+        POSTGRES_PASSWORD: mlp
         KETO_URL: http://localhost:4466
       run: make it-test-api-ci
