@@ -40,8 +40,6 @@ jobs:
     - name: Build and push docker image
       uses: docker/build-push-action@v1
       with:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GHCR_TOKEN }}
-        registry: ghcr.io
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
         tag_with_ref: true
-        tag_with_sha: true
