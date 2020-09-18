@@ -43,9 +43,8 @@ jobs:
     - name: Install dependencies
       run: make init-dep-ui
     - name: Publish @gojek/mlp-ui library
-      run: |
-        cd ui
-        yarn lib publish
+      run: yarn lib publish
+      working-directory: ./ui
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
