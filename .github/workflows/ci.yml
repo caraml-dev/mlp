@@ -32,6 +32,23 @@ jobs:
         KETO_URL: http://localhost:4466
       run: make it-test-api-ci
 
+  push-@gojek/mlp-ui:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12
+        registry-url: 'https://registry.npmjs.org'
+    - name: Install dependencies
+      run: make init-dep-ui
+    - name: Publish @gojek/mlp-ui library
+      run: |
+        cd ui
+        yarn lib publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
   build-push-docker:
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
