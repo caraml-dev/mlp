@@ -32,7 +32,7 @@ jobs:
         KETO_URL: http://localhost:4466
       run: make it-test-api-ci
 
-  push-@gojek/mlp-ui:
+  push-gojek-mlp-ui:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
