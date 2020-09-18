@@ -42,5 +42,5 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-        repository: gojektech
+        repository: gojektech/mlp
         tag_with_ref: true
