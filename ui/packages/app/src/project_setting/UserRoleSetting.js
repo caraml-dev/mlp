@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import UserRoleListTable from "./user_role/UserRoleListTable";
-import { CurrentProjectContext, replaceBreadcrumbs } from "@mlp/ui";
+import { CurrentProjectContext, replaceBreadcrumbs } from "@gojek/mlp-ui";
 import { SettingsSection } from "./ProjectSetting";
 import { EuiLoadingChart, EuiTextAlign } from "@elastic/eui";
 

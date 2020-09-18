@@ -1,7 +1,7 @@
 import React, { Fragment, useContext, useEffect } from "react";
 import { EuiButton, EuiText } from "@elastic/eui";
 import gitlabSvg from "./gitlab.svg";
-import { AuthContext, useMlpApi } from "@mlp/ui";
+import { AuthContext, useMlpApi } from "@gojek/mlp-ui";
 
 export const Accounts = props => {
   const {

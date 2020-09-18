@@ -1,11 +1,11 @@
-# @mlp/ui Library
+# @gojek/mlp-ui Library
 
 A library of common React components used by the MLP solutions.
 
 ## Install
 
 ```shell script
-yarn add @mlp/ui
+yarn add @gojek/mlp-ui
 ```
 
 ## Packages
@@ -140,23 +140,23 @@ yarn lint:fix
 
 ## Link Library Locally
 
-It can be handy, to link this library locally, when you are working on the application, that has `@mlp/ui` as a dependency. For doing it, run:
+It can be handy, to link this library locally, when you are working on the application, that has `@gojek/mlp-ui` as a dependency. For doing it, run:
 
 ```shell script
 yarn run link
 ```
 
-This will link `@mlp/ui` as well as `react` and `react-dom` locally, so it can be used in your application. Then run following commands from your project's directory:
+This will link `@gojek/mlp-ui` as well as `react` and `react-dom` locally, so it can be used in your application. Then run following commands from your project's directory:
 
 ```shell script
 cd <your app project>
 
-yarn link @mlp/ui
+yarn link @gojek/mlp-ui
 yarn link react
 yarn link react-dom
 ```
 
-When you no longer want to have a local link of `@mlp/ui` and want to resolve the library from the npm registry, run:
+When you no longer want to have a local link of `@gojek/mlp-ui` and want to resolve the library from the npm registry, run:
 
 ```shell script
 cd </path/to/mlp-iu/packages/lib>
@@ -169,7 +169,7 @@ and then:
 ```shell script
 cd <your app project>
 
-yarn unlink @mlp/ui
+yarn unlink @gojek/mlp-ui
 yarn unlink react
 yarn unlink react-dom
 ```

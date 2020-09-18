@@ -1,5 +1,5 @@
 import { navigate } from "@reach/router";
-import { slugify } from "@mlp/ui/src/utils";
+import { slugify } from "@gojek/mlp-ui/src/utils";
 
 export const pages = {};
 

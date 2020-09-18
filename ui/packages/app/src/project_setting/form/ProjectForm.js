@@ -12,7 +12,7 @@ import {
   EuiForm,
   EuiIcon
 } from "@elastic/eui";
-import { addToast, useMlpApi } from "@mlp/ui";
+import { addToast, useMlpApi } from "@gojek/mlp-ui";
 import { ProjectFormContext } from "./context";
 import { SingleSelectionComboBox } from "./SingleSelectionComboBox";
 import { EmailTextArea } from "./EmailTextArea";
