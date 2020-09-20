@@ -10,24 +10,13 @@ BIN_NAME := $(if ${APP_NAME},${APP_NAME},mlp)
 all: setup init-dep lint test clean build run
 
 # ============================================================
-# Analyze source code recipes
-# ============================================================
-.PHONY: lint
-lint: lint-ui lint-api
-
-.PHONY: lint-ui
-lint-ui:
-	@echo "> Linting the UI source code ..."
-	@cd ${UI_PATH} && yarn lint
-
-.PHONY: lint-api
-lint-api:
-	@echo "> Analyzing API source code..."
-	@cd ${API_PATH} && golint -set_exit_status ${API_ALL_PACKAGES}
-
-# ============================================================
 # Initialize dependency recipes
 # ============================================================
+.PHONY: setup
+setup:
+	@echo "> Setting up tools ..."
+	@test -x ${GOPATH}/bin/golint || go get -u golang.org/x/lint/golint
+
 .PHONY: init-dep
 init-dep: init-dep-ui init-dep-api
 
@@ -41,6 +30,22 @@ init-dep-api:
 	@echo "> Initializing API dependencies ..."
 	@cd ${API_PATH} && go mod tidy -v
 	@cd ${API_PATH} && go get -v ./...
+
+# ============================================================
+# Analyze source code recipes
+# ============================================================
+.PHONY: lint
+lint: lint-ui lint-api
+
+.PHONY: lint-ui
+lint-ui:
+	@echo "> Linting the UI source code ..."
+	@cd ${UI_PATH} && yarn lint
+
+.PHONY: lint-api
+lint-api:
+	@echo "> Analyzing API source code..."
+	@cd ${API_PATH} && golint ${API_ALL_PACKAGES}
 
 # ============================================================
 # Testing recipes
@@ -125,11 +130,6 @@ generate-client:
 local-db:
 	@echo "> Starting up DB ..."
 	@docker-compose up -d postgres && docker-compose run migrations
-
-.PHONY: setup
-setup:
-	@echo "> Setting up tools ..."
-	@test -x ${GOPATH}/bin/golint || go get -u golang.org/x/lint/golint
 
 .PHONY: start-keto
 start-keto:

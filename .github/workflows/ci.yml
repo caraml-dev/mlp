@@ -62,7 +62,9 @@ jobs:
       run: yarn install
     - name: Publish @gojek/mlp-ui library
       working-directory: ./ui
-      run: yarn lib publish
+      run: |
+        yarn set-version-from-git
+        yarn lib publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
