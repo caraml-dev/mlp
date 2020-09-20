@@ -41,10 +41,11 @@ jobs:
         node-version: 12
         registry-url: 'https://registry.npmjs.org'
     - name: Install dependencies
-      run: make init-dep-ui
-    - name: Publish @gojek/mlp-ui library
-      run: yarn lib publish
       working-directory: ./ui
+      run: yarn install
+    - name: Publish @gojek/mlp-ui library
+      working-directory: ./ui
+      run: yarn lib publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
