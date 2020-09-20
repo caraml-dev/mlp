@@ -1,7 +1,7 @@
 {
   "name": "@gojek/mlp-ui",
   "version": "1.0.0",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "publishConfig": {
