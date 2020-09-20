@@ -11,6 +11,11 @@ jobs:
     - uses: actions/setup-go@v2
       with:
         go-version: 1.13
+    - name: Install dependencies
+      working-directory: ./ui
+      run: |
+        make setup
+        make init-dep
     - name: Lint source code
       run: make lint
 

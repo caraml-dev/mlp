@@ -7,7 +7,7 @@ API_PATH := api
 API_ALL_PACKAGES := $(shell cd ${API_PATH} && go list ./... | grep -v github.com/gojek/mlp/client | grep -v mocks)
 BIN_NAME := $(if ${APP_NAME},${APP_NAME},mlp)
 
-all: setup lint init-dep test clean build run
+all: setup init-dep lint test clean build run
 
 # ============================================================
 # Analyze source code recipes
