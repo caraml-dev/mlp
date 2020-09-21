@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { replaceBreadcrumbs, useMlpApi } from "@mlp/ui";
+import { replaceBreadcrumbs, useMlpApi } from "@gojek/mlp-ui";
 import { EuiCallOut, EuiLoadingChart, EuiTextAlign } from "@elastic/eui";
 import { SettingsSection } from "./ProjectSetting";
 import SecretListTable from "./secret/SecretListTable";

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useMlpApi } from "@mlp/ui";
+import { useMlpApi } from "@gojek/mlp-ui";
 import { EuiConfirmModal, EuiOverlayMask } from "@elastic/eui";
 
 const DeleteUserRoleModal = ({

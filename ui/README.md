@@ -5,7 +5,7 @@
 We are using [Yarn workspace](https://classic.yarnpkg.com/en/docs/workspaces) to set up UI's package architecture that consists of:
 
 - [mlp-ui](./packages/app) – React app (CRA) with common UI functionality.
-- [@mlp/ui](./packages/lib/README.md) – library of shared UI components.
+- [@gojek/mlp-ui](./packages/lib/README.md) – library of shared UI components.
 
 ## Development environment
 

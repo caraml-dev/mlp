@@ -8,7 +8,7 @@ import {
   MlpApiContextProvider,
   PrivateRoute,
   Toast
-} from "@mlp/ui";
+} from "@gojek/mlp-ui";
 import config from "./config";
 import Home from "./views/Home";
 import { PrivateLayout } from "./PrivateLayout";

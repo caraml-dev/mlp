@@ -1,0 +1,84 @@
+name: Continuous Integration
+on: push
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12
+    - uses: actions/setup-go@v2
+      with:
+        go-version: 1.13
+    - name: Install dependencies
+      run: |
+        make setup
+        make init-dep
+    - name: Lint source code
+      run: make lint
+
+  integration-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12.4
+        env:
+          POSTGRES_DB: mlp
+          POSTGRES_USER: mlp
+          POSTGRES_PASSWORD: mlp
+        ports:
+        - 5432:5432
+      keto:
+        image: oryd/keto:v0.4.3-alpha.2
+        env:
+          DSN: memory
+        ports:
+        - 4466:4466
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: 1.13
+    - name: Integration test
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_DB: mlp
+        POSTGRES_USER: mlp
+        POSTGRES_PASSWORD: mlp
+        KETO_URL: http://localhost:4466
+      run: make it-test-api-ci
+
+  push-gojek-mlp-ui:
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12
+        registry-url: https://registry.npmjs.org
+    - name: Install dependencies
+      working-directory: ./ui
+      run: yarn install
+    - name: Publish @gojek/mlp-ui library
+      working-directory: ./ui
+      run: |
+        yarn set-version-from-git
+        yarn lib publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  build-push-docker:
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    needs: integration-test
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build and push docker image
+      uses: docker/build-push-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        repository: gojektech/mlp
+        tag_with_ref: true

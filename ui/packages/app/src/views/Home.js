@@ -8,7 +8,7 @@ import {
   EuiFlexGrid,
   EuiEmptyPrompt
 } from "@elastic/eui";
-import { ApplicationsContext } from "@mlp/ui";
+import { ApplicationsContext } from "@gojek/mlp-ui";
 
 const Home = () => {
   return (

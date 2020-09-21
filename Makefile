@@ -7,7 +7,29 @@ API_PATH := api
 API_ALL_PACKAGES := $(shell cd ${API_PATH} && go list ./... | grep -v github.com/gojek/mlp/client | grep -v mocks)
 BIN_NAME := $(if ${APP_NAME},${APP_NAME},mlp)
 
-all: setup lint init-dep test clean build run
+all: setup init-dep lint test clean build run
+
+# ============================================================
+# Initialize dependency recipes
+# ============================================================
+.PHONY: setup
+setup:
+	@echo "> Setting up tools ..."
+	@test -x ${GOPATH}/bin/golint || go get -u golang.org/x/lint/golint
+
+.PHONY: init-dep
+init-dep: init-dep-ui init-dep-api
+
+.PHONY: init-dep-ui
+init-dep-ui:
+	@echo "> Initializing UI dependencies ..."
+	@cd ${UI_PATH} && yarn
+
+.PHONY: init-dep-api
+init-dep-api:
+	@echo "> Initializing API dependencies ..."
+	@cd ${API_PATH} && go mod tidy -v
+	@cd ${API_PATH} && go get -v ./...
 
 # ============================================================
 # Analyze source code recipes
@@ -23,24 +45,7 @@ lint-ui:
 .PHONY: lint-api
 lint-api:
 	@echo "> Analyzing API source code..."
-	@cd ${API_PATH} && golint -set_exit_status ${API_ALL_PACKAGES}
-
-# ============================================================
-# Initialize dependency recipes
-# ============================================================
-.PHONY: init-dep
-init-dep: init-dep-ui init-dep-api
-
-.PHONY: init-dep-ui
-init-dep-ui:
-	@echo "> Initializing UI dependencies ..."
-	@cd ${UI_PATH} && yarn
-
-.PHONY: init-dep-api
-init-dep-api:
-	@echo "> Initializing API dependencies ..."
-	@cd ${API_PATH} && go mod tidy -v
-	@cd ${API_PATH} && go get -v ./...
+	@cd ${API_PATH} && golint ${API_ALL_PACKAGES}
 
 # ============================================================
 # Testing recipes
@@ -125,11 +130,6 @@ generate-client:
 local-db:
 	@echo "> Starting up DB ..."
 	@docker-compose up -d postgres && docker-compose run migrations
-
-.PHONY: setup
-setup:
-	@echo "> Setting up tools ..."
-	@test -x ${GOPATH}/bin/golint || go get -u golang.org/x/lint/golint
 
 .PHONY: start-keto
 start-keto:

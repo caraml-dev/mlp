@@ -5,7 +5,7 @@ import {
   Header,
   NavDrawer,
   ProjectsContextProvider
-} from "@mlp/ui";
+} from "@gojek/mlp-ui";
 import { navigate } from "@reach/router";
 import React from "react";
 

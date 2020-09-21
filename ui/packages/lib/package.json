@@ -1,10 +1,11 @@
 {
-  "name": "@mlp/ui",
-  "version": "0.0.20",
-  "license": "UNLICENSED",
+  "name": "@gojek/mlp-ui",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "publishConfig": {
+    "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "files": [

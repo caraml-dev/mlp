@@ -11,7 +11,7 @@ import {
   EuiSideNav,
   EuiTitle
 } from "@elastic/eui";
-import { slugify } from "@mlp/ui/src/utils";
+import { slugify } from "@gojek/mlp-ui/src/utils";
 import { Redirect, Router } from "@reach/router";
 import UserRoleSetting from "./UserRoleSetting";
 import SecretSetting from "./SecretSetting";

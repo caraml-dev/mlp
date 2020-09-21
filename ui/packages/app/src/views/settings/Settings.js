@@ -11,7 +11,7 @@ import {
   EuiSideNav,
   EuiTitle
 } from "@elastic/eui";
-import { slugify } from "@mlp/ui/src/utils";
+import { slugify } from "@gojek/mlp-ui/src/utils";
 import { navigation, pages } from "./index";
 import { Accounts } from "./Accounts";
 import queryString from "query-string";
