@@ -78,7 +78,7 @@ jobs:
     - name: Build and push docker image
       uses: docker/build-push-action@v1
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-        repository: gojektech/mlp
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_TOKEN }}
+        registry: ghcr.io
         tag_with_ref: true
