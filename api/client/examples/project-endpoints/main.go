@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 
 	"golang.org/x/oauth2/google"
@@ -18,14 +19,17 @@ func main() {
 	}
 
 	// Create an HTTP client with Google default credential
+	httpClient := http.DefaultClient
 	googleClient, err := google.DefaultClient(ctx, "https://www.googleapis.com/auth/userinfo.email")
-	if err != nil {
-		panic(err)
+	if err == nil {
+		httpClient = googleClient
+	} else {
+		fmt.Println("Google default credential not found. Fallback to HTTP default client")
 	}
 
 	cfg := client.NewConfiguration()
 	cfg.BasePath = basePath
-	cfg.HTTPClient = googleClient
+	cfg.HTTPClient = httpClient
 
 	apiClient := client.NewAPIClient(cfg)
 
