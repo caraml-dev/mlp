@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -24,7 +24,7 @@ func main() {
 	if err == nil {
 		httpClient = googleClient
 	} else {
-		fmt.Println("Google default credential not found. Fallback to HTTP default client")
+		log.Println("Google default credential not found. Fallback to HTTP default client")
 	}
 
 	cfg := client.NewConfiguration()
@@ -40,11 +40,11 @@ func main() {
 	}
 
 	for _, project := range projects {
-		fmt.Println()
-		fmt.Println("---")
-		fmt.Println()
+		log.Println()
+		log.Println("---")
+		log.Println()
 
-		fmt.Println("Project:", project.Name)
+		log.Println("Project:", project.Name)
 
 		// Update project
 		updatedProject, _, err := apiClient.ProjectApi.ProjectsProjectIdPut(ctx, project.Id, client.Project{
@@ -56,11 +56,11 @@ func main() {
 			panic(err)
 		}
 		if updatedProject.Team != "dsp-new" {
-			panic(fmt.Errorf("Team should be changed to dsp-new"))
+			panic(log.Errorf("Team should be changed to dsp-new"))
 		}
 		if updatedProject.Stream != "dsp-new" {
-			panic(fmt.Errorf("Stream should be changed to dsp-new"))
+			panic(log.Errorf("Stream should be changed to dsp-new"))
 		}
-		fmt.Printf("Project %s updated\n", project.Name)
+		log.Printf("Project %s updated\n", project.Name)
 	}
 }

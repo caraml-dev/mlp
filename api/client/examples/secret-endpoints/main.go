@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -24,7 +24,7 @@ func main() {
 	if err == nil {
 		httpClient = googleClient
 	} else {
-		fmt.Println("Google default credential not found. Fallback to HTTP default client")
+		log.Println("Google default credential not found. Fallback to HTTP default client")
 	}
 
 	cfg := client.NewConfiguration()
@@ -42,11 +42,11 @@ func main() {
 	}
 
 	for _, project := range projects {
-		fmt.Println()
-		fmt.Println("---")
-		fmt.Println()
+		log.Println()
+		log.Println("---")
+		log.Println()
 
-		fmt.Println("Project:", project.Name)
+		log.Println("Project:", project.Name)
 
 		_, _, err := apiClient.SecretApi.ProjectsProjectIdSecretsPost(ctx, project.Id, client.Secret{
 			Name: project.Name,
@@ -63,12 +63,12 @@ func main() {
 		}
 
 		for _, secret := range secrets {
-			fmt.Println("Secret name:", secret.Name)
+			log.Println("Secret name:", secret.Name)
 			_, err := apiClient.SecretApi.ProjectsProjectIdSecretsSecretIdDelete(ctx, project.Id, secret.Id)
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("Secret %s: deleted", secret.Name)
+			log.Printf("Secret %s: deleted", secret.Name)
 
 		}
 
