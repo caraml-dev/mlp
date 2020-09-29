@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "mlp.fullname" .}}
@@ -10,6 +10,10 @@ metadata:
     heritage: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.mlp.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "mlp.name" .}}
+      release: {{ .Release.Name }}
   strategy:
     type: RollingUpdate
   template:
@@ -39,7 +43,7 @@ spec:
             name: db-migrations
       containers:
         - name: api
-          image: {{ .Values.mlp.image.registry }}{{ .Values.mlp.image.repository }}:{{ .Values.mlp.image.tag }}
+          image: {{ .Values.mlp.image.registry }}/{{ .Values.mlp.image.repository }}:{{ .Values.mlp.image.tag }}
           imagePullPolicy: {{ .Values.mlp.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.mlp.service.internalPort }}
@@ -48,7 +52,7 @@ spec:
               path: {{ .Values.mlp.livenessProbe.path }}
               port: {{ .Values.mlp.service.internalPort }}
               scheme: HTTP
-            initialDelaySeconds: {{ default "60" .Values.mlp.livenessProbe.initialDelaySeconds }}
+            initialDelaySeconds: {{ default "30" .Values.mlp.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ default "10" .Values.mlp.livenessProbe.periodSeconds }}
             successThreshold: {{ default "1" .Values.mlp.livenessProbe.successThreshold }}
             timeoutSeconds: {{ default "5" .Values.mlp.livenessProbe.timeoutSeconds }}
@@ -57,7 +61,7 @@ spec:
               path: {{ .Values.mlp.readinessProbe.path }}
               port: {{ .Values.mlp.service.internalPort }}
               scheme: HTTP
-            initialDelaySeconds: {{ default "60" .Values.mlp.readinessProbe.initialDelaySeconds }}
+            initialDelaySeconds: {{ default "30" .Values.mlp.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ default "10" .Values.mlp.readinessProbe.periodSeconds }}
             successThreshold: {{ default "1" .Values.mlp.readinessProbe.successThreshold }}
             timeoutSeconds: {{ default "5" .Values.mlp.readinessProbe.timeoutSeconds }}
@@ -135,9 +139,13 @@ spec:
       - name: db-migrations
         configMap:
           name: {{ .Release.Name }}-db-migrations
-{{- if (not .Values.mlp.nodeSelectorDisabled) }}
+
+{{- if .Values.mlp.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.mlp.imagePullSecrets | indent 6 }}
+{{- end }}
+
 {{- if .Values.mlp.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.mlp.nodeSelector | indent 8 }}
-{{ end -}}
-{{ end -}}
+{{- end }}

@@ -1,13 +1,13 @@
 mlp:
   image:
     pullPolicy: IfNotPresent
-    registry: gojektech
-    repository: mlp
-    tag: 0.1.0-*
-  replicaCount: "1"
+    registry: ghcr.io
+    repository: gojek/mlp
+    tag: 0.1.0
+  replicaCount: 1
   resources:
     requests:
-      cpu: "1"
+      cpu: "500m"
       memory: 512Mi
     limits:
       cpu: "1"
@@ -27,7 +27,7 @@ mlp:
     # encryption.key must be specified using --set flag.
     key: ""
   authorization:
-    enabled: true
+    enabled: false
     serverUrl: http://mlp-authorization-keto
   ingress:
     enabled: false
@@ -37,7 +37,7 @@ dbMigrations:
     tag: v4.7.1
 
 gitlab:
-  enabled: true
+  enabled: false
   host: https://gitlab.com
   oauthScopes: read_user
   clientId: #clientId
@@ -46,8 +46,8 @@ gitlab:
 postgresql:
   resources:
     requests:
+      cpu: "1"
       memory: 2Gi
-      cpu: 1
   persistence:
     size: 10Gi
   postgresqlUsername: mlp
