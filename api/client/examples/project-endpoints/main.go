@@ -56,10 +56,10 @@ func main() {
 			panic(err)
 		}
 		if updatedProject.Team != "dsp-new" {
-			panic(log.Errorf("Team should be changed to dsp-new"))
+			panic("Team should be changed to dsp-new")
 		}
 		if updatedProject.Stream != "dsp-new" {
-			panic(log.Errorf("Stream should be changed to dsp-new"))
+			panic("Stream should be changed to dsp-new")
 		}
 		log.Printf("Project %s updated\n", project.Name)
 	}
