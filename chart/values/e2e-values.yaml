@@ -5,7 +5,7 @@
 mlp:
   environment: dev
   image:
-    tag: use-ghcr
+    tag: add-e2e-test
   imagePullSecrets:
   - name: regcred
   resources:
