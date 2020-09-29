@@ -40,6 +40,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Println("Projects:", projects)
 
 	for _, project := range projects {
 		log.Println()
@@ -69,8 +70,6 @@ func main() {
 				panic(err)
 			}
 			log.Printf("Secret %s: deleted", secret.Name)
-
 		}
-
 	}
 }
