@@ -4,8 +4,7 @@
 
 mlp:
   environment: dev
-  image:
-    tag: add-e2e-test
+  # TODO: After the MLP docker image got published, we can remove imagePullSecrets config
   imagePullSecrets:
   - name: regcred
   resources:
