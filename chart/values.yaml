@@ -5,13 +5,15 @@ mlp:
     repository: gojek/mlp
     tag: 0.1.0
   replicaCount: 1
+
+  ## Configure resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
   resources:
     requests:
-      cpu: "500m"
-      memory: 512Mi
-    limits:
-      cpu: "1"
-      memory: 1Gi
+      cpu: 100m
+      memory: 128Mi
+
   livenessProbe:
     path: "/v1/internal/live"
   readinessProbe:
@@ -46,8 +48,8 @@ gitlab:
 postgresql:
   resources:
     requests:
-      cpu: "1"
-      memory: 2Gi
+      cpu: 100m
+      memory: 128Mi
   persistence:
     size: 10Gi
   postgresqlUsername: mlp

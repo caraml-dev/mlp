@@ -65,13 +65,9 @@ spec:
             periodSeconds: {{ default "10" .Values.mlp.readinessProbe.periodSeconds }}
             successThreshold: {{ default "1" .Values.mlp.readinessProbe.successThreshold }}
             timeoutSeconds: {{ default "5" .Values.mlp.readinessProbe.timeoutSeconds }}
-          resources:
-            requests:
-              cpu: {{ .Values.mlp.resources.requests.cpu }}
-              memory: {{ .Values.mlp.resources.requests.memory }}
-            limits:
-              cpu: {{ .Values.mlp.resources.limits.cpu }}
-              memory: {{ .Values.mlp.resources.limits.memory }}
+          {{- if .Values.mlp.resources }}
+          resources: {{- toYaml .Values.mlp.resources | nindent 12 }}
+          {{- end }}
 {{- if .Values.mlp.args }}
           args:
 {{ toYaml .Values.mlp.args | indent 10 -}}
