@@ -9,10 +9,10 @@ mlp:
   ## Configure resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ##
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
+  resources: {}
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
 
   livenessProbe:
     path: "/v1/internal/live"
@@ -46,10 +46,13 @@ gitlab:
   clientSecret: #clientSecret
 
 postgresql:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
+  ## Configure resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
+  resources: {}
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
   persistence:
     size: 10Gi
   postgresqlUsername: mlp
