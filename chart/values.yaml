@@ -19,9 +19,9 @@ mlp:
   service:
     externalPort: 8080
     internalPort: 8080
-  apiHost: "http://mlp.dev/v1"
-  gitlabRedirectUrl: "http://mlp.dev/settings/connected-accounts"
-  mlflowTrackingUrl: "http://mlflow.mlp.dev"
+  apiHost: "http://mlp/v1"
+  gitlabRedirectUrl: "http://mlp/settings/connected-accounts"
+  mlflowTrackingUrl: "http://mlflow.mlp"
   environment: "production"
   encryption:
     # encryption.key must be specified using --set flag.
