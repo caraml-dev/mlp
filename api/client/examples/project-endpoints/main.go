@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
+	"net/http"
 	"os"
 
 	"golang.org/x/oauth2/google"
@@ -18,14 +19,17 @@ func main() {
 	}
 
 	// Create an HTTP client with Google default credential
+	httpClient := http.DefaultClient
 	googleClient, err := google.DefaultClient(ctx, "https://www.googleapis.com/auth/userinfo.email")
-	if err != nil {
-		panic(err)
+	if err == nil {
+		httpClient = googleClient
+	} else {
+		log.Println("Google default credential not found. Fallback to HTTP default client")
 	}
 
 	cfg := client.NewConfiguration()
 	cfg.BasePath = basePath
-	cfg.HTTPClient = googleClient
+	cfg.HTTPClient = httpClient
 
 	apiClient := client.NewAPIClient(cfg)
 
@@ -34,13 +38,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Println("Projects:", projects)
 
 	for _, project := range projects {
-		fmt.Println()
-		fmt.Println("---")
-		fmt.Println()
+		log.Println()
+		log.Println("---")
+		log.Println()
 
-		fmt.Println("Project:", project.Name)
+		log.Println("Project:", project.Name)
 
 		// Update project
 		updatedProject, _, err := apiClient.ProjectApi.ProjectsProjectIdPut(ctx, project.Id, client.Project{
@@ -52,11 +57,11 @@ func main() {
 			panic(err)
 		}
 		if updatedProject.Team != "dsp-new" {
-			panic(fmt.Errorf("Team should be changed to dsp-new"))
+			panic("Team should be changed to dsp-new")
 		}
 		if updatedProject.Stream != "dsp-new" {
-			panic(fmt.Errorf("Stream should be changed to dsp-new"))
+			panic("Stream should be changed to dsp-new")
 		}
-		fmt.Printf("Project %s updated\n", project.Name)
+		log.Printf("Project %s updated\n", project.Name)
 	}
 }

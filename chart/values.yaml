@@ -1,17 +1,19 @@
 mlp:
   image:
     pullPolicy: IfNotPresent
-    registry: gojektech
-    repository: mlp
-    tag: 0.1.0-*
-  replicaCount: "1"
-  resources:
-    requests:
-      cpu: "1"
-      memory: 512Mi
-    limits:
-      cpu: "1"
-      memory: 1Gi
+    registry: ghcr.io
+    repository: gojek/mlp
+    tag: 0.1.0
+  replicaCount: 1
+
+  ## Configure resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
+  resources: {}
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
+
   livenessProbe:
     path: "/v1/internal/live"
   readinessProbe:
@@ -19,15 +21,15 @@ mlp:
   service:
     externalPort: 8080
     internalPort: 8080
-  apiHost: "http://mlp.dev/v1"
-  gitlabRedirectUrl: "http://mlp.dev/settings/connected-accounts"
-  mlflowTrackingUrl: "http://mlflow.mlp.dev"
+  apiHost: "http://mlp/v1"
+  gitlabRedirectUrl: "http://mlp/settings/connected-accounts"
+  mlflowTrackingUrl: "http://mlflow.mlp"
   environment: "production"
   encryption:
     # encryption.key must be specified using --set flag.
     key: ""
   authorization:
-    enabled: true
+    enabled: false
     serverUrl: http://mlp-authorization-keto
   ingress:
     enabled: false
@@ -37,17 +39,20 @@ dbMigrations:
     tag: v4.7.1
 
 gitlab:
-  enabled: true
+  enabled: false
   host: https://gitlab.com
   oauthScopes: read_user
   clientId: #clientId
   clientSecret: #clientSecret
 
 postgresql:
-  resources:
-    requests:
-      memory: 2Gi
-      cpu: 1
+  ## Configure resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
+  resources: {}
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
   persistence:
     size: 10Gi
   postgresqlUsername: mlp

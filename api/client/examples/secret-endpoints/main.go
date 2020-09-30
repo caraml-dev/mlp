@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
+	"net/http"
 	"os"
 
 	"golang.org/x/oauth2/google"
@@ -18,14 +19,17 @@ func main() {
 	}
 
 	// Create an HTTP client with Google default credential
+	httpClient := http.DefaultClient
 	googleClient, err := google.DefaultClient(ctx, "https://www.googleapis.com/auth/userinfo.email")
-	if err != nil {
-		panic(err)
+	if err == nil {
+		httpClient = googleClient
+	} else {
+		log.Println("Google default credential not found. Fallback to HTTP default client")
 	}
 
 	cfg := client.NewConfiguration()
 	cfg.BasePath = basePath
-	cfg.HTTPClient = googleClient
+	cfg.HTTPClient = httpClient
 
 	apiClient := client.NewAPIClient(cfg)
 
@@ -36,13 +40,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Println("Projects:", projects)
 
 	for _, project := range projects {
-		fmt.Println()
-		fmt.Println("---")
-		fmt.Println()
+		log.Println()
+		log.Println("---")
+		log.Println()
 
-		fmt.Println("Project:", project.Name)
+		log.Println("Project:", project.Name)
 
 		_, _, err := apiClient.SecretApi.ProjectsProjectIdSecretsPost(ctx, project.Id, client.Secret{
 			Name: project.Name,
@@ -59,14 +64,12 @@ func main() {
 		}
 
 		for _, secret := range secrets {
-			fmt.Println("Secret name:", secret.Name)
+			log.Println("Secret name:", secret.Name)
 			_, err := apiClient.SecretApi.ProjectsProjectIdSecretsSecretIdDelete(ctx, project.Id, secret.Id)
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("Secret %s: deleted", secret.Name)
-
+			log.Printf("Secret %s: deleted", secret.Name)
 		}
-
 	}
 }
