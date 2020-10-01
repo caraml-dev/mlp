@@ -7,7 +7,7 @@ import (
 	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
 
-	"github.com/gojek/mlp/models"
+	"github.com/gojek/mlp/api/models"
 )
 
 type GitlabService interface {

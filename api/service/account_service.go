@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/jinzhu/gorm"
 
-	"github.com/gojek/mlp/models"
+	"github.com/gojek/mlp/api/models"
 )
 
 type AccountService interface {

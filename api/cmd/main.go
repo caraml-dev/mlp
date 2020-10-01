@@ -8,18 +8,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gojek/mlp/pkg/authz/enforcer"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer"
 	"github.com/gorilla/mux"
 	"github.com/heptiolabs/healthcheck"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/rs/cors"
 
-	"github.com/gojek/mlp/api"
-	"github.com/gojek/mlp/config"
-	"github.com/gojek/mlp/log"
-	"github.com/gojek/mlp/service"
-	"github.com/gojek/mlp/storage"
+	"github.com/gojek/mlp/api/api"
+	"github.com/gojek/mlp/api/config"
+	"github.com/gojek/mlp/api/log"
+	"github.com/gojek/mlp/api/service"
+	"github.com/gojek/mlp/api/storage"
 )
 
 func main() {

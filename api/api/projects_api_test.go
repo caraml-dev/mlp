@@ -15,11 +15,11 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gojek/mlp/it/database"
-	"github.com/gojek/mlp/models"
-	enforcerMock "github.com/gojek/mlp/pkg/authz/enforcer/mocks"
-	"github.com/gojek/mlp/service"
-	"github.com/gojek/mlp/storage"
+	"github.com/gojek/mlp/api/it/database"
+	"github.com/gojek/mlp/api/models"
+	enforcerMock "github.com/gojek/mlp/api/pkg/authz/enforcer/mocks"
+	"github.com/gojek/mlp/api/service"
+	"github.com/gojek/mlp/api/storage"
 )
 
 const (

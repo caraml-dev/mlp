@@ -7,7 +7,7 @@ This guide helps you get started developing MLP.
 Make sure you have the following dependencies installed before setting up your developer environment:
 
 - [Git](https://git-scm.com/)
-- [Go 1.13](https://golang.org/doc/install) (see [go.mod](../api/go.mod#L3) for minimum required version)
+- [Go 1.13](https://golang.org/doc/install) (see [go.mod](../go.mod#L3) for minimum required version)
 - [Node.js 12](https://nodejs.org) (LTS version or greater)
 - [Yarn](https://yarnpkg.com)
 - [Docker](https://docs.docker.com/get-docker/)

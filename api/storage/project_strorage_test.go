@@ -8,8 +8,8 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gojek/mlp/it/database"
-	"github.com/gojek/mlp/models"
+	"github.com/gojek/mlp/api/it/database"
+	"github.com/gojek/mlp/api/models"
 )
 
 func TestProjectsService_SaveAndGet(t *testing.T) {

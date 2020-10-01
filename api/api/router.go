@@ -7,14 +7,14 @@ import (
 	"reflect"
 
 	"github.com/go-playground/validator"
-	"github.com/gojek/mlp/pkg/authz/enforcer"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer"
 	"github.com/gorilla/mux"
 
-	"github.com/gojek/mlp/middleware"
-	"github.com/gojek/mlp/models"
-	"github.com/gojek/mlp/pkg/instrumentation/newrelic"
-	"github.com/gojek/mlp/service"
-	"github.com/gojek/mlp/validation"
+	"github.com/gojek/mlp/api/middleware"
+	"github.com/gojek/mlp/api/models"
+	"github.com/gojek/mlp/api/pkg/instrumentation/newrelic"
+	"github.com/gojek/mlp/api/service"
+	"github.com/gojek/mlp/api/validation"
 )
 
 type AppContext struct {
