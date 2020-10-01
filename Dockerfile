@@ -13,9 +13,10 @@ RUN yarn app build
 # ============================================================
 FROM golang:1.14-alpine as go-builder
 WORKDIR /src/api
-COPY api .
-COPY --from=node-builder /src/ui/build ./ui/build
-RUN go build -o bin/mlp-api ./cmd/main.go
+COPY api api/
+COPY go.mod .
+COPY go.sum .
+RUN go build -o bin/mlp-api ./api/cmd/main.go
 
 # ============================================================
 # Build stage 3: Run the app
