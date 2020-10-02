@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gojek/mlp/models"
-	rand "github.com/gojek/mlp/util"
+	"github.com/gojek/mlp/api/models"
+	rand "github.com/gojek/mlp/api/util"
 )
 
 type UsersController struct {

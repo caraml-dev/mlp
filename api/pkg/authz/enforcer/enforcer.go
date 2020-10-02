@@ -11,7 +11,7 @@ import (
 	"github.com/ory/keto-client-go/client/engines"
 	"github.com/ory/keto-client-go/models"
 
-	"github.com/gojek/mlp/pkg/authz/enforcer/types"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer/types"
 )
 
 const (

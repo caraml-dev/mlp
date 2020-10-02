@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gojek/mlp/log"
-	"github.com/gojek/mlp/models"
+	"github.com/gojek/mlp/api/log"
+	"github.com/gojek/mlp/api/models"
 )
 
 type SecretsController struct {

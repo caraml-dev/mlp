@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/oauth2"
 
-	"github.com/gojek/mlp/models"
+	"github.com/gojek/mlp/api/models"
 )
 
 type mockGitlabService struct {

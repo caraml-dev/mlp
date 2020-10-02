@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gojek/mlp/pkg/authz/enforcer"
-	enforcerMock "github.com/gojek/mlp/pkg/authz/enforcer/mocks"
-	"github.com/gojek/mlp/pkg/authz/enforcer/types"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer"
+	enforcerMock "github.com/gojek/mlp/api/pkg/authz/enforcer/mocks"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer/types"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gojek/mlp/models"
-	"github.com/gojek/mlp/storage/mocks"
+	"github.com/gojek/mlp/api/models"
+	"github.com/gojek/mlp/api/storage/mocks"
 )
 
 const MLFlowTrackingURL = "http://localhost:5555"

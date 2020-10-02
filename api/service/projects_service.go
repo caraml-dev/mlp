@@ -6,9 +6,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/gojek/mlp/models"
-	"github.com/gojek/mlp/pkg/authz/enforcer"
-	"github.com/gojek/mlp/storage"
+	"github.com/gojek/mlp/api/models"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer"
+	"github.com/gojek/mlp/api/storage"
 )
 
 type ProjectsService interface {

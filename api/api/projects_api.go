@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/gojek/mlp/pkg/authz/enforcer"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer"
 
-	"github.com/gojek/mlp/log"
-	"github.com/gojek/mlp/models"
+	"github.com/gojek/mlp/api/log"
+	"github.com/gojek/mlp/api/models"
 )
 
 type ProjectsController struct {
