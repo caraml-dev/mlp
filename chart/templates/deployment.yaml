@@ -131,6 +131,10 @@ spec:
               value: "{{ .Values.mlp.oauthClientID }}"
             - name: SENTRY_DSN
               value: "{{ .Values.mlp.sentryDSN }}"
+            - name: TEAM_LIST
+              value: "{{ join "," .Values.mlp.teams }}"
+            - name: STREAM_LIST
+              value: "{{ join "," .Values.mlp.streams }}"
       volumes:
       - name: db-migrations
         configMap:

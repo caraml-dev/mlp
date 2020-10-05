@@ -18,6 +18,7 @@ import { SingleSelectionComboBox } from "./SingleSelectionComboBox";
 import { EmailTextArea } from "./EmailTextArea";
 import { Labels } from "./Labels";
 import { validateSubdomain } from "../../validation/validateSubdomain";
+import config from "../../config";
 
 const ProjectForm = () => {
   const {
@@ -39,13 +40,23 @@ const ProjectForm = () => {
     setName(newValue);
   };
 
-  const teamOptions = [];
+  const teamOptions = config.TEAMS.map(team => {
+    return {
+      label: team
+    };
+  });
+
   const onTeamChange = selectedTeam => {
     setTeam(selectedTeam.label);
   };
   const [teamValid, setTeamValid] = useState();
 
-  const streamOptions = [];
+  const streamOptions = config.STREAMS.map(stream => {
+    return {
+      label: stream
+    };
+  });
+
   const onStreamChange = selectedStream => {
     setStream(selectedStream.label);
   };

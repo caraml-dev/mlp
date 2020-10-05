@@ -33,6 +33,14 @@ mlp:
     serverUrl: http://mlp-authorization-keto
   ingress:
     enabled: false
+  teams:
+    - marketing
+    - operation
+    - business
+  streams:
+    - promotion-marketing
+    - operation-strategy
+    - business-analyst
 
 dbMigrations:
   image:
