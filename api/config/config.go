@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	APIHost       string `envconfig:"API_HOST" default:"http://localhost:8080/v1`
+	APIHost       string `envconfig:"API_HOST" default:"http://localhost:8080/v1"`
 	Port          int    `envconfig:"PORT" default:"8080"`
 	Environment   string `envconfig:"ENVIRONMENT" default:"dev"`
 	EncryptionKey string `envconfig:"ENCRYPTION_KEY" required:"true"`
@@ -21,6 +21,9 @@ type Config struct {
 
 	OauthClientID string `envconfig:"OAUTH_CLIENT_ID"`
 	SentryDSN     string `envconfig:"SENTRY_DSN"`
+
+	Teams   []string `envconfig:"TEAM_LIST"`
+	Streams []string `envconfig:"STREAM_LIST"`
 }
 
 // UIConfig stores the configuration for the UI.

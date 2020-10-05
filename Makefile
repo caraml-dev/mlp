@@ -80,7 +80,7 @@ build: build-ui build-api
 .PHONY: build-ui
 build-ui: clean-ui
 	@echo "> Building UI static build ..."
-	@cd ${UI_PATH} && yarn app build
+	@cd ${UI_PATH} && yarn lib build && yarn app build
 
 .PHONY: build-api
 build-api: clean-bin
