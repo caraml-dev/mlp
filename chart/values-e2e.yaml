@@ -4,9 +4,6 @@
 
 mlp:
   environment: dev
-  # TODO: After the MLP docker image got published, we can remove imagePullSecrets config
-  imagePullSecrets:
-  - name: regcred
   resources:
     requests:
       cpu: 25m

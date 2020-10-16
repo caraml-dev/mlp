@@ -95,9 +95,6 @@ jobs:
       run: kind create cluster --image=kindest/node:v1.17.11
     - name: Create mlp namespace
       run: kubectl create namespace mlp
-    # TODO: After the MLP docker image got published, we can remove this step
-    - name: Setup Docker credential
-      run: kubectl create secret docker-registry regcred --namespace=mlp --docker-server=ghcr.io --docker-email=ariefrahmansyah@hotmail.com --docker-username=ariefrahmansyah --docker-password=${{ secrets.GHCR_TOKEN }}
     - name: Deploy MLP
       run: ./scripts/e2e/deploy-mlp.sh "chart"
     - name: Run E2E test
