@@ -5,7 +5,7 @@ metadata:
   name: {{ template "mlp.fullname" .}}
   namespace: {{ .Release.Namespace }}
   annotations:
-    ingress.class: {{ .Values.mlp.ingress.class }}
+    kubernetes.io/ingress.class: {{ .Values.mlp.ingress.class }}
   labels:
     app: {{ include "mlp.name" . }}
     chart: {{ include "mlp.chart" . }}
@@ -19,7 +19,7 @@ spec:
     - host: {{ .Values.mlp.ingress.host }}
       http:
         paths:
-          - path: /
+          - path: {{ .Values.mlp.ingress.path | default "/" }}
             backend:
               serviceName: {{ template "mlp.fullname" .}}
               servicePort: {{ .Values.mlp.service.externalPort }}
