@@ -21,7 +21,8 @@ const zeroState = data => ({
   data: data,
   isLoading: false,
   isLoaded: false,
-  error: null
+  error: null,
+  headers: null
 });
 
 const dataFetchReducer = (state, action) => {
@@ -33,14 +34,16 @@ const dataFetchReducer = (state, action) => {
         ...state,
         isLoading: true,
         isLoaded: false,
-        error: null
+        error: null,
+        headers: null
       };
     case "FETCH_SUCCESS":
       return {
         ...state,
         isLoading: false,
         isLoaded: true,
-        data: action.payload
+        data: action.payload,
+        headers: action.headers
       };
     case "FETCH_FAILURE":
       return {
@@ -112,7 +115,12 @@ export const useApi = (
           )
       )
         .then(result => {
-          if (!didCancel) dispatch({ type: "FETCH_SUCCESS", payload: result });
+          if (!didCancel)
+            dispatch({
+              type: "FETCH_SUCCESS",
+              payload: result.body,
+              headers: result.headers
+            });
         })
         .catch(error => {
           if (!didCancel) dispatch({ type: "FETCH_FAILURE", error: error });

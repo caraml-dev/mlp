@@ -49,7 +49,15 @@ const fetchData = async (url, authCtx, options) => {
 
 export default async (url, authCtx, options = {}) => {
   return fetchData(url, authCtx, options)
-    .then(parseJson)
+    .then(response =>
+      parseJson(response).then(result => {
+        var headers = {};
+        for (var pair of response.headers.entries()) {
+          headers[pair[0]] = pair[1];
+        }
+        return { body: result, headers: headers };
+      })
+    )
     .then(result => {
       if (options.addToast) {
         addToast({
