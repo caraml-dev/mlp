@@ -37,7 +37,7 @@
     "react-google-login": "5.1.19"
   },
   "peerDependencies": {
-    "@elastic/eui": "27.0.0",
+    "@elastic/eui": "29.0.0",
     "@reach/router": "1.3.3",
     "@sentry/browser": "5.15.5",
     "moment": "^2.27.0",
