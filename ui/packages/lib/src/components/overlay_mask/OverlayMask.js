@@ -1,7 +1,7 @@
 import React from "react";
 
 import "./OverlayMask.scss";
-import useDimension from "../../hooks/useDimension";
+import { useDimension } from "../../hooks";
 
 export const OverlayMask = ({ parentRef, opacity = 0.5, children }) => {
   const { width, height } = useDimension(parentRef);
