@@ -8,4 +8,4 @@ export * from "./hooks";
 export * from "./in_memory_table_form";
 export * from "./label_with_tooltip";
 export * from "./validation";
-export * from "./context";
+export { FormContext, FormContextProvider } from "./context";
