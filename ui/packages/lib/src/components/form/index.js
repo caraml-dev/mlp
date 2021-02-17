@@ -7,6 +7,5 @@ export * from "./functions";
 export * from "./hooks";
 export * from "./in_memory_table_form";
 export * from "./label_with_tooltip";
-export * from "./service_account_combo_box";
 export * from "./validation";
 export * from "./context";
