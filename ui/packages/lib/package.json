@@ -30,11 +30,17 @@
     "preunlink": "yarn unlink:react && yarn unlink:react-dom"
   },
   "dependencies": {
+    "classnames": "^2.2.6",
+    "lodash": "^4.17.20",
     "prop-types": "15.7.2",
     "proper-url-join": "2.1.1",
     "query-string": "^6.13.1",
     "react-fast-compare": "^3.2.0",
-    "react-google-login": "5.1.19"
+    "react-google-login": "5.1.19",
+    "react-scroll": "^1.8.1",
+    "react-sticky": "^6.0.3",
+    "resize-observer-polyfill": "^1.5.1",
+    "yup": "^0.29.1"
   },
   "peerDependencies": {
     "@elastic/eui": "29.0.0",
