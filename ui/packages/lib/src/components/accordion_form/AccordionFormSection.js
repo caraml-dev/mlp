@@ -2,7 +2,7 @@ import React from "react";
 import { Element } from "react-scroll";
 import { EuiAccordion } from "@elastic/eui";
 import { slugify } from "@gojek/mlp-ui";
-import FormValidationContext from "../form/validation";
+import { FormValidationContext } from "../form/validation";
 import { isSectionInvalid } from "./AccordionForm";
 
 export const AccordionFormSection = ({ section, errors, renderTitle }) => (

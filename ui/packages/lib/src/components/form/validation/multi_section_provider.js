@@ -1,7 +1,6 @@
-import * as React from "react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { FormContext } from "../context";
-import FormValidationContext from ".";
+import FormValidationContext from "./context";
 import { extractErrors } from "./errors";
 import zip from "lodash/zip";
 

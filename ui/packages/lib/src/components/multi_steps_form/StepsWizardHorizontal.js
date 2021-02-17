@@ -7,9 +7,8 @@ import {
 } from "@elastic/eui";
 import { StepContent } from "./StepContent";
 import { StepActions } from "./StepActions";
-import FormValidationContext, {
-  FormValidationContextProvider
-} from "../form/validation";
+import FormValidationContext from "../form/validation/context";
+import { FormValidationContextProvider } from "../form/validation/provider";
 
 export const StepsWizardHorizontal = ({
   steps,

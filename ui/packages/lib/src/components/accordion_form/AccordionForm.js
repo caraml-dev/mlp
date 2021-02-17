@@ -2,9 +2,8 @@ import React, { useRef } from "react";
 import { EuiFlexGroup, EuiFlexItem, EuiSpacer } from "@elastic/eui";
 import { StepActions } from "../multi_steps_form/StepActions";
 import { Sticky, StickyContainer } from "react-sticky";
-import FormValidationContext, {
-  MultiSectionFormValidationContextProvider
-} from "../form/validation";
+import FormValidationContext from "../form/validation/context";
+import { MultiSectionFormValidationContextProvider } from "../form/validation/multi_section_provider";
 import {
   AccordionFormScrollController,
   AccordionFormSection,
