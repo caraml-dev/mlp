@@ -38,6 +38,7 @@ export const AuthProvider = ({ clientId, children }) => {
       isAuthenticated: true,
       profileObj: profileObj,
       accessToken: accessToken,
+      idToken: tokenObj.id_token,
       expiresAt: tokenObj.expires_at
     });
   };
