@@ -83,6 +83,7 @@ func TestProjectsService_CreateProject(t *testing.T) {
 
 			projectResource := fmt.Sprintf(ProjectResources, tt.arg.Id)
 			projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.Id)
+			projectNameResource := fmt.Sprintf(ProjectResources, tt.arg.Name)
 
 			authEnforcer := &enforcerMock.Enforcer{}
 			if tt.authEnabled {
@@ -96,18 +97,18 @@ func TestProjectsService_CreateProject(t *testing.T) {
 						ID:      "reader-role",
 						Members: tt.arg.Readers,
 					}, nil)
-				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-administrators-policy", tt.arg.Name), []string{"admin-role"}, []string{}, []string{projectResource, projectSubResource}, []string{enforcer.ActionAll}).
+				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-administrators-policy", tt.arg.Name), []string{"admin-role"}, []string{}, []string{projectResource, projectSubResource, projectNameResource}, []string{enforcer.ActionAll}).
 					Return(&types.Policy{
 						ID:        "admin-policy",
 						Subjects:  []string{"admin-role"},
-						Resources: []string{projectResource, projectSubResource},
+						Resources: []string{projectResource, projectSubResource, projectNameResource},
 						Actions:   []string{enforcer.ActionAll},
 					}, nil)
-				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-readers-policy", tt.arg.Name), []string{"reader-role"}, []string{}, []string{projectResource, projectSubResource}, []string{enforcer.ActionRead}).
+				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-readers-policy", tt.arg.Name), []string{"reader-role"}, []string{}, []string{projectResource, projectSubResource, projectNameResource}, []string{enforcer.ActionRead}).
 					Return(&types.Policy{
 						ID:        "reader-policy",
 						Subjects:  []string{"readers-role"},
-						Resources: []string{projectResource, projectSubResource},
+						Resources: []string{projectResource, projectSubResource, projectNameResource},
 						Actions:   []string{enforcer.ActionRead},
 					}, nil)
 			}
@@ -179,6 +180,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 
 				projectResource := fmt.Sprintf(ProjectResources, tt.arg.Id)
 				projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.Id)
+				projectNameResource := fmt.Sprintf(ProjectResources, tt.arg.Name)
 
 				authEnforcer.On("UpsertRole", fmt.Sprintf("%s-administrators", tt.arg.Name), []string(tt.arg.Administrators)).
 					Return(&types.Role{
@@ -190,18 +192,18 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 						ID:      "reader-role",
 						Members: tt.arg.Readers,
 					}, nil)
-				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-administrators-policy", tt.arg.Name), []string{"admin-role"}, []string{}, []string{projectResource, projectSubResource}, []string{enforcer.ActionAll}).
+				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-administrators-policy", tt.arg.Name), []string{"admin-role"}, []string{}, []string{projectResource, projectSubResource, projectNameResource}, []string{enforcer.ActionAll}).
 					Return(&types.Policy{
 						ID:        "admin-policy",
 						Subjects:  []string{"admin-role"},
-						Resources: []string{projectResource, projectSubResource},
+						Resources: []string{projectResource, projectSubResource, projectNameResource},
 						Actions:   []string{enforcer.ActionAll},
 					}, nil)
-				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-readers-policy", tt.arg.Name), []string{"reader-role"}, []string{}, []string{projectResource, projectSubResource}, []string{enforcer.ActionRead}).
+				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-readers-policy", tt.arg.Name), []string{"reader-role"}, []string{}, []string{projectResource, projectSubResource, projectNameResource}, []string{enforcer.ActionRead}).
 					Return(&types.Policy{
 						ID:        "reader-policy",
 						Subjects:  []string{"readers-role"},
-						Resources: []string{projectResource, projectSubResource},
+						Resources: []string{projectResource, projectSubResource, projectNameResource},
 						Actions:   []string{enforcer.ActionRead},
 					}, nil)
 			}
