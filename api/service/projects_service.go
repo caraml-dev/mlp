@@ -152,7 +152,7 @@ func (service *projectsService) upsertAdministratorsRole(project *models.Project
 func (service *projectsService) upsertAdministratorsPolicy(role string, project *models.Project) error {
 	subResources := fmt.Sprintf(ProjectSubResources, project.Id)
 	resource := fmt.Sprintf(ProjectResources, project.Id)
-	nameResource := fmt.Sprintf(ProjectResources, project.Name)
+	nameResource := fmt.Sprintf(ProjectSubResources, project.Name)
 	policyName := fmt.Sprintf("%s-administrators-policy", project.Name)
 	_, err := service.authEnforcer.UpsertPolicy(policyName, []string{role}, []string{}, []string{resource, subResources, nameResource}, []string{enforcer.ActionAll})
 	return err
@@ -161,7 +161,7 @@ func (service *projectsService) upsertAdministratorsPolicy(role string, project 
 func (service *projectsService) upsertReadersPolicy(role string, project *models.Project) error {
 	subResources := fmt.Sprintf(ProjectSubResources, project.Id)
 	resource := fmt.Sprintf(ProjectResources, project.Id)
-	nameResource := fmt.Sprintf(ProjectResources, project.Name)
+	nameResource := fmt.Sprintf(ProjectSubResources, project.Name)
 	policyName := fmt.Sprintf("%s-readers-policy", project.Name)
 	_, err := service.authEnforcer.UpsertPolicy(policyName, []string{role}, []string{}, []string{resource, subResources, nameResource}, []string{enforcer.ActionRead})
 	return err

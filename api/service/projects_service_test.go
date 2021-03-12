@@ -83,7 +83,7 @@ func TestProjectsService_CreateProject(t *testing.T) {
 
 			projectResource := fmt.Sprintf(ProjectResources, tt.arg.Id)
 			projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.Id)
-			projectNameResource := fmt.Sprintf(ProjectResources, tt.arg.Name)
+			projectNameResource := fmt.Sprintf(ProjectSubResources, tt.arg.Name)
 
 			authEnforcer := &enforcerMock.Enforcer{}
 			if tt.authEnabled {
@@ -180,7 +180,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 
 				projectResource := fmt.Sprintf(ProjectResources, tt.arg.Id)
 				projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.Id)
-				projectNameResource := fmt.Sprintf(ProjectResources, tt.arg.Name)
+				projectNameResource := fmt.Sprintf(ProjectSubResources, tt.arg.Name)
 
 				authEnforcer.On("UpsertRole", fmt.Sprintf("%s-administrators", tt.arg.Name), []string(tt.arg.Administrators)).
 					Return(&types.Role{
