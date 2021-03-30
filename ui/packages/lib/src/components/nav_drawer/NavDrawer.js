@@ -1,46 +1,33 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
   EuiHorizontalRule,
-  EuiNavDrawer,
-  EuiNavDrawerGroup,
+  EuiCollapsibleNav,
+  EuiCollapsibleNavGroup,
+  EuiListGroup,
+  EuiListGroupItem,
   EuiFlexGroup,
+  EuiHeaderSectionItemButton,
+  EuiIcon,
   EuiFlexItem,
-  EuiSpacer
+  EuiSpacer,
+  EuiShowFor
 } from "@elastic/eui";
 import ApplicationsContext from "../../providers/application/context";
 import { CurrentProjectContext } from "../../providers/project";
-import "./NavDrawer.scss";
-
-const HEADER_HEIGHT = 49;
+import { useToggle } from "../../hooks/useToggle";
 
 export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
   const { projectId } = useContext(CurrentProjectContext);
   const { apps } = useContext(ApplicationsContext);
-  const [topPosition, setTopPosition] = useState(HEADER_HEIGHT);
-
-  const handleScroll = () => {
-    const position = Math.max(HEADER_HEIGHT - window.pageYOffset, 0);
-    setTopPosition(position);
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   const mlpLinks = useMemo(
     () =>
-      apps
-        ? apps
-            .filter(a => a.href !== homeUrl)
-            .map(a => ({
-              label: a.name,
-              iconType: a.icon,
-              href: projectId ? `${a.href}/projects/${projectId}` : a.href
-            }))
-        : [],
+      apps.map(a => ({
+        label: a.name,
+        iconType: a.icon,
+        href: projectId ? `${a.href}/projects/${projectId}` : a.href,
+        isActive: a.href === homeUrl
+      })),
     [apps, homeUrl, projectId]
   );
 
@@ -52,29 +39,122 @@ export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
     }
   ];
 
+  const docLinks = [
+    {
+      label: "Merlin User Guide",
+      href:
+        "https://go-jek.atlassian.net/wiki/spaces/DSP/pages/1450639714/Merlin+User+Guide"
+    },
+    {
+      label: "Turing User Guide",
+      href:
+        "https://go-jek.atlassian.net/wiki/spaces/DSP/pages/1757883181/Turing+User+Documentation"
+    },
+    {
+      label: "Feast User Guide",
+      hrefh: "https://docs.feast.dev/user-guide/overview"
+    }
+  ];
+
+  const [navIsOpen, setNavIsOpen] = useState(true);
+  const [navIsDocked, setNavIsDocked] = useState(true);
+
+  useEffect(() => {
+    setNavIsDocked(navIsOpen);
+  }, [navIsOpen]);
+
+  const [appExpanded, toggleAppExpanded] = useToggle(true);
+  const [docsExpanded, toggleDocsExpanded] = useToggle(true);
   return (
-    <EuiNavDrawer>
+    <EuiCollapsibleNav
+      aria-label="Main navigation"
+      isOpen={navIsOpen}
+      showCloseButton={false}
+      isDocked={navIsDocked}
+      showButtonIfDocked={true}
+      style={{ top: "49px", height: "calc(100% - 49px)", width: "240px" }}
+      button={
+        <EuiHeaderSectionItemButton
+          aria-label="Toggle main navigation"
+          onClick={() => setNavIsOpen(!navIsOpen)}>
+          <EuiIcon type={"menu"} size="m" aria-hidden="true" />
+        </EuiHeaderSectionItemButton>
+      }
+      onClose={() => setNavIsOpen(false)}>
       <EuiFlexGroup
         gutterSize="none"
         direction="column"
         style={{ height: "100%" }}>
-        <EuiFlexItem grow={true} style={{ marginTop: `${topPosition}px` }}>
+        <EuiFlexItem grow={true}>
           {appLinks && (
             <>
-              <EuiNavDrawerGroup showToolTips={true} listItems={appLinks} />
+              <EuiCollapsibleNavGroup listItems={appLinks} />
               <EuiHorizontalRule margin="none" />
             </>
           )}
-          <EuiNavDrawerGroup showToolTips={true} listItems={mlpLinks} />
-          <EuiHorizontalRule margin="none" />
+          <EuiCollapsibleNavGroup
+            isCollapsible={appExpanded}
+            initialIsOpen={true}
+            iconType="apps"
+            title="Products">
+            <EuiListGroup
+              aria-label="MLP apps"
+              listItems={mlpLinks}
+              maxWidth="none"
+              color="text"
+              gutterSize="none"
+              size="s"
+            />
+          </EuiCollapsibleNavGroup>
+
+          <EuiCollapsibleNavGroup
+            title="Learn"
+            iconType="training"
+            isCollapsible={true}
+            initialIsOpen={docsExpanded}
+            onToggle={toggleDocsExpanded}>
+            <EuiListGroup
+              aria-label="Learn" // A11y : EuiCollapsibleNavGroup can't correctly pass the `title` as the `aria-label` to the right HTML element, so it must be added manually
+              listItems={docLinks}
+              maxWidth="none"
+              color="subdued"
+              gutterSize="none"
+              size="s"
+            />
+          </EuiCollapsibleNavGroup>
         </EuiFlexItem>
+
+        <EuiHorizontalRule margin="none" />
+
         <EuiFlexItem grow={false}>
           {projectId && (
-            <EuiNavDrawerGroup showToolTips={true} listItems={adminLinks} />
+            <EuiCollapsibleNavGroup>
+              <EuiListGroup
+                listItems={adminLinks}
+                color="subdued"
+                size="s"
+                gutterSize="none"
+              />
+            </EuiCollapsibleNavGroup>
           )}
           <EuiSpacer size="s" />
         </EuiFlexItem>
+        <EuiFlexItem grow={false}>
+          <EuiShowFor sizes={["l", "xl"]}>
+            <EuiCollapsibleNavGroup>
+              <EuiListGroupItem
+                size="s"
+                color="subdued"
+                label={`${navIsDocked ? "Undock" : "Dock"} navigation`}
+                onClick={() => {
+                  setNavIsDocked(!navIsDocked);
+                }}
+                iconType={navIsDocked ? "lock" : "lockOpen"}
+              />
+            </EuiCollapsibleNavGroup>
+          </EuiShowFor>
+        </EuiFlexItem>
       </EuiFlexGroup>
-    </EuiNavDrawer>
+    </EuiCollapsibleNav>
   );
 };

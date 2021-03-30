@@ -1,29 +1,32 @@
+import React from "react";
+import { navigate } from "@reach/router";
+import { EuiPage } from "@elastic/eui";
 import {
   ApplicationsContextProvider,
   CurrentProjectContext,
   CurrentProjectContextProvider,
   Header,
-  NavDrawer,
   ProjectsContextProvider
 } from "@gojek/mlp-ui";
-import { navigate } from "@reach/router";
-import React from "react";
 
 export const PrivateLayout = Component => {
   return props => (
     <ApplicationsContextProvider>
       <ProjectsContextProvider>
         <CurrentProjectContextProvider {...props}>
-          <Header
-            appIcon="graphApp"
-            onProjectSelect={projectId =>
-              navigate(`/projects/${projectId}/settings`)
-            }
-          />
           <CurrentProjectContext.Consumer>
-            {({ projectId }) => projectId && <NavDrawer />}
+            {({ _ }) => (
+              <Header
+                appIcon="graphApp"
+                onProjectSelect={projectId =>
+                  navigate(`/projects/${projectId}/settings`)
+                }
+              />
+            )}
           </CurrentProjectContext.Consumer>
-          <Component {...props} />
+          <EuiPage style={{ paddingTop: "49px" }}>
+            <Component {...props} />
+          </EuiPage>
         </CurrentProjectContextProvider>
       </ProjectsContextProvider>
     </ApplicationsContextProvider>

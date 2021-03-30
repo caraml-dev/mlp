@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
-import { navigate } from "@reach/router";
 import {
   EuiContextMenuItem,
   EuiHeader,
   EuiHeaderLogo,
   EuiHeaderLink,
+  EuiText,
   EuiHeaderSection,
   EuiHeaderSectionItem
 } from "@elastic/eui";
@@ -15,29 +15,36 @@ import { ProjectsDropdown } from "../projects_dropdown";
 import { Breadcrumbs } from "../breadcrumbs";
 import { HeaderUserMenu } from "./HeaderUserMenu";
 import { slugify } from "../../utils";
+import { NavDrawer } from "../nav_drawer";
 
 export const Header = ({
   homeUrl = "/",
-  appIcon,
   onProjectSelect,
   userMenuItems,
-  helpLink
+  helpLink,
+  appLinks
 }) => {
   const { state, onLogout } = useContext(AuthContext);
   const { projects } = useContext(ProjectsContext);
   const { projectId } = useContext(CurrentProjectContext);
 
   return (
-    <EuiHeader>
+    <EuiHeader position="fixed">
       <EuiHeaderSection grow={false}>
+        {projectId && (
+          <EuiHeaderSectionItem>
+            <NavDrawer homeUrl={homeUrl} />
+          </EuiHeaderSectionItem>
+        )}
         <EuiHeaderSectionItem border="right">
           <EuiHeaderLogo
-            iconType={appIcon}
+            iconType="graphApp"
             size="m"
             onClick={() =>
               projectId ? onProjectSelect(projectId) : navigate(homeUrl)
             }
             aria-label="Machine Learning Platform"
+            title="Machine Learning Platform"
           />
         </EuiHeaderSectionItem>
         <ProjectsDropdown
