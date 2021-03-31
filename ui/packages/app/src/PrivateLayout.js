@@ -2,7 +2,6 @@ import React from "react";
 import { navigate } from "@reach/router";
 import {
   ApplicationsContextProvider,
-  CurrentProjectContext,
   CurrentProjectContextProvider,
   Header,
   ProjectsContextProvider
@@ -13,17 +12,12 @@ export const PrivateLayout = Component => {
     <ApplicationsContextProvider>
       <ProjectsContextProvider>
         <CurrentProjectContextProvider {...props}>
-          <CurrentProjectContext.Consumer>
-            {({ _ }) => (
-              <Header
-                appIcon="graphApp"
-                onProjectSelect={projectId =>
-                  navigate(`/projects/${projectId}/settings`)
-                }
-              />
-            )}
-          </CurrentProjectContext.Consumer>
-
+          <Header
+            appIcon="graphApp"
+            onProjectSelect={projectId =>
+              navigate(`/projects/${projectId}/settings`)
+            }
+          />
           <div style={{ paddingTop: "49px" }}>
             <Component {...props} />
           </div>

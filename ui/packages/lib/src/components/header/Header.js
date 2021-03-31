@@ -9,7 +9,6 @@ import {
 } from "@elastic/eui";
 import AuthContext from "../../auth/context";
 import ProjectsContext from "../../providers/project/projectsContext";
-import CurrentProjectContext from "../../providers/project/currentProjectContext";
 import { ProjectsDropdown } from "../projects_dropdown";
 import { Breadcrumbs } from "../breadcrumbs";
 import { HeaderUserMenu } from "./HeaderUserMenu";
@@ -25,16 +24,14 @@ export const Header = ({
 }) => {
   const { state, onLogout } = useContext(AuthContext);
   const { projects } = useContext(ProjectsContext);
-  const { projectId } = useContext(CurrentProjectContext);
 
   return (
     <EuiHeader position="fixed">
       <EuiHeaderSection grow={false}>
-        {projectId && (
-          <EuiHeaderSectionItem>
-            <NavDrawer homeUrl={homeUrl} />
-          </EuiHeaderSectionItem>
-        )}
+        <EuiHeaderSectionItem>
+          <NavDrawer homeUrl={homeUrl} />
+        </EuiHeaderSectionItem>
+
         <EuiHeaderSectionItem border="right">
           <EuiText style={{ padding: "10px" }}>
             <h4>Machine Learning Platform</h4>
