@@ -15,7 +15,6 @@ import { Breadcrumbs } from "../breadcrumbs";
 import { HeaderUserMenu } from "./HeaderUserMenu";
 import { slugify } from "../../utils";
 import { NavDrawer } from "../nav_drawer";
-import { navigate } from "@reach/router";
 
 export const Header = ({
   homeUrl = "/",

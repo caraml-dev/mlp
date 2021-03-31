@@ -1220,17 +1220,6 @@
     uuid "^8.3.0"
     vfile "^4.2.0"
 
-"@gojek/mlp-ui@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@gojek/mlp-ui/-/mlp-ui-1.0.1.tgz#f27d534c62db698f30ca2757b47def52dbaafdcd"
-  integrity sha512-nckvDJWYUsnCpJ//byM/XQBl9SjYaACZmmyKME9a1DK12UV3WGADeU73h8dSzAdMMUsm6EVLYJBVcD9zA979hw==
-  dependencies:
-    prop-types "15.7.2"
-    proper-url-join "2.1.1"
-    query-string "^6.13.1"
-    react-fast-compare "^3.2.0"
-    react-google-login "5.1.19"
-
 "@hapi/address@2.x.x":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@hapi/address/-/address-2.1.4.tgz#5d67ed43f3fd41a69d4b9ff7b56e7c0d1d0a81e5"
