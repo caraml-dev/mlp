@@ -93,8 +93,9 @@ export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
             </>
           )}
           <EuiCollapsibleNavGroup
-            isCollapsible={appExpanded}
-            initialIsOpen={true}
+            isCollapsible={true}
+            initialIsOpen={appExpanded}
+            onToggle={toggleAppExpanded}
             iconType="apps"
             title="Products">
             <EuiListGroup

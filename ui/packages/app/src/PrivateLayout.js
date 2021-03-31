@@ -1,6 +1,5 @@
 import React from "react";
 import { navigate } from "@reach/router";
-import { EuiPage } from "@elastic/eui";
 import {
   ApplicationsContextProvider,
   CurrentProjectContext,
@@ -24,9 +23,10 @@ export const PrivateLayout = Component => {
               />
             )}
           </CurrentProjectContext.Consumer>
-          <EuiPage style={{ paddingTop: "49px" }}>
+
+          <div style={{ paddingTop: "49px" }}>
             <Component {...props} />
-          </EuiPage>
+          </div>
         </CurrentProjectContextProvider>
       </ProjectsContextProvider>
     </ApplicationsContextProvider>
