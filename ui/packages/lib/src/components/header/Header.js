@@ -2,8 +2,8 @@ import React, { useContext } from "react";
 import {
   EuiContextMenuItem,
   EuiHeader,
-  EuiHeaderLogo,
   EuiHeaderLink,
+  EuiText,
   EuiHeaderSection,
   EuiHeaderSectionItem
 } from "@elastic/eui";
@@ -37,15 +37,9 @@ export const Header = ({
           </EuiHeaderSectionItem>
         )}
         <EuiHeaderSectionItem border="right">
-          <EuiHeaderLogo
-            iconType="graphApp"
-            size="m"
-            onClick={() =>
-              projectId ? onProjectSelect(projectId) : navigate(homeUrl)
-            }
-            aria-label="Machine Learning Platform"
-            title="Machine Learning Platform"
-          />
+          <EuiText style={{ padding: "10px" }}>
+            <h4>Machine Learning Platform</h4>
+          </EuiText>
         </EuiHeaderSectionItem>
         <ProjectsDropdown
           projects={projects}

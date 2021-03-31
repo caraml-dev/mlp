@@ -72,7 +72,7 @@ export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
       showCloseButton={false}
       isDocked={navIsDocked}
       showButtonIfDocked={true}
-      style={{ top: "49px", height: "calc(100% - 49px)", width: "240px" }}
+      style={{ top: "49px", height: "calc(100% - 49px)", width: "262px" }}
       button={
         <EuiHeaderSectionItemButton
           aria-label="Toggle main navigation"
