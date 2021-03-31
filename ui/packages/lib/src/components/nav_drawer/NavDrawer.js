@@ -103,7 +103,7 @@ export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
               listItems={mlpLinks}
               maxWidth="none"
               color="text"
-              gutterSize="none"
+              gutterSize="s"
               size="s"
             />
           </EuiCollapsibleNavGroup>
@@ -119,7 +119,7 @@ export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
               listItems={docLinks}
               maxWidth="none"
               color="subdued"
-              gutterSize="none"
+              gutterSize="s"
               size="s"
             />
           </EuiCollapsibleNavGroup>
