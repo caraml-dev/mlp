@@ -15,8 +15,9 @@ import {
 import ApplicationsContext from "../../providers/application/context";
 import { CurrentProjectContext } from "../../providers/project";
 import { useToggle } from "../../hooks/useToggle";
+import "./NavDrawer.scss";
 
-export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
+export const NavDrawer = ({ homeUrl = "/", appLinks, docLinks }) => {
   const { projectId } = useContext(CurrentProjectContext);
   const { apps } = useContext(ApplicationsContext);
 
@@ -39,23 +40,6 @@ export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
     }
   ];
 
-  const docLinks = [
-    {
-      label: "Merlin User Guide",
-      href:
-        "https://go-jek.atlassian.net/wiki/spaces/DSP/pages/1450639714/Merlin+User+Guide"
-    },
-    {
-      label: "Turing User Guide",
-      href:
-        "https://go-jek.atlassian.net/wiki/spaces/DSP/pages/1757883181/Turing+User+Documentation"
-    },
-    {
-      label: "Feast User Guide",
-      hrefh: "https://docs.feast.dev/user-guide/overview"
-    }
-  ];
-
   const [navIsOpen, setNavIsOpen] = useState(true);
   const [navIsDocked, setNavIsDocked] = useState(true);
 
@@ -72,7 +56,6 @@ export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
       showCloseButton={false}
       isDocked={navIsDocked}
       showButtonIfDocked={true}
-      style={{ top: "49px", height: "calc(100% - 49px)", width: "262px" }}
       button={
         <EuiHeaderSectionItemButton
           aria-label="Toggle main navigation"
@@ -125,8 +108,6 @@ export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
           </EuiCollapsibleNavGroup>
         </EuiFlexItem>
 
-        <EuiHorizontalRule margin="none" />
-
         <EuiFlexItem grow={false}>
           {projectId && (
             <EuiCollapsibleNavGroup>
@@ -140,6 +121,9 @@ export const NavDrawer = ({ homeUrl = "/", appLinks }) => {
           )}
           <EuiSpacer size="s" />
         </EuiFlexItem>
+
+        <EuiHorizontalRule margin="none" />
+
         <EuiFlexItem grow={false}>
           <EuiShowFor sizes={["l", "xl"]}>
             <EuiCollapsibleNavGroup>

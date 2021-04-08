@@ -14,13 +14,15 @@ import { Breadcrumbs } from "../breadcrumbs";
 import { HeaderUserMenu } from "./HeaderUserMenu";
 import { slugify } from "../../utils";
 import { NavDrawer } from "../nav_drawer";
+import "./Header.scss";
 
 export const Header = ({
   homeUrl = "/",
   onProjectSelect,
   userMenuItems,
   helpLink,
-  appLinks
+  appLinks,
+  docLinks
 }) => {
   const { state, onLogout } = useContext(AuthContext);
   const { projects } = useContext(ProjectsContext);
@@ -29,11 +31,11 @@ export const Header = ({
     <EuiHeader position="fixed">
       <EuiHeaderSection grow={false}>
         <EuiHeaderSectionItem>
-          <NavDrawer homeUrl={homeUrl} />
+          <NavDrawer homeUrl={homeUrl} docLinks={docLinks} />
         </EuiHeaderSectionItem>
 
         <EuiHeaderSectionItem border="right">
-          <EuiText style={{ padding: "10px" }}>
+          <EuiText className="header-title">
             <h4>Machine Learning Platform</h4>
           </EuiText>
         </EuiHeaderSectionItem>
