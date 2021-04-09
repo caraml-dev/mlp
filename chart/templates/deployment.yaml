@@ -135,8 +135,10 @@ spec:
               value: "{{ join "," .Values.mlp.teams }}"
             - name: STREAM_LIST
               value: "{{ join "," .Values.mlp.streams }}"
+            {{- if .Values.mlp.docs }}
             - name: DOC_LIST
               value: {{ .Values.mlp.docs | toJson | quote  }}
+            {{- end }}
       volumes:
       - name: db-migrations
         configMap:

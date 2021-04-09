@@ -91,21 +91,23 @@ export const NavDrawer = ({ homeUrl = "/", appLinks, docLinks }) => {
             />
           </EuiCollapsibleNavGroup>
 
-          <EuiCollapsibleNavGroup
-            title="Learn"
-            iconType="training"
-            isCollapsible={true}
-            initialIsOpen={docsExpanded}
-            onToggle={toggleDocsExpanded}>
-            <EuiListGroup
-              aria-label="Learn" // A11y : EuiCollapsibleNavGroup can't correctly pass the `title` as the `aria-label` to the right HTML element, so it must be added manually
-              listItems={docLinks}
-              maxWidth="none"
-              color="subdued"
-              gutterSize="s"
-              size="s"
-            />
-          </EuiCollapsibleNavGroup>
+          {docLinks.length > 0 && (
+            <EuiCollapsibleNavGroup
+              title="Learn"
+              iconType="training"
+              isCollapsible={true}
+              initialIsOpen={docsExpanded}
+              onToggle={toggleDocsExpanded}>
+              <EuiListGroup
+                aria-label="Learn" // A11y : EuiCollapsibleNavGroup can't correctly pass the `title` as the `aria-label` to the right HTML element, so it must be added manually
+                listItems={docLinks}
+                maxWidth="none"
+                color="subdued"
+                gutterSize="s"
+                size="s"
+              />
+            </EuiCollapsibleNavGroup>
+          )}
         </EuiFlexItem>
 
         <EuiFlexItem grow={false}>
