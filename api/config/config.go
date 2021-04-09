@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/kelseyhightower/envconfig"
@@ -22,8 +23,26 @@ type Config struct {
 	OauthClientID string `envconfig:"OAUTH_CLIENT_ID"`
 	SentryDSN     string `envconfig:"SENTRY_DSN"`
 
-	Teams   []string `envconfig:"TEAM_LIST"`
-	Streams []string `envconfig:"STREAM_LIST"`
+	Teams   []string       `envconfig:"TEAM_LIST"`
+	Streams []string       `envconfig:"STREAM_LIST"`
+	Docs    Documentations `envconfig:"DOC_LIST"`
+}
+
+type Documentations []Documentation
+
+type Documentation struct {
+	Label string `json:"label"`
+	Href  string `json:"href"`
+}
+
+func (docs *Documentations) Decode(value string) error {
+	var listOfDoc Documentations
+
+	if err := json.Unmarshal([]byte(value), &listOfDoc); err != nil {
+		return err
+	}
+	*docs = listOfDoc
+	return nil
 }
 
 // UIConfig stores the configuration for the UI.

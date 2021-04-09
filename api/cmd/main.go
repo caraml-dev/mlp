@@ -87,6 +87,7 @@ func main() {
 		SentryDSN:     cfg.SentryDSN,
 		Teams:         cfg.Teams,
 		Streams:       cfg.Streams,
+		Docs:          cfg.Docs,
 	}
 
 	router.Methods("GET").Path("/env.js").HandlerFunc(uiEnv.handler)
@@ -108,12 +109,13 @@ func mount(r *mux.Router, path string, handler http.Handler) {
 }
 
 type uiEnvHandler struct {
-	ApiURL        string   `json:"REACT_APP_API_URL,omitempty"`
-	OauthClientID string   `json:"REACT_APP_OAUTH_CLIENT_ID,omitempty"`
-	Environment   string   `json:"REACT_APP_ENVIRONMENT,omitempty"`
-	SentryDSN     string   `json:"REACT_APP_SENTRY_DSN,omitempty"`
-	Teams         []string `json:"REACT_APP_TEAMS"`
-	Streams       []string `json:"REACT_APP_STREAMS"`
+	ApiURL        string                `json:"REACT_APP_API_URL,omitempty"`
+	OauthClientID string                `json:"REACT_APP_OAUTH_CLIENT_ID,omitempty"`
+	Environment   string                `json:"REACT_APP_ENVIRONMENT,omitempty"`
+	SentryDSN     string                `json:"REACT_APP_SENTRY_DSN,omitempty"`
+	Teams         []string              `json:"REACT_APP_TEAMS"`
+	Streams       []string              `json:"REACT_APP_STREAMS"`
+	Docs          config.Documentations `json:"REACT_APP_DOC_LINKS"`
 }
 
 func (h uiEnvHandler) handler(w http.ResponseWriter, r *http.Request) {
