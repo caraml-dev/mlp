@@ -10,7 +10,7 @@ export const ExpandableContainer = ({
   maxHeight = 300,
   isScrollable = true,
   toggleKind = "button", // "button" | "text"
-  children,
+  children
 }) => {
   const contentRef = useRef();
   const [isExpanded, toggle] = useToggle();
@@ -19,17 +19,17 @@ export const ExpandableContainer = ({
   return (
     <div
       className={classNames("expandableContainer", {
-        "expandableContainer-isOpen": isExpanded,
+        "expandableContainer-isOpen": isExpanded
       })}>
       <EuiFlexItem grow={true} className="euiFlexItem--childFlexPanel">
         <div
           className={classNames("expandableContainer__childWrapper", {
-            scrollableContainer: isScrollable,
+            scrollableContainer: isScrollable
           })}
           style={{
             height: isExpanded
               ? contentHeight
-              : Math.min(contentHeight, maxHeight),
+              : Math.min(contentHeight, maxHeight)
           }}>
           <div ref={contentRef}>{children}</div>
         </div>
