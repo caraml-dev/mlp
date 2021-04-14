@@ -9,7 +9,7 @@ import {
 } from "@elastic/eui";
 import { ApplicationsContext, CurrentProjectContext } from "@gojek/mlp-ui";
 import { Instances } from "./components/Instances";
-import { InstancesSummary } from "./components/InstancesSummary";
+// import { InstancesSummary } from "./components/InstancesSummary";
 import { ProjectSummary } from "./components/ProjectSummary";
 import { Resources } from "./components/Resources";
 import { useMerlinApi } from "../../hooks/useMerlinApi";

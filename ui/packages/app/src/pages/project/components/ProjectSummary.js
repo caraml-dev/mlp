@@ -4,7 +4,7 @@ import {
   EuiLink,
   EuiText
 } from "@elastic/eui";
-import { CollapsibleLabelsPanel } from "@gojek/mlp-ui";
+// import { CollapsibleLabelsPanel } from "@gojek/mlp-ui";
 import { Panel } from "./Panel";
 
 const moment = require("moment");
