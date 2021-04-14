@@ -139,6 +139,22 @@ spec:
             - name: DOC_LIST
               value: {{ .Values.mlp.docs | toJson | quote  }}
             {{- end }}
+            - name: REACT_APP_FEAST_CORE_API
+              value: "{{ .Values.mlp.ui.feastCoreApi }}"
+            - name: REACT_APP_MERLIN_API
+              value: "{{ .Values.mlp.ui.merlinApi }}"
+            - name: REACT_APP_TURING_API
+              value: "{{ .Values.mlp.ui.turingApi }}"
+            - name: REACT_APP_CLOCKWORK_UI_HOMEPAGE
+              value: "{{ .Values.mlp.ui.clockworkHomepage }}"
+            - name: REACT_APP_FEAST_UI_HOMEPAGE
+              value: "{{ .Values.mlp.ui.feastHomepage }}"
+            - name: REACT_APP_KUBEFLOW_UI_HOMEPAGE
+              value: "{{ .Values.mlp.ui.kubeflowHomepage }}"
+            - name: REACT_APP_MERLIN_UI_HOMEPAGE
+              value: "{{ .Values.mlp.ui.merlinHomepage }}"
+            - name: REACT_APP_TURING_UI_HOMEPAGE
+              value: "{{ .Values.mlp.ui.turingHomepage }}"
       volumes:
       - name: db-migrations
         configMap:
