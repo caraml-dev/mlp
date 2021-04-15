@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { navigate } from "@reach/router";
 import { EuiInMemoryTable } from "@elastic/eui";
 
 export const TuringRoutersTable = ({ project, routers }) => {
@@ -48,7 +47,7 @@ export const TuringRoutersTable = ({ project, routers }) => {
 
   const cellProps = item => ({
     style: { cursor: "pointer" },
-    onClick: () => navigate(`/turing/projects/${project.id}/routers/${item.id}/details`),
+    onClick: () => window.location.href = `/turing/projects/${project.id}/routers/${item.id}/details`,
   });
 
   return <EuiInMemoryTable items={items} columns={columns} cellProps={cellProps} />;

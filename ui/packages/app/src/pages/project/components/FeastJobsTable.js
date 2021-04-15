@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { navigate } from "@reach/router";
 import { EuiInMemoryTable } from "@elastic/eui";
 
 export const FeastJobsTable = ({ project, feastIngestionJobs }) => {
@@ -59,7 +58,7 @@ export const FeastJobsTable = ({ project, feastIngestionJobs }) => {
 
   const cellProps = () => ({
     style: { cursor: "pointer" },
-    onClick: () => navigate(`/feast/projects/${project.id}`),
+    onClick: () => window.location.href = `/feast/projects/${project.id}`,
   });
 
   return <EuiInMemoryTable items={items} columns={columns} cellProps={cellProps} />;

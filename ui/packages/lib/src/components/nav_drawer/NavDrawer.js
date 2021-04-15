@@ -40,21 +40,22 @@ export const NavDrawer = ({ homeUrl = "/", appLinks, docLinks }) => {
     }
   ];
 
-  const [navIsOpen, setNavIsOpen] = useState(true);
-  const [navIsDocked, setNavIsDocked] = useState(true);
+  const [navIsOpen, setNavIsOpen] = useState(JSON.parse(String(localStorage.getItem('navIsDocked'))) || true);
+  const [navIsDocked, setNavIsDocked] = useState(JSON.parse(String(localStorage.getItem('navIsDocked'))) || true);
 
-  useEffect(() => {
-    setNavIsDocked(navIsOpen);
-  }, [navIsOpen]);
+  // useEffect(() => {
+  //   setNavIsDocked(navIsOpen);
+  // }, [navIsOpen]);
 
   const [appExpanded, toggleAppExpanded] = useToggle(true);
   const [docsExpanded, toggleDocsExpanded] = useToggle(true);
+
   return (
     <EuiCollapsibleNav
       aria-label="Main navigation"
       isOpen={navIsOpen}
-      showCloseButton={false}
       isDocked={navIsDocked}
+      showCloseButton={false}
       showButtonIfDocked={true}
       button={
         <EuiHeaderSectionItemButton
@@ -135,6 +136,10 @@ export const NavDrawer = ({ homeUrl = "/", appLinks, docLinks }) => {
                 label={`${navIsDocked ? "Undock" : "Dock"} navigation`}
                 onClick={() => {
                   setNavIsDocked(!navIsDocked);
+                  localStorage.setItem(
+                    'navIsDocked',
+                    JSON.stringify(!navIsDocked)
+                  );
                 }}
                 iconType={navIsDocked ? "lock" : "lockOpen"}
               />

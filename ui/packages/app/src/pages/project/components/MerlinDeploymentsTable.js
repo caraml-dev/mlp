@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { navigate } from "@reach/router";
 import { EuiInMemoryTable } from "@elastic/eui";
 
 export const MerlinDeploymentsTable = ({ project, models }) => {
@@ -59,7 +58,7 @@ export const MerlinDeploymentsTable = ({ project, models }) => {
 
   const cellProps = item => ({
     style: { cursor: "pointer" },
-    onClick: () => navigate(`/merlin/projects/${project.id}/models/${item.id}/versions/${item.version_id}/endpoints/${item.version_endpoint_id}/details`),
+    onClick: () => window.location.href = `/merlin/projects/${project.id}/models/${item.id}/versions/${item.version_id}/endpoints/${item.version_endpoint_id}/details`,
   });
 
   return <EuiInMemoryTable items={items} columns={columns} cellProps={cellProps} />;
