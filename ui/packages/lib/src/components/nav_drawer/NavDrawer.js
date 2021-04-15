@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import {
   EuiHorizontalRule,
   EuiCollapsibleNav,
@@ -40,8 +40,8 @@ export const NavDrawer = ({ homeUrl = "/", appLinks, docLinks }) => {
     }
   ];
 
-  const [navIsOpen, setNavIsOpen] = useState(JSON.parse(String(localStorage.getItem('navIsDocked'))) || true);
-  const [navIsDocked, setNavIsDocked] = useState(JSON.parse(String(localStorage.getItem('navIsDocked'))) || true);
+  const [navIsOpen, setNavIsOpen] = useState(JSON.parse(String(localStorage.getItem('mlp-navIsDocked'))) || true);
+  const [navIsDocked, setNavIsDocked] = useState(JSON.parse(String(localStorage.getItem('mlp-navIsDocked'))) || true);
 
   // useEffect(() => {
   //   setNavIsDocked(navIsOpen);
@@ -137,7 +137,7 @@ export const NavDrawer = ({ homeUrl = "/", appLinks, docLinks }) => {
                 onClick={() => {
                   setNavIsDocked(!navIsDocked);
                   localStorage.setItem(
-                    'navIsDocked',
+                    'mlp-navIsDocked',
                     JSON.stringify(!navIsDocked)
                   );
                 }}
