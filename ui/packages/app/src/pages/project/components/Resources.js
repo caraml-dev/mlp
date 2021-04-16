@@ -53,7 +53,7 @@ export const Resources = ({
       Deploy model
     </EuiContextMenuItem>,
     <EuiContextMenuItem
-      href={`${config.FEAST_UI_HOMEPAGE}/projects/${project.id}/routers/create`}
+      href={`${config.TURING_UI_HOMEPAGE}/projects/${project.id}/routers/create`}
       key="experiment"
       size="s">
       Set up experiment
