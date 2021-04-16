@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { navigate } from "@reach/router";
 import { EuiLink, EuiListGroup, EuiText } from "@elastic/eui";
 
 export const MerlinDeployments = ({ project, models }) => {
