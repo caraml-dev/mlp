@@ -85,7 +85,7 @@ export const Resources = ({
     {
       title: "Notebooks",
       description: (
-        <EuiLink href={config.KUBEFLOW_HOMEPAGE}>Kubeflow Notebooks</EuiLink>
+        <EuiLink href={config.KUBEFLOW_UI_HOMEPAGE}>Kubeflow Notebooks</EuiLink>
       )
     },
     {
