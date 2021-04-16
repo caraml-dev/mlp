@@ -59,9 +59,9 @@ const Project = () => {
 
   useEffect(() => {
     if (project) {
-      fetchEntities();
-      fetchFeatureTables();
-      fetchFeastIngestionJobs();
+      fetchEntities({ body: JSON.stringify({ "filter": { "project": project.name } }) });
+      fetchFeatureTables({ body: JSON.stringify({ "filter": { "project": project.name } }) });
+      fetchFeastIngestionJobs({ body: JSON.stringify({ "include_terminated":true, "project": project.name.replace(/-/g, "_") }) });
       fetchModels();
       fetchRouters();
     }

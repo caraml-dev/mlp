@@ -15,7 +15,7 @@ export const FeastResources = ({ project, entities, featureTables }) => {
             <EuiText size="s">{entities.entities.length} entities</EuiText>
           ),
           onClick: () => {
-            window.location.href = `/feast/entities`;
+            window.location.href = `/feast/projects/${project.id}/entities`;
           },
           size: "s"
         },
@@ -27,7 +27,7 @@ export const FeastResources = ({ project, entities, featureTables }) => {
             </EuiText>
           ),
           onClick: () => {
-            window.location.href = `/feast/featuretables`;
+            window.location.href = `/feast/projects/${project.id}/featuretables`;
           },
           size: "s"
         }
