@@ -53,7 +53,7 @@ export const Resources = ({
       Deploy model
     </EuiContextMenuItem>,
     <EuiContextMenuItem
-      href={`http://console.s.ai.golabs.io/turing/projects/${project.id}/routers/create`}
+      href={`${config.FEAST_UI_HOMEPAGE}/projects/${project.id}/routers/create`}
       key="experiment"
       size="s">
       Set up experiment
