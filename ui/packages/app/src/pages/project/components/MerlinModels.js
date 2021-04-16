@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { navigate } from "@reach/router";
 import { EuiListGroup, EuiText } from "@elastic/eui";
 import { MODEL_TYPE_NAME_MAP } from "../../../services/merlin/Model";
 
@@ -32,7 +31,7 @@ export const MerlinModels = ({ project, models }) => {
             </EuiText>
           ),
           onClick: () => {
-            navigate(`/merlin/projects/${project.id}/models?type=${modelType}`);
+            window.location.href = `/merlin/projects/${project.id}/models?type=${modelType}`;
           },
           size: "s"
         });

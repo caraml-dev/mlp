@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { navigate } from "@reach/router";
 import { EuiListGroup, EuiText } from "@elastic/eui";
 
 import "./ListGroup.scss";
@@ -16,7 +15,7 @@ export const FeastResources = ({ project, entities, featureTables }) => {
             <EuiText size="s">{entities.entities.length} entities</EuiText>
           ),
           onClick: () => {
-            navigate(`/feast/entities`);
+            window.location.href = `/feast/entities`;
           },
           size: "s"
         },
@@ -28,7 +27,7 @@ export const FeastResources = ({ project, entities, featureTables }) => {
             </EuiText>
           ),
           onClick: () => {
-            navigate(`/feast/featuretables`);
+            window.location.href = `/feast/featuretables`;
           },
           size: "s"
         }

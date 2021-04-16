@@ -56,9 +56,7 @@ export const MerlinDeployments = ({ project, models }) => {
                 <EuiText size="s">{totalServing} active serving</EuiText>
               </>
             ),
-            onClick: () => {
-              navigate(`/merlin/projects/${project.id}/models/${model.id}`);
-            },
+            onClick: () => { window.location.href = `/merlin/projects/${project.id}/models/${model.id}`; },
             size: "s"
           };
         });

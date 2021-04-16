@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { navigate } from "@reach/router";
 import { EuiListGroup, EuiText } from "@elastic/eui";
 import { EXPERIMENT_TYPE_NAME_MAP } from "../../../services/turing/Turing";
 
@@ -37,9 +36,7 @@ export const TuringRouters = ({ project, routers }) => {
             </EuiText>
           ),
           onClick: () => {
-            navigate(
-              `/turing/projects/${project.id}/routers?experiment_type=${expType}`
-            );
+            window.location.href = `/turing/projects/${project.id}/routers?experiment_type=${expType}`;
           },
           size: "s"
         });
