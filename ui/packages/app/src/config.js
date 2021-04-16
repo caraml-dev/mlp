@@ -14,7 +14,11 @@ const config = {
   USE_MOCK_DATA: false,
   TEAMS: (getEnv("REACT_APP_TEAMS") || []).map(team => team.trim()),
   STREAMS: (getEnv("REACT_APP_STREAMS") || []).map(stream => stream.trim()),
-  DOC_LINKS: getEnv("REACT_APP_DOC_LINKS") || [],
+  DOC_LINKS: getEnv("REACT_APP_DOC_LINKS") || [
+    {"href":"https://github.com/gojek/merlin/blob/main/docs/getting-started/README.md","label":"Merlin User Guide"},
+    {"href":"https://github.com/gojek/turing","label":"Turing User Guide"},
+    {"href":"https://docs.feast.dev/user-guide/overview","label":"Feast User Guide"},
+  ],
 
   FEAST_CORE_API: getEnv("REACT_APP_FEAST_CORE_API"),
   MERLIN_API: getEnv("REACT_APP_MERLIN_API"),
