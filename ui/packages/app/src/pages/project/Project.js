@@ -118,7 +118,7 @@ const Project = () => {
 
             <EuiFlexGroup>
               <EuiFlexItem grow={5}>
-                <ComingSoonPanel title="Health Monitoring" iconType="lensApp" />
+                <ComingSoonPanel title="Health Monitoring" iconType="monitoringApp" />
               </EuiFlexItem>
               <EuiFlexItem grow={4}>
                 <ComingSoonPanel title="Error Summary" iconType="bug" />

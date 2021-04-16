@@ -38,7 +38,13 @@ export const Resources = ({
       Create notebook
     </EuiContextMenuItem>,
     <EuiContextMenuItem
-      href={config.FEAST_UI_HOMEPAGE}
+      href={`${config.FEAST_UI_HOMEPAGE}/projects/${project.id}/entities/create`}
+      key="feature-table"
+      size="s">
+      Create Entities
+    </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      href={`${config.FEAST_UI_HOMEPAGE}/projects/${project.id}/featuretables/create`}
       key="feature-table"
       size="s">
       Create FeatureTable
@@ -47,7 +53,7 @@ export const Resources = ({
       Deploy model
     </EuiContextMenuItem>,
     <EuiContextMenuItem
-      href={config.TURING_UI_HOMEPAGE}
+      href={`http://console.s.ai.golabs.io/turing/projects/${project.id}/routers/create`}
       key="experiment"
       size="s">
       Set up experiment
@@ -108,5 +114,5 @@ export const Resources = ({
     </EuiPopover>
   );
 
-  return <Panel title="Resources" items={items} actions={actions} />;
+  return <Panel title="Resources" items={items} actions={actions} iconType="beaker" />;
 };

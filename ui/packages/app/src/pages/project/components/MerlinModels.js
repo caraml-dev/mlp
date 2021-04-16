@@ -3,6 +3,8 @@ import { navigate } from "@reach/router";
 import { EuiListGroup, EuiText } from "@elastic/eui";
 import { MODEL_TYPE_NAME_MAP } from "../../../services/merlin/Model";
 
+import "./ListGroup.scss";
+
 export const MerlinModels = ({ project, models }) => {
   const [modelItems, setModelItems] = useState([]);
 
@@ -23,6 +25,7 @@ export const MerlinModels = ({ project, models }) => {
       let items = [];
       modelMap.forEach((modelCount, modelType) => {
         items.push({
+          className: "listGroupItem",
           label: (
             <EuiText size="s">
               {modelCount} {MODEL_TYPE_NAME_MAP[modelType]}

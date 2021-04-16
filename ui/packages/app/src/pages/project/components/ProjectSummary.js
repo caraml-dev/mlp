@@ -47,5 +47,5 @@ export const ProjectSummary = ({ project, environments }) => {
     </EuiLink>
   );
 
-  return <Panel title="Project Info" items={items} actions={actions} />;
+  return <Panel title="Project Info" items={items} actions={actions} iconType="machineLearningApp" />;
 };

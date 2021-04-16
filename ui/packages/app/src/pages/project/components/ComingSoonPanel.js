@@ -7,7 +7,7 @@ import {
 export const ComingSoonPanel = ({ title, iconType }) => {
   return (
     <EuiCard
-      icon={<EuiIcon size="xxl" type={iconType} />}
+      icon={<EuiIcon size="xl" type={iconType} />}
       title={title}
       description="Coming soon."
       layout="horizontal"

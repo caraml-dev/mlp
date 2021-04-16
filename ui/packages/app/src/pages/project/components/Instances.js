@@ -10,7 +10,7 @@ const Title = ({ title, href }) => {
     <EuiFlexGroup alignItems="center" gutterSize="m">
       <EuiFlexItem grow={false}>
         <EuiTitle size="xxs">
-          <h1>{title}</h1>
+          <h4>{title}</h4>
         </EuiTitle>
       </EuiFlexItem>
       <EuiFlexItem>
@@ -53,5 +53,5 @@ export const Instances = ({ project, feastIngestionJobs, models, routers }) => {
     }
   ];
 
-  return <Panel title="Instances" items={items} type="row" />;
+  return <Panel title="Instances" items={items} type="row" iconType="compute" />;
 };

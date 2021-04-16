@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { navigate } from "@reach/router";
 import { EuiListGroup, EuiText } from "@elastic/eui";
 
+import "./ListGroup.scss";
+
 export const FeastResources = ({ project, entities, featureTables }) => {
   const [items, setItems] = useState([]);
 
@@ -9,6 +11,7 @@ export const FeastResources = ({ project, entities, featureTables }) => {
     if (project && entities && featureTables) {
       setItems([
         {
+          className: "listGroupItem",
           label: (
             <EuiText size="s">{entities.entities.length} entities</EuiText>
           ),
@@ -18,6 +21,7 @@ export const FeastResources = ({ project, entities, featureTables }) => {
           size: "s"
         },
         {
+          className: "listGroupItem",
           label: (
             <EuiText size="s">
               {featureTables.tables.length} feature tables

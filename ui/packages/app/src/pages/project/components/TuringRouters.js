@@ -3,6 +3,8 @@ import { navigate } from "@reach/router";
 import { EuiListGroup, EuiText } from "@elastic/eui";
 import { EXPERIMENT_TYPE_NAME_MAP } from "../../../services/turing/Turing";
 
+import "./ListGroup.scss";
+
 export const TuringRouters = ({ project, routers }) => {
   const [experiments, setExperiments] = useState([]);
 
@@ -28,6 +30,7 @@ export const TuringRouters = ({ project, routers }) => {
       let exps = [];
       expMap.forEach((expCount, expType) => {
         exps.push({
+          className: "listGroupItem",
           label: (
             <EuiText size="s">
               {expCount} {EXPERIMENT_TYPE_NAME_MAP[expType]}

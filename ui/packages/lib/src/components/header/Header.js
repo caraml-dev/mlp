@@ -21,8 +21,8 @@ export const Header = ({
   onProjectSelect,
   userMenuItems,
   helpLink,
-  appLinks,
-  docLinks
+  docLinks,
+  homepage,
 }) => {
   const { state, onLogout } = useContext(AuthContext);
   const { projects } = useContext(ProjectsContext);
@@ -35,9 +35,11 @@ export const Header = ({
         </EuiHeaderSectionItem>
 
         <EuiHeaderSectionItem border="right">
-          <EuiText className="header-title">
-            <h4>Machine Learning Platform</h4>
-          </EuiText>
+          <a href={homepage ? homepage : "/"}>
+            <EuiText className="header-title">
+              <h4>Machine Learning Platform</h4>
+            </EuiText>
+          </a>
         </EuiHeaderSectionItem>
         <ProjectsDropdown
           projects={projects}
