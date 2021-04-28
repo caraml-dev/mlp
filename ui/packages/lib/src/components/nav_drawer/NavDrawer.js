@@ -17,7 +17,7 @@ import { CurrentProjectContext } from "../../providers/project";
 import { useToggle } from "../../hooks/useToggle";
 import "./NavDrawer.scss";
 
-export const NavDrawer = ({ homeUrl = "/", appLinks, docLinks }) => {
+export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
   const { projectId } = useContext(CurrentProjectContext);
   const { apps } = useContext(ApplicationsContext);
 
@@ -40,12 +40,8 @@ export const NavDrawer = ({ homeUrl = "/", appLinks, docLinks }) => {
     }
   ];
 
-  const [navIsOpen, setNavIsOpen] = useState(JSON.parse(String(localStorage.getItem('mlp-navIsDocked'))) || true);
-  const [navIsDocked, setNavIsDocked] = useState(JSON.parse(String(localStorage.getItem('mlp-navIsDocked'))) || true);
-
-  // useEffect(() => {
-  //   setNavIsDocked(navIsOpen);
-  // }, [navIsOpen]);
+  const [navIsOpen, setNavIsOpen] = useState(JSON.parse(String(localStorage.getItem('mlp-navIsDocked'))) || false);
+  const [navIsDocked, setNavIsDocked] = useState(JSON.parse(String(localStorage.getItem('mlp-navIsDocked'))) || false);
 
   const [appExpanded, toggleAppExpanded] = useToggle(true);
   const [docsExpanded, toggleDocsExpanded] = useToggle(true);
@@ -70,37 +66,33 @@ export const NavDrawer = ({ homeUrl = "/", appLinks, docLinks }) => {
         direction="column"
         style={{ height: "100%" }}>
         <EuiFlexItem grow={true}>
-          {appLinks && (
-            <>
-              <EuiCollapsibleNavGroup listItems={appLinks} />
-              <EuiHorizontalRule margin="none" />
-            </>
+          {mlpLinks.length > 0 && (
+            <EuiCollapsibleNavGroup
+              isCollapsible={false}
+              initialIsOpen={appExpanded}
+              onToggle={toggleAppExpanded}
+              iconType="apps"
+              title="Products">
+              <EuiListGroup
+                aria-label="MLP apps"
+                listItems={mlpLinks}
+                maxWidth="none"
+                color="text"
+                gutterSize="s"
+                size="s"
+              />
+            </EuiCollapsibleNavGroup>
           )}
-          <EuiCollapsibleNavGroup
-            isCollapsible={true}
-            initialIsOpen={appExpanded}
-            onToggle={toggleAppExpanded}
-            iconType="apps"
-            title="Products">
-            <EuiListGroup
-              aria-label="MLP apps"
-              listItems={mlpLinks}
-              maxWidth="none"
-              color="text"
-              gutterSize="s"
-              size="s"
-            />
-          </EuiCollapsibleNavGroup>
 
           {docLinks.length > 0 && (
             <EuiCollapsibleNavGroup
               title="Learn"
               iconType="training"
-              isCollapsible={true}
+              isCollapsible={false}
               initialIsOpen={docsExpanded}
               onToggle={toggleDocsExpanded}>
               <EuiListGroup
-                aria-label="Learn" // A11y : EuiCollapsibleNavGroup can't correctly pass the `title` as the `aria-label` to the right HTML element, so it must be added manually
+                aria-label="Learn"
                 listItems={docLinks}
                 maxWidth="none"
                 color="subdued"

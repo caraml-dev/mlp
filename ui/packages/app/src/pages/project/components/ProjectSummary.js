@@ -31,14 +31,6 @@ export const ProjectSummary = ({ project, environments }) => {
       title: "Modified at",
       description: moment(project.updated_at).format("DD-MM-YYYY")
     },
-    // {
-    //   title: "Labels",
-    //   description: <CollapsibleLabelsPanel labels={project.labels} />
-    // },
-    // {
-    //   title: "Administrator",
-    //   description: project.administrators.join(", "),
-    // },
   ];
 
   const actions = (

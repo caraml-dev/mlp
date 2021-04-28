@@ -6,7 +6,6 @@ export const MerlinApp = () => {
   const [merlinApp, setMerlinApp] = useState({});
 
   useEffect(() => {
-    console.log("WKWKWKKWKKKK 1111");
     if (apps) {
       const merlin = apps.find(app => app.name === "Merlin");
       setMerlinApp(merlin);

@@ -14,17 +14,21 @@ export const FeastJobsTable = ({ project, feastIngestionJobs }) => {
           if (items.length >= 5) {
             return;
           }
+
           let tableName = "";
+          let jobType = "";
           if (job.type === "STREAM_INGESTION_JOB") {
             tableName = job.streamIngestion.tableName;
+            jobType = "stream";
           } else if (job.type === "BATCH_INGESTION_JOB") {
             tableName = job.batchIngestion.tableName;
+            jobType = "batch";
           }
 
           items.push({
             id: job.id,
             table_name: tableName,
-            type: job.type === "STREAM_INGESTION_JOB" ? "stream" : "batch",
+            type: jobType,
             status: "running"
           });
         });
