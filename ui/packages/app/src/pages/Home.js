@@ -14,7 +14,7 @@ const Home = () => {
   return (
     <Fragment>
       <EuiEmptyPrompt
-        iconType="graphApp"
+        iconType="machineLearningApp"
         title={<h2>Machine Learning Platform</h2>}
       />
       <EuiFlexGroup style={{ paddingLeft: 50, paddingRight: 50 }}>

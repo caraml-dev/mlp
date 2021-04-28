@@ -1,6 +1,6 @@
 import { get, normalizePath, set } from "@gojek/mlp-ui/src/utils";
 
-export const extractErrors = (validationError) => {
+export const extractErrors = validationError => {
   let errors = {};
   if (validationError.inner) {
     for (let err of validationError.inner) {

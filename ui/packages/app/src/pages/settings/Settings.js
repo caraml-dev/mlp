@@ -16,7 +16,7 @@ import { navigation, pages } from "./index";
 import { Accounts } from "./Accounts";
 import queryString from "query-string";
 
-export const Settings = ({ section, ...props }) => {
+const Settings = ({ section, ...props }) => {
   const [isSideNavOpenOnMobile, setSideNavOpenOnMobile] = useState(true);
   const [items, setItems] = useState(navigation);
   const [page, setPage] = useState(null);
@@ -90,3 +90,5 @@ export const Settings = ({ section, ...props }) => {
     </div>
   );
 };
+
+export default Settings;

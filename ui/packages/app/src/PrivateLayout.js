@@ -17,7 +17,7 @@ export const PrivateLayout = Component => {
           <Header
             appIcon="graphApp"
             onProjectSelect={projectId =>
-              navigate(`/projects/${projectId}/settings`)
+              navigate(`/projects/${projectId}`)
             }
             docLinks={config.DOC_LINKS}
           />

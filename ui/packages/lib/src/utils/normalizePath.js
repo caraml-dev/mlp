@@ -1,1 +1,1 @@
-export const normalizePath = (key) => key.replace(/\[([^}\]]+)]/g, ".$1");
+export const normalizePath = key => key.replace(/\[([^}\]]+)]/g, ".$1");

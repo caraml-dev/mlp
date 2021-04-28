@@ -88,6 +88,8 @@ func main() {
 		Teams:         cfg.Teams,
 		Streams:       cfg.Streams,
 		Docs:          cfg.Docs,
+
+		UIConfig: cfg.UI,
 	}
 
 	router.Methods("GET").Path("/env.js").HandlerFunc(uiEnv.handler)
@@ -116,6 +118,8 @@ type uiEnvHandler struct {
 	Teams         []string              `json:"REACT_APP_TEAMS"`
 	Streams       []string              `json:"REACT_APP_STREAMS"`
 	Docs          config.Documentations `json:"REACT_APP_DOC_LINKS"`
+
+	config.UIConfig
 }
 
 func (h uiEnvHandler) handler(w http.ResponseWriter, r *http.Request) {

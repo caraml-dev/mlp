@@ -56,8 +56,15 @@ mlp:
        "href": "https://docs.feast.dev/user-guide/overview"
       },
     ]
-    
-   
+  ui:
+    feastCoreApi: "http://feast.dev/v1"
+    merlinApi: "http://merlin.dev/v1"
+    turingApi: "http://turing.dev/v1"
+    clockworkHomepage: "http://clockwork.dev"
+    feastHomepage: "http://feast.dev"
+    kubeflowHomepage: "http://kubeflow.org"
+    merlinHomepage: "http://merlin.dev"
+    turingHomepage: "http://turing.dev"
 
 dbMigrations:
   image:

@@ -1,5 +1,6 @@
 export * from "./accordion_form";
 export * from "./breadcrumbs";
+export * from "./collapsible_labels_panels";
 export * from "./confirmation_modal";
 export * from "./expandable_container";
 export * from "./form";

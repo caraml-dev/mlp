@@ -1,5 +1,5 @@
 import React from "react";
-import { Redirect, Router } from "@reach/router";
+import { Router } from "@reach/router";
 import {
   AuthProvider,
   Empty,
@@ -9,12 +9,11 @@ import {
   PrivateRoute,
   Toast
 } from "@gojek/mlp-ui";
+import { Home, Project, Settings } from "./pages";
 import config from "./config";
-import Home from "./views/Home";
 import { PrivateLayout } from "./PrivateLayout";
-import ProjectSetting from "./project_setting/ProjectSetting";
 import { ProjectCreation } from "./project_setting/ProjectCreation";
-import { Settings } from "./views/settings/Settings";
+import ProjectSetting from "./project_setting/ProjectSetting";
 
 export default () => (
   <ErrorBoundary>
@@ -26,10 +25,10 @@ export default () => (
         <Router role="group">
           <Login path="/login" />
 
-          <Redirect
-            from="/projects/:projectId"
-            to="/projects/:projectId/settings"
-            noThrow
+          {/* PROJECT LANDING PAGE */}
+          <PrivateRoute
+            path="/projects/:projectId"
+            render={PrivateLayout(Project)}
           />
 
           {/* PROJECT SETTING */}

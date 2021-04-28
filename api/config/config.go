@@ -49,6 +49,16 @@ func (docs *Documentations) Decode(value string) error {
 type UIConfig struct {
 	StaticPath string `envconfig:"UI_STATIC_PATH" default:"ui/build"`
 	IndexPath  string `envconfig:"UI_INDEX_PATH" default:"index.html"`
+
+	FeastCoreAPI string `envconfig:"REACT_APP_FEAST_CORE_API" json:"REACT_APP_FEAST_CORE_API"`
+	MerlinAPI    string `envconfig:"REACT_APP_MERLIN_API" json:"REACT_APP_MERLIN_API"`
+	TuringAPI    string `envconfig:"REACT_APP_TURING_API" json:"REACT_APP_TURING_API"`
+
+	ClockworkUIHomepage string `envconfig:"REACT_APP_CLOCKWORK_UI_HOMEPAGE" json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
+	FeastUIHomepage     string `envconfig:"REACT_APP_FEAST_UI_HOMEPAGE" json:"REACT_APP_FEAST_UI_HOMEPAGE"`
+	KubeflowUIHomepage  string `envconfig:"REACT_APP_KUBEFLOW_UI_HOMEPAGE" json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`
+	MerlinUIHomepage    string `envconfig:"REACT_APP_MERLIN_UI_HOMEPAGE" json:"REACT_APP_MERLIN_UI_HOMEPAGE"`
+	TuringUIHomepage    string `envconfig:"REACT_APP_TURING_UI_HOMEPAGE" json:"REACT_APP_TURING_UI_HOMEPAGE"`
 }
 
 type DatabaseConfig struct {
