@@ -9,8 +9,7 @@ import {
   EuiHeaderSectionItemButton,
   EuiIcon,
   EuiFlexItem,
-  EuiSpacer,
-  EuiShowFor
+  EuiSpacer
 } from "@elastic/eui";
 import ApplicationsContext from "../../providers/application/context";
 import { CurrentProjectContext } from "../../providers/project";
@@ -68,7 +67,7 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
         <EuiFlexItem grow={true}>
           {mlpLinks.length > 0 && (
             <EuiCollapsibleNavGroup
-              isCollapsible={false}
+              isCollapsible={true}
               initialIsOpen={appExpanded}
               onToggle={toggleAppExpanded}
               iconType="apps"
@@ -88,7 +87,7 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
             <EuiCollapsibleNavGroup
               title="Learn"
               iconType="training"
-              isCollapsible={false}
+              isCollapsible={true}
               initialIsOpen={docsExpanded}
               onToggle={toggleDocsExpanded}>
               <EuiListGroup
@@ -120,23 +119,21 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
         <EuiHorizontalRule margin="none" />
 
         <EuiFlexItem grow={false}>
-          <EuiShowFor sizes={["l", "xl"]}>
-            <EuiCollapsibleNavGroup>
-              <EuiListGroupItem
-                size="s"
-                color="subdued"
-                label={`${navIsDocked ? "Undock" : "Dock"} navigation`}
-                onClick={() => {
-                  setNavIsDocked(!navIsDocked);
-                  localStorage.setItem(
-                    'mlp-navIsDocked',
-                    JSON.stringify(!navIsDocked)
-                  );
-                }}
-                iconType={navIsDocked ? "lock" : "lockOpen"}
-              />
-            </EuiCollapsibleNavGroup>
-          </EuiShowFor>
+          <EuiCollapsibleNavGroup>
+            <EuiListGroupItem
+              size="s"
+              color="subdued"
+              label={`${navIsDocked ? "Undock" : "Dock"} navigation`}
+              onClick={() => {
+                setNavIsDocked(!navIsDocked);
+                localStorage.setItem(
+                  'mlp-navIsDocked',
+                  JSON.stringify(!navIsDocked)
+                );
+              }}
+              iconType={navIsDocked ? "lock" : "lockOpen"}
+            />
+          </EuiCollapsibleNavGroup>
         </EuiFlexItem>
       </EuiFlexGroup>
     </EuiCollapsibleNav>
