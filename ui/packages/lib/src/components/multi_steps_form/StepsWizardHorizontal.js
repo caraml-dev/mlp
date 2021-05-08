@@ -44,7 +44,7 @@ export const StepsWizardHorizontal = ({
         <EuiSpacer size="l" />
 
         <EuiFlexItem>
-          <StepContent>{steps[currentStep].children}</StepContent>
+          <StepContent width={steps[currentStep].width}>{steps[currentStep].children}</StepContent>
         </EuiFlexItem>
 
         <EuiSpacer size="l" />
