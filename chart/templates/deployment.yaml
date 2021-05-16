@@ -16,6 +16,9 @@ spec:
       release: {{ .Release.Name }}
   strategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
   template:
     metadata:
       labels:
