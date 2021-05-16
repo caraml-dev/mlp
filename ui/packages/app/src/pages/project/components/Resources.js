@@ -49,7 +49,7 @@ export const Resources = ({
       size="s">
       Create FeatureTable
     </EuiContextMenuItem>,
-    <EuiContextMenuItem href={config.MERLIN_UI_HOMEPAGE} key="model" size="s">
+    <EuiContextMenuItem href={`${config.MERLIN_UI_HOMEPAGE}/projects/${project.id}`} key="model" size="s">
       Deploy model
     </EuiContextMenuItem>,
     <EuiContextMenuItem
