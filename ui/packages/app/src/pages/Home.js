@@ -1,6 +1,6 @@
-import React, { Fragment, useContext } from "react";
+import React, { useContext } from "react";
 import { EuiLoadingContent, EuiPage, EuiPageBody } from "@elastic/eui";
-import { ApplicationsContext, CurrentProjectContext } from "@gojek/mlp-ui";
+import { CurrentProjectContext } from "@gojek/mlp-ui";
 import { Redirect } from "@reach/router";
 
 const Home = () => {
