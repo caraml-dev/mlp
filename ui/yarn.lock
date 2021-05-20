@@ -1235,6 +1235,25 @@
     uuid "^8.3.0"
     vfile "^4.2.0"
 
+"@gojek/mlp-ui@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@gojek/mlp-ui/-/mlp-ui-1.4.1.tgz#cdb3e5f6167aded38b515a209c603fa0cfba5e41"
+  integrity sha512-01DSeU/X9FJaMp162VQnatWcvV83cwzdk7NLV5epWFgI66co1xf11ZpFzRTqDWye3s4YASkuzv9o1/7jsHow8A==
+  dependencies:
+    classnames "^2.2.6"
+    lodash "^4.17.20"
+    prop-types "15.7.2"
+    proper-url-join "2.1.1"
+    query-string "^6.13.1"
+    react-collapsed "^3.0.1"
+    react-ellipsis-text "^1.2.1"
+    react-fast-compare "^3.2.0"
+    react-google-login "5.1.19"
+    react-scroll "^1.8.1"
+    react-sticky "^6.0.3"
+    resize-observer-polyfill "^1.5.1"
+    yup "^0.29.1"
+
 "@hapi/address@2.x.x":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@hapi/address/-/address-2.1.4.tgz#5d67ed43f3fd41a69d4b9ff7b56e7c0d1d0a81e5"
