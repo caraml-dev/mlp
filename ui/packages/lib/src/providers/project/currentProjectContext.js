@@ -6,7 +6,7 @@ const projectIdKey = "lastSelectedProjectId";
 
 const getSelectedProjectId = (projectId, projects) => {
   let selectedProjectId = projectId;
-  if (selectedProjectId != undefined) {
+  if (selectedProjectId !== undefined) {
     localStorage.setItem(projectIdKey, selectedProjectId);
     return selectedProjectId;
   }
