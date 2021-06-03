@@ -5,10 +5,9 @@ const CurrentProjectContext = React.createContext({});
 const projectIdKey = "lastSelectedProjectId";
 
 const getSelectedProjectId = (projectId, projects) => {
-  let selectedProjectId = projectId;
-  if (selectedProjectId !== undefined) {
-    localStorage.setItem(projectIdKey, selectedProjectId);
-    return selectedProjectId;
+  if (projectId !== undefined) {
+    localStorage.setItem(projectIdKey, projectId);
+    return projectId;
   }
 
   let lastSelectedProjectId = localStorage.getItem(projectIdKey);
