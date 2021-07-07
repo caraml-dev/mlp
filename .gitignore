@@ -4,5 +4,7 @@
 .metals
 *.code-workspace
 
+.idea
+
 # Binary directory
 bin/
