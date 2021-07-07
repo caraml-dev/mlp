@@ -1,7 +1,6 @@
 package metrics
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"time"
 )
 
@@ -14,13 +13,21 @@ func newNopMetricsCollector() Collector {
 	return &NopMetricsCollector{}
 }
 
+func InitNopMetricsCollector() error {
+	SetGlobMetricsCollector(newNopMetricsCollector())
+	globalMetricsCollector.InitMetrics()
+	return nil
+}
+
 // InitMetrics satisfies the Collector interface
-func (NopMetricsCollector) InitMetrics(map[MetricName]*prometheus.HistogramVec) {}
+func (NopMetricsCollector) InitMetrics() {}
 
 // MeasureDurationMsSince satisfies the Collector interface
-func (NopMetricsCollector) MeasureDurationMsSince(MetricName, map[MetricName]*prometheus.HistogramVec, time.Time, map[string]string) {}
+func (NopMetricsCollector) MeasureDurationMsSince(MetricName, time.Time, map[string]string) error {
+	return nil
+}
 
 // MeasureDurationMs satisfies the Collector interface
-func (NopMetricsCollector) MeasureDurationMs(MetricName, map[MetricName]*prometheus.HistogramVec, map[string]func() string) func() {
+func (NopMetricsCollector) MeasureDurationMs(MetricName, map[string]func() string) func() {
 	return func() {}
 }

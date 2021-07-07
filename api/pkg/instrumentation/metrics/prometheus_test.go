@@ -1,12 +1,13 @@
 package metrics
 
 import (
+	"testing"
+	"time"
+
 	"bou.ke/monkey"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
-	"time"
 )
 
 // mockHistogramVec mocks a prometheus HistogramVec
@@ -50,7 +51,7 @@ func TestMeasureDurationMsSince(t *testing.T) {
 		func(key MetricName, histogramMap map[MetricName]*prometheus.HistogramVec) (PrometheusHistogramVec, error) {
 			return histVec, nil
 		})
-	p.MeasureDurationMsSince("TEST_METRIC", histogramMap, starttime, labels)
+	p.MeasureDurationMsSince("TEST_METRIC", starttime, labels)
 	monkey.Unpatch(getHistogramVec)
 	// Validate
 	histVec.AssertCalled(t, "GetMetricWith", mock.Anything)
@@ -68,7 +69,7 @@ func TestMeasureDurationMs(t *testing.T) {
 		func(key MetricName, histogramMap map[MetricName]*prometheus.HistogramVec) (PrometheusHistogramVec, error) {
 			return histVec, nil
 		})
-	p.MeasureDurationMs("TEST_METRIC", histogramMap, map[string]func() string{})()
+	p.MeasureDurationMs("TEST_METRIC", map[string]func() string{})()
 	monkey.Unpatch(getHistogramVec)
 	// Validate
 	histVec.AssertCalled(t, "GetMetricWith", mock.Anything)

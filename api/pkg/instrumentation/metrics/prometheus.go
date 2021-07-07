@@ -1,10 +1,10 @@
 package metrics
 
 import (
-	"github.com/gojek/mlp/api/log"
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/errgo.v2/fmt/errors"
-	"time"
 )
 
 // PrometheusHistogramVec is an interface that captures the methods from the the Prometheus
@@ -25,13 +25,20 @@ func getHistogramVec(key MetricName, histogramMap map[MetricName]*prometheus.His
 
 // PrometheusClient satisfies the Collector interface
 type PrometheusClient struct {
+	histogramMap map[MetricName]*prometheus.HistogramVec
+}
+
+func InitPrometheusMetricsCollector(histogramMap map[MetricName]*prometheus.HistogramVec) error {
+	SetGlobMetricsCollector(&PrometheusClient{histogramMap: histogramMap})
+	globalMetricsCollector.InitMetrics()
+	return nil
 }
 
 // InitMetrics initializes the collectors for all metrics defined for the app
 // and registers them with the DefaultRegisterer.
-func (PrometheusClient) InitMetrics(histogramMap map[MetricName]*prometheus.HistogramVec) {
+func (p PrometheusClient) InitMetrics() {
 	// Register histograms
-	for _, obs := range histogramMap {
+	for _, obs := range p.histogramMap {
 		prometheus.MustRegister(obs)
 	}
 }
@@ -39,26 +46,25 @@ func (PrometheusClient) InitMetrics(histogramMap map[MetricName]*prometheus.Hist
 // MeasureDurationMsSince takes in the Metric name, the start time and a map of labels and values
 // to be associated to the metric. If errors occur in accessing the metric or associating the
 // labels, they will simply be logged.
-func (PrometheusClient) MeasureDurationMsSince(
+func (p PrometheusClient) MeasureDurationMsSince(
 	key MetricName,
-	histogramMap map[MetricName]*prometheus.HistogramVec,
 	starttime time.Time,
 	labels map[string]string,
-) {
+) error {
 	// Get the histogram vec defined for the input key
-	histVec, err := getHistogramVec(key, histogramMap)
+	histVec, err := getHistogramVec(key, p.histogramMap)
 	if err != nil {
-		log.GlobalLogger.Errorf(err.Error())
-		return
+		return err
 	}
 	// Create a histogram with the labels
 	s, err := histVec.GetMetricWith(labels)
 	if err != nil {
-		log.GlobalLogger.Errorf("Error occurred when creating histogram for %s: %v", key, err)
-		return
+		return err
 	}
 	// Record the value in milliseconds
 	s.Observe(float64(time.Since(starttime) / time.Millisecond))
+
+	return nil
 }
 
 // MeasureDurationMs takes in the Metric name and a map of labels and functions to obtain
@@ -68,7 +74,6 @@ func (PrometheusClient) MeasureDurationMsSince(
 // associating the labels, they will simply be logged.
 func (p PrometheusClient) MeasureDurationMs(
 	key MetricName,
-	histogramMap map[MetricName]*prometheus.HistogramVec,
 	labelValueGetters map[string]func() string,
 ) func() {
 	// Capture start time
@@ -81,6 +86,6 @@ func (p PrometheusClient) MeasureDurationMs(
 			labels[key] = f()
 		}
 		// Log measurement
-		p.MeasureDurationMsSince(key, histogramMap, starttime, labels)
+		p.MeasureDurationMsSince(key, starttime, labels)
 	}
 }

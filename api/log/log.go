@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var GlobalLogger = NewLogger()
+var globalLogger = NewLogger()
 
 // NewLogger create a new SugaredLogger
 func NewLogger() *zap.SugaredLogger {
@@ -14,30 +14,30 @@ func NewLogger() *zap.SugaredLogger {
 
 // Infof uses fmt.Sprintf to log a templated message.
 func Infof(template string, args ...interface{}) {
-	GlobalLogger.Infof(template, args...)
+	globalLogger.Infof(template, args...)
 }
 
 // Warnf uses fmt.Sprintf to log a templated message.
 func Warnf(template string, args ...interface{}) {
-	GlobalLogger.Warnf(template, args...)
+	globalLogger.Warnf(template, args...)
 }
 
 // Errorf uses fmt.Sprintf to log a templated message.
 func Errorf(template string, args ...interface{}) {
-	GlobalLogger.Errorf(template, args...)
+	globalLogger.Errorf(template, args...)
 }
 
 // Debugf uses fmt.Sprintf to log a templated message.
 func Debugf(template string, args ...interface{}) {
-	GlobalLogger.Debugf(template, args...)
+	globalLogger.Debugf(template, args...)
 }
 
 // Fatalf uses fmt.Sprintf to log a templated message.
 func Fatalf(template string, args ...interface{}) {
-	GlobalLogger.Fatalf(template, args...)
+	globalLogger.Fatalf(template, args...)
 }
 
 // Panicf uses fmt.Sprintf to log a templated message.
 func Panicf(template string, args ...interface{}) {
-	GlobalLogger.Panicf(template, args...)
+	globalLogger.Panicf(template, args...)
 }
