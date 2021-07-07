@@ -1,7 +1,6 @@
 package metrics
 
 import (
-	"fmt"
 	"github.com/gojek/mlp/api/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/errgo.v2/fmt/errors"
@@ -19,7 +18,6 @@ type PrometheusHistogramVec interface {
 func getHistogramVec(key MetricName, histogramMap map[MetricName]*prometheus.HistogramVec) (PrometheusHistogramVec, error) {
 	histVec, ok := histogramMap[key]
 	if !ok {
-		fmt.Println("================ failed ====================")
 		return nil, errors.Newf("Could not find the metric for %s", key)
 	}
 	return histVec, nil
