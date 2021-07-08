@@ -15,12 +15,9 @@ func newNopMetricsCollector() Collector {
 
 func InitNopMetricsCollector() error {
 	SetGlobMetricsCollector(newNopMetricsCollector())
-	globalMetricsCollector.InitMetrics()
+
 	return nil
 }
-
-// InitMetrics satisfies the Collector interface
-func (NopMetricsCollector) InitMetrics() {}
 
 // MeasureDurationMsSince satisfies the Collector interface
 func (NopMetricsCollector) MeasureDurationMsSince(MetricName, time.Time, map[string]string) error {

@@ -28,19 +28,15 @@ type PrometheusClient struct {
 	histogramMap map[MetricName]*prometheus.HistogramVec
 }
 
+// InitPrometheusMetricsCollector initializes the collectors for all metrics defined for the app
+// and registers them with the DefaultRegisterer.
 func InitPrometheusMetricsCollector(histogramMap map[MetricName]*prometheus.HistogramVec) error {
 	SetGlobMetricsCollector(&PrometheusClient{histogramMap: histogramMap})
-	globalMetricsCollector.InitMetrics()
-	return nil
-}
-
-// InitMetrics initializes the collectors for all metrics defined for the app
-// and registers them with the DefaultRegisterer.
-func (p PrometheusClient) InitMetrics() {
-	// Register histograms
-	for _, obs := range p.histogramMap {
+	for _, obs := range histogramMap {
 		prometheus.MustRegister(obs)
 	}
+
+	return nil
 }
 
 // MeasureDurationMsSince takes in the Metric name, the start time and a map of labels and values

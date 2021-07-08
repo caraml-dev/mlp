@@ -17,7 +17,6 @@ var statusLabels = struct {
 
 // Collector defines the common interface for all metrics collection engines
 type Collector interface {
-	InitMetrics()
 	MeasureDurationMsSince(key MetricName, starttime time.Time, labels map[string]string) error
 	// MeasureDurationMs is a deferrable version of MeasureDurationMsSince which evaluates labels
 	// at the time of logging
