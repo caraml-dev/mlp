@@ -28,3 +28,8 @@ func (NopMetricsCollector) MeasureDurationMsSince(MetricName, time.Time, map[str
 func (NopMetricsCollector) MeasureDurationMs(MetricName, map[string]func() string) func() {
 	return func() {}
 }
+
+// RecordGauge satisfies the Collector interface
+func (NopMetricsCollector) RecordGauge(MetricName, float64, map[string]string) error {
+	return nil
+}

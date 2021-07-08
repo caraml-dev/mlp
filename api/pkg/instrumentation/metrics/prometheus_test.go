@@ -17,6 +17,7 @@ type mockGauge struct {
 	count float64
 }
 
+// Implementing Prometheus Gauge interface
 func (g *mockGauge) Desc() *prometheus.Desc {
 	return nil
 }
@@ -99,7 +100,7 @@ func TestMeasureGauge(t *testing.T) {
 		func(key MetricName, gaugeMap map[MetricName]*prometheus.GaugeVec) (PrometheusGaugeVec, error) {
 			return gaugeVec, nil
 		})
-	p.MeasureGauge("TEST_METRIC", count, labels)
+	p.RecordGauge("TEST_METRIC", count, labels)
 	monkey.Unpatch(getGaugeVec)
 	// Validate
 	gaugeVec.AssertCalled(t, "GetMetricWith", mock.Anything)
@@ -125,6 +126,7 @@ type mockHistogram struct {
 	duration float64
 }
 
+// Implementing Prometheus Histogram interface
 func (h *mockHistogram) Observe(duration float64) {
 	h.Called(duration)
 }
