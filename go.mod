@@ -3,6 +3,7 @@ module github.com/gojek/mlp
 go 1.13
 
 require (
+	bou.ke/monkey v1.0.2
 	github.com/antihax/optional v1.0.0
 	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 	github.com/certifi/gocertifi v0.0.0-20191021191039-0944d244cd40 // indirect
@@ -23,6 +24,7 @@ require (
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/ory/keto-client-go v0.4.3-alpha.2
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.11.0
 	github.com/rs/cors v1.7.0
 	github.com/stretchr/testify v1.4.0
 	github.com/uber-go/atomic v1.4.0 // indirect
@@ -34,5 +36,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/tools v0.1.0 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
+	gopkg.in/errgo.v2 v2.1.0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )
