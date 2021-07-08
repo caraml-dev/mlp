@@ -21,7 +21,7 @@ type Collector interface {
 	// MeasureDurationMs is a deferrable version of MeasureDurationMsSince which evaluates labels
 	// at the time of logging
 	MeasureDurationMs(key MetricName, labels map[string]func() string) func()
-	RecordGauge(key MetricName, count float64, labels map[string]string) error
+	RecordGauge(key MetricName, value float64, labels map[string]string) error
 }
 
 // globalMetricsCollector is initialised to a Nop metrics collector. Calling

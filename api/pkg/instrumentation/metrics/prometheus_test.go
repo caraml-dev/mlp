@@ -14,7 +14,7 @@ import (
 // mockGauge mocks a prometheus Gauge
 type mockGauge struct {
 	mock.Mock
-	count float64
+	value float64
 }
 
 // Implementing Prometheus Gauge interface
@@ -34,8 +34,8 @@ func (g *mockGauge) SetToCurrentTime() {
 	g.Called()
 }
 
-func (g *mockGauge) Set(count float64) {
-	g.Called(count)
+func (g *mockGauge) Set(value float64) {
+	g.Called(value)
 }
 
 func (g *mockGauge) Inc() {
@@ -46,12 +46,12 @@ func (g *mockGauge) Dec() {
 	g.Sub(1)
 }
 
-func (g *mockGauge) Add(count float64) {
-	g.Called(count)
+func (g *mockGauge) Add(value float64) {
+	g.Called(value)
 }
 
-func (g *mockGauge) Sub(count float64) {
-	g.Called(count)
+func (g *mockGauge) Sub(value float64) {
+	g.Called(value)
 }
 
 // mockGaugeVec mocks a prometheus GaugeVec
@@ -67,13 +67,13 @@ func (g *mockGaugeVec) GetMetricWith(labels prometheus.Labels) (prometheus.Gauge
 }
 
 // createMockGaugeVec creates a mock gauge and a mock gauge vec
-func createMockGaugeVec(testCount float64) *mockGaugeVec {
+func createMockGaugeVec(testValue float64) *mockGaugeVec {
 	// Create mock gauge and gauge vec
 	gauge := &mockGauge{
-		count: 0,
+		value: 0,
 	}
 	gauge.On("Set", mock.Anything).Run(func(args mock.Arguments) {
-		gauge.count = testCount
+		gauge.value = testValue
 	}).Return(nil)
 	gaugeVec := &mockGaugeVec{
 		gauge: gauge,
@@ -91,21 +91,21 @@ func TestGetGaugeVec(t *testing.T) {
 
 func TestMeasureGauge(t *testing.T) {
 	p := &PrometheusClient{}
-	count := float64(5)
+	value := float64(5)
 	labels := map[string]string{}
 	// Create mock gauge vec
-	gaugeVec := createMockGaugeVec(count)
+	gaugeVec := createMockGaugeVec(value)
 	// Patch getGaugeVec for the test and run
 	monkey.Patch(getGaugeVec,
 		func(key MetricName, gaugeMap map[MetricName]*prometheus.GaugeVec) (PrometheusGaugeVec, error) {
 			return gaugeVec, nil
 		})
-	p.RecordGauge("TEST_METRIC", count, labels)
+	p.RecordGauge("TEST_METRIC", value, labels)
 	monkey.Unpatch(getGaugeVec)
 	// Validate
 	gaugeVec.AssertCalled(t, "GetMetricWith", mock.Anything)
 	gaugeVec.gauge.AssertCalled(t, "Set", mock.AnythingOfType("float64"))
-	assert.Equal(t, count, gaugeVec.gauge.count)
+	assert.Equal(t, value, gaugeVec.gauge.value)
 }
 
 // mockHistogramVec mocks a prometheus HistogramVec

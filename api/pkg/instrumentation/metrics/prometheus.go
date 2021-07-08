@@ -117,7 +117,7 @@ func (p PrometheusClient) MeasureDurationMs(
 // the metric or associating the labels.
 func (p PrometheusClient) RecordGauge(
 	key MetricName,
-	count float64,
+	value float64,
 	labels map[string]string,
 ) error {
 	// Get the gauge vec defined for the input key
@@ -132,7 +132,7 @@ func (p PrometheusClient) RecordGauge(
 	}
 
 	// Record the value
-	s.Set(count)
+	s.Set(value)
 
 	return nil
 }
