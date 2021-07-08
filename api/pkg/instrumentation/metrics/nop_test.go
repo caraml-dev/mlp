@@ -12,4 +12,5 @@ func TestNopMethods(_ *testing.T) {
 	c := &NopMetricsCollector{}
 	c.MeasureDurationMs(testMetric, map[string]func() string{})
 	c.MeasureDurationMsSince(testMetric, time.Now(), map[string]string{})
+	c.RecordGauge(testMetric, 0, map[string]string{})
 }
