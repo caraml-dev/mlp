@@ -41,7 +41,7 @@ func getHistogramVec(key MetricName, histogramMap map[MetricName]*prometheus.His
 
 // PrometheusClient satisfies the Collector interface
 type PrometheusClient struct {
-	gaugeMap map[MetricName]*prometheus.GaugeVec
+	gaugeMap     map[MetricName]*prometheus.GaugeVec
 	histogramMap map[MetricName]*prometheus.HistogramVec
 }
 
@@ -52,7 +52,7 @@ func InitPrometheusMetricsCollector(
 	histogramMap map[MetricName]*prometheus.HistogramVec,
 ) error {
 	SetGlobMetricsCollector(&PrometheusClient{
-		gaugeMap: gaugeMap,
+		gaugeMap:     gaugeMap,
 		histogramMap: histogramMap,
 	})
 	for _, obs := range gaugeMap {

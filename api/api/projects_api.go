@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/jinzhu/gorm"
 	"github.com/gojek/mlp/api/pkg/authz/enforcer"
+	"github.com/jinzhu/gorm"
 
 	"github.com/gojek/mlp/api/log"
 	"github.com/gojek/mlp/api/models"

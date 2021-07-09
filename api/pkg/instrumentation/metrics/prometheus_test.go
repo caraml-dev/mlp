@@ -1,9 +1,10 @@
 package metrics
 
 import (
-	io_prometheus_client "github.com/prometheus/client_model/go"
 	"testing"
 	"time"
+
+	io_prometheus_client "github.com/prometheus/client_model/go"
 
 	"bou.ke/monkey"
 	"github.com/prometheus/client_golang/prometheus"
