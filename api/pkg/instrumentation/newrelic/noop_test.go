@@ -39,4 +39,5 @@ func TestNoopTx(t *testing.T) {
 	nt.WriteHeader(0)
 	nt.GetTraceMetadata()
 	nt.GetLinkingMetadata()
+	nt.IsSampled()
 }

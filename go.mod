@@ -20,7 +20,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/lib/pq v1.3.0
-	github.com/newrelic/go-agent v2.13.0+incompatible
+	github.com/newrelic/go-agent v3.9.0+incompatible
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/ory/keto-client-go v0.4.3-alpha.2
 	github.com/pkg/errors v0.9.1

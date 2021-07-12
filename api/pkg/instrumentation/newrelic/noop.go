@@ -40,6 +40,10 @@ type NoopTx struct {
 	w http.ResponseWriter
 }
 
+func (nt *NoopTx) IsSampled() bool {
+	return false
+}
+
 // End implements newrelic.Transaction interface.
 func (nt *NoopTx) End() error {
 	return nil
