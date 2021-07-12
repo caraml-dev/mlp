@@ -1,22 +1,21 @@
 package validation
 
 import (
-	"regexp"
 	"reflect"
+	"regexp"
 	"strings"
 
 	"github.com/asaskevich/govalidator"
-	"github.com/go-playground/validator"
 	"github.com/go-playground/locales/en_US"
 	ut "github.com/go-playground/universal-translator"
-	
+	"github.com/go-playground/validator"
 )
 
 var (
 	english = en_US.New()
 	trans   = ut.New(english, english)
 	EN, _   = trans.GetTranslator("en")
-	
+
 	subdomainRffc1123 = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9\-]+[a-zA-Z0-9]$`)
 )
 
@@ -84,7 +83,7 @@ func NewValidator() *validator.Validate {
 			}
 			return t
 		})
-		
+
 	return instance
 }
 

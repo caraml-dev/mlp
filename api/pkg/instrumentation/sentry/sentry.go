@@ -22,9 +22,9 @@ var (
 
 // Config stores NewRelic configuration.
 type Config struct {
-	Enabled bool
-	DSN     string
-	Labels  map[string]string
+	Enabled bool              `envconfig:"SENTRY_ENABLED" default:"false"`
+	DSN     string            `envconfig:"SENTRY_DSN" default:""`
+	Labels  map[string]string `envconfig:"SENTRY_LABELS" default:""`
 }
 
 // InitSentry creates a new Sentry client.

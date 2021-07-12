@@ -14,11 +14,12 @@ var (
 
 // Config stores NewRelic configuration.
 type Config struct {
-	Enabled           bool
-	AppName           string
-	License           string
-	Labels            map[string]interface{}
-	IgnoreStatusCodes []int // https://docs.newrelic.com/docs/agents/go-agent/configuration/go-agent-configuration#error-ignore-status
+	Enabled bool                   `envconfig:"NEWRELIC_ENABLED" default:"false"`
+	AppName string                 `envconfig:"NEWRELIC_APP_NAME" default:"app-name"`
+	License string                 `envconfig:"NEWRELIC_LICENSE" default:""`
+	Labels  map[string]interface{} `envconfig:"NEWRELIC_LABELS" default:""`
+	// https://docs.newrelic.com/docs/agents/go-agent/configuration/go-agent-configuration#error-ignore-status
+	IgnoreStatusCodes []int `envconfig:"NEWRELIC_IGNORE_STATUS_CODES" default:"400,401,403,404,405,412"`
 }
 
 // InitNewRelic initializes NewRelic Application.
