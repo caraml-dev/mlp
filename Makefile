@@ -96,7 +96,7 @@ build-docker:
 # Run recipes
 # ============================================================
 .PHONY: run
-run:
+run: build-api local-db
 	@echo "> Running application ..."
 	@./bin/${BIN_NAME}
 

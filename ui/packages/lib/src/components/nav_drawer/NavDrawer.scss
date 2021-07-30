@@ -1,3 +1,5 @@
+@import "~@elastic/eui/src/global_styling/variables/index";
+
 .euiBody--collapsibleNavIsDocked {
   transition: none !important;
 }
@@ -8,5 +10,32 @@
   width: 262px !important;
 
   -webkit-animation: none !important;
-  animation        : none !important;
+  animation: none !important;
+}
+
+.euiTreeView.mlpApplications {
+  padding: 0 8px;
+
+  .euiTreeView__nodeInner:focus {
+    animation: none !important;
+  }
+
+  .euiTreeView__node---small {
+    font-size: $euiFontSizeS;
+    color: $euiTextColor;
+    font-weight: $euiFontWeightMedium;
+    letter-spacing: 0;
+    padding: 4px 8px;
+  }
+
+  .euiTreeView__node---small---active {
+    @extend .euiTreeView__node---small;
+    background-color: #e6f0f8;
+  }
+
+  .euiTreeView__node---small---subsection {
+    @extend .euiTreeView__node---small;
+    color: $euiTextSubduedColor;
+    padding-left: 16px !important;
+  }
 }
