@@ -4,7 +4,7 @@ export const MODEL_TYPE_NAME_MAP = {
   sklearn: "SKLearn",
   tensorflow: "Tensorflow",
   xgboost: "XGBoost",
-  
+
   pyfunc: "Pyfunc",
   pyfunc_v2: "Pyfunc",
   custom: "Custom"

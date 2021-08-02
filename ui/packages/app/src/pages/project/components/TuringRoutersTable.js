@@ -47,8 +47,11 @@ export const TuringRoutersTable = ({ project, routers }) => {
 
   const cellProps = item => ({
     style: { cursor: "pointer" },
-    onClick: () => window.location.href = `/turing/projects/${project.id}/routers/${item.id}/details`,
+    onClick: () =>
+      (window.location.href = `/turing/projects/${project.id}/routers/${item.id}/details`)
   });
 
-  return <EuiInMemoryTable items={items} columns={columns} cellProps={cellProps} />;
+  return (
+    <EuiInMemoryTable items={items} columns={columns} cellProps={cellProps} />
+  );
 };

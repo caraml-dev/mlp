@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  EuiIcon,
-  EuiLink,
-  EuiText
-} from "@elastic/eui";
+import { EuiIcon, EuiLink, EuiText } from "@elastic/eui";
 // import { CollapsibleLabelsPanel } from "@gojek/mlp-ui";
 import { Panel } from "./Panel";
 
@@ -30,14 +26,23 @@ export const ProjectSummary = ({ project, environments }) => {
     {
       title: "Modified at",
       description: moment(project.updated_at).format("DD-MM-YYYY")
-    },
+    }
   ];
 
   const actions = (
     <EuiLink href={`/projects/${project.id}/settings`}>
-      <EuiText size="s"><EuiIcon type="arrowRight" /> Go to Project Settings</EuiText>
+      <EuiText size="s">
+        <EuiIcon type="arrowRight" /> Go to Project Settings
+      </EuiText>
     </EuiLink>
   );
 
-  return <Panel title="Project Info" items={items} actions={actions} iconType="machineLearningApp" />;
+  return (
+    <Panel
+      title="Project Info"
+      items={items}
+      actions={actions}
+      iconType="machineLearningApp"
+    />
+  );
 };

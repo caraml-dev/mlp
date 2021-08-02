@@ -16,9 +16,7 @@ export const PrivateLayout = Component => {
         <CurrentProjectContextProvider {...props}>
           <Header
             appIcon="graphApp"
-            onProjectSelect={projectId =>
-              navigate(`/projects/${projectId}`)
-            }
+            onProjectSelect={projectId => navigate(`/projects/${projectId}`)}
             docLinks={config.DOC_LINKS}
           />
           <div className="main-component-layout">

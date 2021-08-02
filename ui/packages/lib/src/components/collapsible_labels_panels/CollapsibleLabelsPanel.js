@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  EuiBadge,
-  EuiLink,
-  EuiBadgeGroup,
-} from "@elastic/eui";
+import { EuiBadge, EuiLink, EuiBadgeGroup } from "@elastic/eui";
 import EllipsisText from "react-ellipsis-text";
 import useCollapse from "react-collapsed";
 

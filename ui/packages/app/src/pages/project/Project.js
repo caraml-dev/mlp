@@ -59,9 +59,18 @@ const Project = () => {
 
   useEffect(() => {
     if (project) {
-      fetchEntities({ body: JSON.stringify({ "filter": { "project": project.name } }) });
-      fetchFeatureTables({ body: JSON.stringify({ "filter": { "project": project.name } }) });
-      fetchFeastIngestionJobs({ body: JSON.stringify({ "include_terminated":true, "project": project.name.replace(/-/g, "_") }) });
+      fetchEntities({
+        body: JSON.stringify({ filter: { project: project.name } })
+      });
+      fetchFeatureTables({
+        body: JSON.stringify({ filter: { project: project.name } })
+      });
+      fetchFeastIngestionJobs({
+        body: JSON.stringify({
+          include_terminated: true,
+          project: project.name.replace(/-/g, "_")
+        })
+      });
       fetchModels();
       fetchRouters();
     }
@@ -118,7 +127,10 @@ const Project = () => {
 
             <EuiFlexGroup>
               <EuiFlexItem grow={5}>
-                <ComingSoonPanel title="Health Monitoring" iconType="monitoringApp" />
+                <ComingSoonPanel
+                  title="Health Monitoring"
+                  iconType="monitoringApp"
+                />
               </EuiFlexItem>
               <EuiFlexItem grow={4}>
                 <ComingSoonPanel title="Error Summary" iconType="bug" />

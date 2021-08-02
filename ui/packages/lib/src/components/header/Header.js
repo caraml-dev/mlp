@@ -22,7 +22,7 @@ export const Header = ({
   userMenuItems,
   helpLink,
   docLinks,
-  homepage,
+  homepage
 }) => {
   const { state, onLogout } = useContext(AuthContext);
   const { projects } = useContext(ProjectsContext);

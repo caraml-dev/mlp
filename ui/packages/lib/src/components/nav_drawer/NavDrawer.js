@@ -59,7 +59,7 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
           children: children
         };
       }),
-    [apps, homeUrl, projectId]
+    [apps, homeUrl, projectId, isRootApplication]
   );
 
   const adminLinks = [

@@ -28,7 +28,7 @@ export const MerlinDeploymentsTable = ({ project, models }) => {
                 environment_name: endpoint.environment_name,
                 endpoint: endpoint.url,
                 version_id: destination.version_endpoint.version_id,
-                version_endpoint_id: destination.version_endpoint.id,
+                version_endpoint_id: destination.version_endpoint.id
               });
             });
           });
@@ -58,8 +58,11 @@ export const MerlinDeploymentsTable = ({ project, models }) => {
 
   const cellProps = item => ({
     style: { cursor: "pointer" },
-    onClick: () => window.location.href = `/merlin/projects/${project.id}/models/${item.id}/versions/${item.version_id}/endpoints/${item.version_endpoint_id}/details`,
+    onClick: () =>
+      (window.location.href = `/merlin/projects/${project.id}/models/${item.id}/versions/${item.version_id}/endpoints/${item.version_endpoint_id}/details`)
   });
 
-  return <EuiInMemoryTable items={items} columns={columns} cellProps={cellProps} />;
+  return (
+    <EuiInMemoryTable items={items} columns={columns} cellProps={cellProps} />
+  );
 };
