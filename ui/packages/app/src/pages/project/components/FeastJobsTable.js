@@ -62,8 +62,11 @@ export const FeastJobsTable = ({ project, feastIngestionJobs }) => {
 
   const cellProps = item => ({
     style: { cursor: "pointer" },
-    onClick: () => window.location.href = `/feast/projects/${project.id}/jobs/${item.type}`,
+    onClick: () =>
+      (window.location.href = `/feast/projects/${project.id}/jobs/${item.type}`)
   });
 
-  return <EuiInMemoryTable items={items} columns={columns} cellProps={cellProps} />;
+  return (
+    <EuiInMemoryTable items={items} columns={columns} cellProps={cellProps} />
+  );
 };

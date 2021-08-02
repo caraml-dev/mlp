@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  EuiCard,
-  EuiIcon,
-} from "@elastic/eui";
+import { EuiCard, EuiIcon } from "@elastic/eui";
 
 export const ComingSoonPanel = ({ title, iconType }) => {
   return (

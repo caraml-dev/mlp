@@ -9,27 +9,56 @@ import {
   EuiHeaderSectionItemButton,
   EuiIcon,
   EuiFlexItem,
-  EuiSpacer
+  EuiSpacer,
+  EuiTreeView
 } from "@elastic/eui";
 import ApplicationsContext from "../../providers/application/context";
 import { CurrentProjectContext } from "../../providers/project";
-import { useToggle } from "../../hooks/useToggle";
+import { useToggle } from "../../hooks";
+import { navigate } from "@reach/router";
+import { get, slugify } from "../../utils";
+import urlJoin from "proper-url-join";
+
 import "./NavDrawer.scss";
 
 export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
   const { projectId } = useContext(CurrentProjectContext);
   const { apps } = useContext(ApplicationsContext);
 
-  const mlpLinks = useMemo(
-    () =>
-      apps.map(a => ({
+  const mlpLinks = useMemo(() => {
+    const isRootApplication = homeUrl === "/";
+
+    return apps.map(a => {
+      const isAppActive = a.href === homeUrl;
+
+      const children =
+        !!projectId && get(a, "config.sections")
+          ? a.config.sections.map(s => ({
+              id: slugify(`${a.name}.${s.name}`),
+              label: s.name,
+              callback: () =>
+                navigate(urlJoin(a.href, "projects", projectId, s.href)),
+              className: "euiTreeView__node---small---subsection"
+            }))
+          : undefined;
+
+      return {
+        id: slugify(a.name),
         label: a.name,
-        iconType: a.icon,
-        href: projectId ? `${a.href}/projects/${projectId}` : a.href,
-        isActive: a.href === homeUrl
-      })),
-    [apps, homeUrl, projectId]
-  );
+        icon: <EuiIcon type={a.icon} />,
+        isExpanded: isAppActive || isRootApplication,
+        className: isAppActive
+          ? "euiTreeView__node---small---active"
+          : "euiTreeView__node---small",
+
+        callback: () =>
+          !children || !projectId
+            ? navigate(projectId ? `${a.href}/projects/${projectId}` : a.href)
+            : {},
+        children: children
+      };
+    });
+  }, [apps, homeUrl, projectId]);
 
   const adminLinks = [
     {
@@ -39,8 +68,12 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
     }
   ];
 
-  const [navIsOpen, setNavIsOpen] = useState(JSON.parse(String(localStorage.getItem('mlp-navIsDocked'))) || false);
-  const [navIsDocked, setNavIsDocked] = useState(JSON.parse(String(localStorage.getItem('mlp-navIsDocked'))) || false);
+  const [navIsOpen, setNavIsOpen] = useState(
+    JSON.parse(String(localStorage.getItem("mlp-navIsDocked"))) || false
+  );
+  const [navIsDocked, setNavIsDocked] = useState(
+    JSON.parse(String(localStorage.getItem("mlp-navIsDocked"))) || false
+  );
 
   const [appExpanded, toggleAppExpanded] = useToggle(true);
   const [docsExpanded, toggleDocsExpanded] = useToggle(true);
@@ -72,13 +105,10 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
               onToggle={toggleAppExpanded}
               iconType="apps"
               title="Products">
-              <EuiListGroup
+              <EuiTreeView
                 aria-label="MLP apps"
-                listItems={mlpLinks}
-                maxWidth="none"
-                color="text"
-                gutterSize="s"
-                size="s"
+                items={mlpLinks}
+                className="mlpApplications"
               />
             </EuiCollapsibleNavGroup>
           )}
@@ -127,7 +157,7 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
               onClick={() => {
                 setNavIsDocked(!navIsDocked);
                 localStorage.setItem(
-                  'mlp-navIsDocked',
+                  "mlp-navIsDocked",
                   JSON.stringify(!navIsDocked)
                 );
               }}

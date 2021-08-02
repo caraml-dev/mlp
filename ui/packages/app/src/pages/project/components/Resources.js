@@ -49,7 +49,10 @@ export const Resources = ({
       size="s">
       Create FeatureTable
     </EuiContextMenuItem>,
-    <EuiContextMenuItem href={`${config.MERLIN_UI_HOMEPAGE}/projects/${project.id}`} key="model" size="s">
+    <EuiContextMenuItem
+      href={`${config.MERLIN_UI_HOMEPAGE}/projects/${project.id}`}
+      key="model"
+      size="s">
       Deploy model
     </EuiContextMenuItem>,
     <EuiContextMenuItem
@@ -95,14 +98,16 @@ export const Resources = ({
           Clockwork Pipelines
         </EuiLink>
       )
-    },
+    }
   ];
 
   const actions = (
     <EuiPopover
       button={
         <EuiLink onClick={onButtonClick}>
-          <EuiText size="s"><EuiIcon type="arrowRight" /> Create a new resource</EuiText>
+          <EuiText size="s">
+            <EuiIcon type="arrowRight" /> Create a new resource
+          </EuiText>
         </EuiLink>
       }
       isOpen={isPopoverOpen}
@@ -114,5 +119,12 @@ export const Resources = ({
     </EuiPopover>
   );
 
-  return <Panel title="Resources" items={items} actions={actions} iconType="beaker" />;
+  return (
+    <Panel
+      title="Resources"
+      items={items}
+      actions={actions}
+      iconType="beaker"
+    />
+  );
 };

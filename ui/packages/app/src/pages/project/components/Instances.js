@@ -53,5 +53,7 @@ export const Instances = ({ project, feastIngestionJobs, models, routers }) => {
     }
   ];
 
-  return <Panel title="Instances" items={items} type="row" iconType="compute" />;
+  return (
+    <Panel title="Instances" items={items} type="row" iconType="compute" />
+  );
 };
