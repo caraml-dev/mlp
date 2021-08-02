@@ -25,42 +25,40 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
   const { projectId } = useContext(CurrentProjectContext);
   const { apps } = useContext(ApplicationsContext);
 
-  const isRootApplication = homeUrl === "/";
+  const mlpLinks = useMemo(() => {
+    const isRootApplication = homeUrl === "/";
 
-  const mlpLinks = useMemo(
-    () =>
-      apps.map(a => {
-        const isAppActive = a.href === homeUrl;
+    return apps.map(a => {
+      const isAppActive = a.href === homeUrl;
 
-        const children =
-          !!projectId && get(a, "config.sections")
-            ? a.config.sections.map(s => ({
-                id: slugify(`${a.name}.${s.name}`),
-                label: s.name,
-                callback: () =>
-                  navigate(urlJoin(a.href, "projects", projectId, s.href)),
-                className: "euiTreeView__node---small---subsection"
-              }))
-            : undefined;
+      const children =
+        !!projectId && get(a, "config.sections")
+          ? a.config.sections.map(s => ({
+              id: slugify(`${a.name}.${s.name}`),
+              label: s.name,
+              callback: () =>
+                navigate(urlJoin(a.href, "projects", projectId, s.href)),
+              className: "euiTreeView__node---small---subsection"
+            }))
+          : undefined;
 
-        return {
-          id: slugify(a.name),
-          label: a.name,
-          icon: <EuiIcon type={a.icon} />,
-          isExpanded: isAppActive || isRootApplication,
-          className: isAppActive
-            ? "euiTreeView__node---small---active"
-            : "euiTreeView__node---small",
+      return {
+        id: slugify(a.name),
+        label: a.name,
+        icon: <EuiIcon type={a.icon} />,
+        isExpanded: isAppActive || isRootApplication,
+        className: isAppActive
+          ? "euiTreeView__node---small---active"
+          : "euiTreeView__node---small",
 
-          callback: () =>
-            !children || !projectId
-              ? navigate(projectId ? `${a.href}/projects/${projectId}` : a.href)
-              : {},
-          children: children
-        };
-      }),
-    [apps, homeUrl, projectId, isRootApplication]
-  );
+        callback: () =>
+          !children || !projectId
+            ? navigate(projectId ? `${a.href}/projects/${projectId}` : a.href)
+            : {},
+        children: children
+      };
+    });
+  }, [apps, homeUrl, projectId]);
 
   const adminLinks = [
     {
