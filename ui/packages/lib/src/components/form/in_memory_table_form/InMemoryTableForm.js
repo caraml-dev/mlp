@@ -5,7 +5,7 @@ import {
   EuiFormRow,
   EuiInMemoryTable
 } from "@elastic/eui";
-import { get } from "@gojek/mlp-ui/src/utils";
+import { get } from "../../../utils";
 
 import "./InMemoryTableForm.scss";
 

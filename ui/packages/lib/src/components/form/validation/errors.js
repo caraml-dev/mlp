@@ -1,4 +1,4 @@
-import { get, normalizePath, set } from "@gojek/mlp-ui/src/utils";
+import { get, normalizePath, set } from "../../../utils";
 
 export const extractErrors = validationError => {
   let errors = {};

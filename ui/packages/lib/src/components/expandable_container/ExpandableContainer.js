@@ -1,10 +1,9 @@
 import React, { Fragment, useRef } from "react";
 import { EuiButton, EuiFlexItem, EuiLink, EuiSpacer } from "@elastic/eui";
 import classNames from "classnames";
-import { useToggle } from "@gojek/mlp-ui";
+import { useToggle, useDimension } from "../../hooks";
 
 import "./ExpandableDescriptionList.scss";
-import { useDimension } from "../../hooks";
 
 export const ExpandableContainer = ({
   maxHeight = 300,

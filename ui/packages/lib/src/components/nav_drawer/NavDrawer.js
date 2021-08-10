@@ -53,7 +53,9 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
 
         callback: () =>
           !children || !projectId
-            ? navigate(projectId ? `${a.href}/projects/${projectId}` : a.href)
+            ? window.location.href = !!projectId
+              ? urlJoin(a.href, "projects", projectId)
+              : a.href
             : {},
         children: children
       };

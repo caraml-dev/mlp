@@ -1,9 +1,9 @@
 import React from "react";
 import { Element } from "react-scroll";
 import { EuiAccordion } from "@elastic/eui";
-import { slugify } from "@gojek/mlp-ui";
+import { slugify } from "../../utils";
 import { FormValidationContext } from "../form/validation";
-import { isSectionInvalid } from "./AccordionForm";
+import { isSectionInvalid } from "./functions";
 
 export const AccordionFormSection = ({ section, errors, renderTitle }) => (
   <Element name={slugify(section.title)}>

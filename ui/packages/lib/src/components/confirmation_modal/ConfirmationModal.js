@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
-import { useToggle } from "@gojek/mlp-ui";
 import { EuiOverlayMask, EuiConfirmModal, EuiProgress } from "@elastic/eui";
+import { useToggle } from "../../hooks";
 
 export const ConfirmationModal = ({
   title,

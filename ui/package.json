@@ -16,16 +16,13 @@
   "scripts": {
     "app": "yarn workspace mlp-ui",
     "lib": "yarn workspace @gojek/mlp-ui",
-
     "format": "yarn prettier --write",
     "prettier": "prettier \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "lint": "yarn workspaces run lint",
-
     "wait-for-lib": "wait-on packages/lib/dist/index.js packages/lib/dist/index.es.js",
     "start:app": "sleep 1; run-s wait-for-lib \"app start\"",
     "start:lib": "yarn lib start",
     "start": "run-p start:lib start:app",
-
     "version:app": "yarn lib version",
     "version:lib": "yarn app version",
     "set-version-from-git:package": "run-p \"version:* --new-version {1} --no-git-tag-version\" --",

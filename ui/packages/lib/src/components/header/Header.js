@@ -15,6 +15,7 @@ import { HeaderUserMenu } from "./HeaderUserMenu";
 import { slugify } from "../../utils";
 import { NavDrawer } from "../nav_drawer";
 import "./Header.scss";
+import {Link} from "@reach/router";
 
 export const Header = ({
   homeUrl = "/",
@@ -35,11 +36,11 @@ export const Header = ({
         </EuiHeaderSectionItem>
 
         <EuiHeaderSectionItem border="right">
-          <a href={homepage ? homepage : "/"}>
+          <Link to={homepage ? homepage : "/"}>
             <EuiText className="header-title">
               <h4>Machine Learning Platform</h4>
             </EuiText>
-          </a>
+          </Link>
         </EuiHeaderSectionItem>
         <ProjectsDropdown
           projects={projects}
