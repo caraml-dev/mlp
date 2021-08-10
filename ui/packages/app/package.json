@@ -25,7 +25,7 @@
     "start": "PORT=3001 react-scripts start",
     "test": "react-scripts test"
   },
-  "proxy": "http://console.d.ai.golabs.io/api",
+  "proxy": "http://localhost:8080/v1",
   "browserslist": {
     "production": [
       ">0.2%",
