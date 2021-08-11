@@ -37,11 +37,9 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
               id: slugify(`${a.name}.${s.name}`),
               label: s.name,
               callback: () => {
-                const dest = urlJoin(a.href, "projects", projectId, s.href)
+                const dest = urlJoin(a.href, "projects", projectId, s.href);
 
-                isAppActive
-                  ? navigate(dest)
-                  : window.location.href = dest
+                isAppActive ? navigate(dest) : (window.location.href = dest);
               },
               className: "euiTreeView__node---small---subsection"
             }))
@@ -58,9 +56,9 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
 
         callback: () =>
           !children || !projectId
-            ? window.location.href = !!projectId
-              ? urlJoin(a.href, "projects", projectId)
-              : a.href
+            ? (window.location.href = !!projectId
+                ? urlJoin(a.href, "projects", projectId)
+                : a.href)
             : {},
         children: children
       };
