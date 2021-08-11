@@ -1,10 +1,10 @@
-import babel from "rollup-plugin-babel";
-import resolve from "rollup-plugin-node-resolve";
+import babel from "@rollup/plugin-babel";
+import resolve from "@rollup/plugin-node-resolve";
+import eslint from "@rollup/plugin-eslint";
 import sass from "rollup-plugin-sass";
 import peerDepsExternal from "rollup-plugin-peer-deps-external";
 import ignoreImport from "rollup-plugin-ignore-import";
 import nodeSass from "node-sass";
-import { eslint } from "rollup-plugin-eslint";
 
 import pkg from "./package.json";
 
@@ -42,6 +42,7 @@ export default {
     }),
     resolve(),
     babel({
+      babelHelpers: "bundled",
       exclude: "node_modules/**"
     })
   ]

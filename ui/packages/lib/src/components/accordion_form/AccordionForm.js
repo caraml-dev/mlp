@@ -1,20 +1,15 @@
 import React, { useRef } from "react";
 import { EuiFlexGroup, EuiFlexItem, EuiSpacer } from "@elastic/eui";
-import { StepActions } from "../multi_steps_form/StepActions";
 import { Sticky, StickyContainer } from "react-sticky";
+import { StepActions } from "../multi_steps_form";
 import FormValidationContext from "../form/validation/context";
-import { MultiSectionFormValidationContextProvider } from "../form/validation/multi_section_provider";
-import {
-  AccordionFormScrollController,
-  AccordionFormSection,
-  AccordionFormSideNav
-} from ".";
+import { MultiSectionFormValidationContextProvider } from "../form";
+import { AccordionFormSideNav } from "./AccordionFormSideNav";
+import { AccordionFormScrollController } from "./AccordionFormScrollController";
+import { AccordionFormSection } from "./AccordionFormSection";
+import { useDimension } from "../../hooks";
 
 import "./AccordionForm.scss";
-import { useDimension } from "../../hooks";
-import { isEmpty } from "../../utils/object";
-
-export const isSectionInvalid = errors => !isEmpty(errors);
 
 export const AccordionForm = ({
   name,

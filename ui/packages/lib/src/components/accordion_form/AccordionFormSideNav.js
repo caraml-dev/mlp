@@ -1,8 +1,8 @@
 import React from "react";
-import { slugify } from "@gojek/mlp-ui";
 import { EuiIcon, EuiSideNav } from "@elastic/eui";
 import { Link } from "react-scroll";
 import { animatedScrollConfig } from "./scroll";
+import { slugify } from "../../utils";
 
 export const AccordionFormSideNav = ({ name, sections }) => {
   const sideNav = [

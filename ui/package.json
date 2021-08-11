@@ -16,26 +16,24 @@
   "scripts": {
     "app": "yarn workspace mlp-ui",
     "lib": "yarn workspace @gojek/mlp-ui",
-
     "format": "yarn prettier --write",
     "prettier": "prettier \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "lint": "yarn workspaces run lint",
-
     "wait-for-lib": "wait-on packages/lib/dist/index.js packages/lib/dist/index.es.js",
     "start:app": "sleep 1; run-s wait-for-lib \"app start\"",
     "start:lib": "yarn lib start",
     "start": "run-p start:lib start:app",
-
     "version:app": "yarn lib version",
     "version:lib": "yarn app version",
+    "prepare": "cd ../ && husky install ui/.husky",
     "set-version-from-git:package": "run-p \"version:* --new-version {1} --no-git-tag-version\" --",
     "set-version-from-git:depenency": "run-s \"app add @gojek/mlp-ui@{1}\" --",
     "set-version-from-git": "run-s \"set-version-from-git:* $(yarn --silent version-from-git)\"",
     "version-from-git": "../scripts/vertagen/vertagen.sh -f docker"
   },
   "devDependencies": {
-    "husky": "^4.2.5",
-    "lint-staged": "^10.2.11",
+    "husky": "^7.0.1",
+    "lint-staged": "^11.1.2",
     "npm-run-all": "^4.1.5",
     "prettier": "^1.17.0",
     "wait-on": "^5.1.0"

@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useMemo } from "react";
-import { set } from "@gojek/mlp-ui/src/utils";
-import { StackableFunction } from "./functions/stackable_function";
-import { useOnChangeHandler } from "./hooks/useOnChangeHandler";
+import { set } from "../../utils";
+import { StackableFunction } from "./functions";
+import { useOnChangeHandler } from "./hooks";
 
 export const FormContext = React.createContext({});
 
