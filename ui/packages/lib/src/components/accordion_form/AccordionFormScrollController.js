@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { FormValidationContext } from "../form/validation";
 import { scroller } from "react-scroll";
 import { animatedScrollConfig } from "./scroll";
-import { isSectionInvalid } from "./functions";
+import {isSectionInvalid} from "./functions";
 import {slugify} from "../../utils";
 
 export const AccordionFormScrollController = ({ sections }) => {
