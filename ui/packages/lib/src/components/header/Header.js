@@ -15,7 +15,7 @@ import { HeaderUserMenu } from "./HeaderUserMenu";
 import { slugify } from "../../utils";
 import { NavDrawer } from "../nav_drawer";
 import "./Header.scss";
-import {Link} from "@reach/router";
+import { Link } from "@reach/router";
 
 export const Header = ({
   homeUrl = "/",

@@ -4,9 +4,9 @@ import { Sticky, StickyContainer } from "react-sticky";
 import { StepActions } from "../multi_steps_form";
 import FormValidationContext from "../form/validation/context";
 import { MultiSectionFormValidationContextProvider } from "../form";
-import {AccordionFormSideNav} from "./AccordionFormSideNav";
-import {AccordionFormScrollController} from "./AccordionFormScrollController";
-import {AccordionFormSection} from "./AccordionFormSection";
+import { AccordionFormSideNav } from "./AccordionFormSideNav";
+import { AccordionFormScrollController } from "./AccordionFormScrollController";
+import { AccordionFormSection } from "./AccordionFormSection";
 import { useDimension } from "../../hooks";
 
 import "./AccordionForm.scss";

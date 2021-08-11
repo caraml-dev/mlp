@@ -3,13 +3,13 @@ import { FormValidationContext } from "../form/validation";
 import { scroller } from "react-scroll";
 import { animatedScrollConfig } from "./scroll";
 import { isSectionInvalid } from "./functions";
-import {slugify} from "../../utils";
+import { slugify } from "../../utils";
 
-export const AccordionFormScrollController = ({ sections }) => {
+export const AccordionFormScrollController = ({sections}) => {
   const [isFormSubmissionInProgress, setFormSubmissionInProgress] = useState(
     false
   );
-  const { isSubmitting, errors } = useContext(FormValidationContext);
+  const {isSubmitting, errors} = useContext(FormValidationContext);
 
   useEffect(() => {
     !!isSubmitting && setFormSubmissionInProgress(true);

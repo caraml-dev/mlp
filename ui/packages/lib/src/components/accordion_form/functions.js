@@ -1,3 +1,3 @@
-import {isEmpty} from "../../utils/object";
+import { isEmpty } from "../../utils/object";
 
 export const isSectionInvalid = errors => !isEmpty(errors);
