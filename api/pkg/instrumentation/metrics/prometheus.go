@@ -7,15 +7,16 @@ import (
 	"gopkg.in/errgo.v2/fmt/errors"
 )
 
-// PrometheusGaugeVec is an interface that captures the methods from the the Prometheus
+// PrometheusGaugeVec is an interface that captures the methods from the Prometheus
 // GaugeVec type that are used in the app. This is added for unit testing.
 type PrometheusGaugeVec interface {
 	GetMetricWith(prometheus.Labels) (prometheus.Gauge, error)
+	prometheus.Collector
 }
 
 // getGaugeVec is a getter for the prometheus.GaugeVec defined for the input key.
 // It returns a value satisfying the PrometheusGaugeVec interface
-func getGaugeVec(key MetricName, gaugeMap map[MetricName]*prometheus.GaugeVec) (PrometheusGaugeVec, error) {
+func getGaugeVec(key MetricName, gaugeMap map[MetricName]PrometheusGaugeVec) (PrometheusGaugeVec, error) {
 	gaugeVec, ok := gaugeMap[key]
 	if !ok {
 		return nil, errors.Newf("Could not find the metric for %s", key)
@@ -27,11 +28,19 @@ func getGaugeVec(key MetricName, gaugeMap map[MetricName]*prometheus.GaugeVec) (
 // HistogramVec type that are used in the app. This is added for unit testing.
 type PrometheusHistogramVec interface {
 	GetMetricWith(prometheus.Labels) (prometheus.Observer, error)
+	prometheus.Collector
+}
+
+// PrometheusCounterVec is an interface that captures the methods from the Prometheus
+// CounterVec type that are used in the app. This is added for unit testing.
+type PrometheusCounterVec interface {
+	GetMetricWith(prometheus.Labels) (prometheus.Counter, error)
+	prometheus.Collector
 }
 
 // getHistogramVec is a getter for the prometheus.HistogramVec defined for the input key.
 // It returns a value satisfying the PrometheusHistogramVec interface
-func getHistogramVec(key MetricName, histogramMap map[MetricName]*prometheus.HistogramVec) (PrometheusHistogramVec, error) {
+func getHistogramVec(key MetricName, histogramMap map[MetricName]PrometheusHistogramVec) (PrometheusHistogramVec, error) {
 	histVec, ok := histogramMap[key]
 	if !ok {
 		return nil, errors.Newf("Could not find the metric for %s", key)
@@ -39,21 +48,34 @@ func getHistogramVec(key MetricName, histogramMap map[MetricName]*prometheus.His
 	return histVec, nil
 }
 
+// getCounterVec is a getter for the prometheus.CounterVec defined for the input key.
+// It returns a value satisfying the PrometheusCounterVec interface
+func getCounterVec(key MetricName, counterMap map[MetricName]PrometheusCounterVec) (PrometheusCounterVec, error) {
+	counterVec, ok := counterMap[key]
+	if !ok {
+		return nil, errors.Newf("Could not find the metric for %s", key)
+	}
+	return counterVec, nil
+}
+
 // PrometheusClient satisfies the Collector interface
 type PrometheusClient struct {
-	gaugeMap     map[MetricName]*prometheus.GaugeVec
-	histogramMap map[MetricName]*prometheus.HistogramVec
+	gaugeMap     map[MetricName]PrometheusGaugeVec
+	histogramMap map[MetricName]PrometheusHistogramVec
+	counterMap   map[MetricName]PrometheusCounterVec
 }
 
 // InitPrometheusMetricsCollector initializes the collectors for all metrics defined for the app
 // and registers them with the DefaultRegisterer.
 func InitPrometheusMetricsCollector(
-	gaugeMap map[MetricName]*prometheus.GaugeVec,
-	histogramMap map[MetricName]*prometheus.HistogramVec,
+	gaugeMap map[MetricName]PrometheusGaugeVec,
+	histogramMap map[MetricName]PrometheusHistogramVec,
+	counterMap map[MetricName]PrometheusCounterVec,
 ) error {
 	SetGlobMetricsCollector(&PrometheusClient{
 		gaugeMap:     gaugeMap,
 		histogramMap: histogramMap,
+		counterMap:   counterMap,
 	})
 	for _, obs := range gaugeMap {
 		prometheus.MustRegister(obs)
@@ -61,8 +83,23 @@ func InitPrometheusMetricsCollector(
 	for _, obs := range histogramMap {
 		prometheus.MustRegister(obs)
 	}
+	for _, obs := range counterMap {
+		prometheus.MustRegister(obs)
+	}
 
 	return nil
+}
+
+func (p PrometheusClient) Inc(key MetricName, labels map[string]string) {
+	counterVec, err := getCounterVec(key, p.counterMap)
+	if err != nil {
+		return
+	}
+	counter, err := counterVec.GetMetricWith(labels)
+	if err != nil {
+		return
+	}
+	counter.Inc()
 }
 
 // MeasureDurationMsSince takes in the Metric name, the start time and a map of labels and values

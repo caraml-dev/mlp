@@ -6,15 +6,53 @@ import (
 
 	io_prometheus_client "github.com/prometheus/client_model/go"
 
-	"bou.ke/monkey"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
+type noOpCollector struct{}
+
+func (c *noOpCollector) Describe(chan<- *prometheus.Desc) {}
+
+func (c *noOpCollector) Collect(chan<- prometheus.Metric) {}
+
+type mockCounter struct {
+	mock.Mock
+	noOpCollector
+}
+
+func (c *mockCounter) Desc() *prometheus.Desc {
+	c.Called()
+	return nil
+}
+
+func (c *mockCounter) Write(metric *io_prometheus_client.Metric) error {
+	c.Called(metric)
+	return nil
+}
+
+func (c *mockCounter) Inc() {
+	c.Called()
+}
+
+func (c *mockCounter) Add(f float64) {
+	c.Called(f)
+}
+
+type mockCounterVec struct {
+	noOpCollector
+	counter *mockCounter
+}
+
+func (m mockCounterVec) GetMetricWith(labels prometheus.Labels) (prometheus.Counter, error) {
+	return m.counter, nil
+}
+
 // mockGauge mocks a prometheus Gauge
 type mockGauge struct {
 	mock.Mock
+	noOpCollector
 	value float64
 }
 
@@ -26,10 +64,6 @@ func (g *mockGauge) Desc() *prometheus.Desc {
 func (g *mockGauge) Write(*io_prometheus_client.Metric) error {
 	return nil
 }
-
-func (g *mockGauge) Describe(chan<- *prometheus.Desc) {}
-
-func (g *mockGauge) Collect(chan<- prometheus.Metric) {}
 
 func (g *mockGauge) SetToCurrentTime() {
 	g.Called()
@@ -57,13 +91,11 @@ func (g *mockGauge) Sub(value float64) {
 
 // mockGaugeVec mocks a prometheus GaugeVec
 type mockGaugeVec struct {
-	mock.Mock
+	noOpCollector
 	gauge *mockGauge
 }
 
 func (g *mockGaugeVec) GetMetricWith(labels prometheus.Labels) (prometheus.Gauge, error) {
-	g.Called(labels)
-	// Return mockGauge
 	return g.gauge, nil
 }
 
@@ -79,11 +111,10 @@ func createMockGaugeVec(testValue float64) *mockGaugeVec {
 	gaugeVec := &mockGaugeVec{
 		gauge: gauge,
 	}
-	gaugeVec.On("GetMetricWith", mock.Anything).Return(gauge, nil)
 	return gaugeVec
 }
 
-var gaugeMap = make(map[MetricName]*prometheus.GaugeVec)
+var gaugeMap = make(map[MetricName]PrometheusGaugeVec)
 
 func TestGetGaugeVec(t *testing.T) {
 	_, err := getGaugeVec("TEST_METRIC", gaugeMap)
@@ -91,33 +122,30 @@ func TestGetGaugeVec(t *testing.T) {
 }
 
 func TestMeasureGauge(t *testing.T) {
-	p := &PrometheusClient{}
+	metricName := MetricName("TEST_METRIC")
 	value := float64(5)
 	labels := map[string]string{}
 	// Create mock gauge vec
 	gaugeVec := createMockGaugeVec(value)
-	// Patch getGaugeVec for the test and run
-	monkey.Patch(getGaugeVec,
-		func(key MetricName, gaugeMap map[MetricName]*prometheus.GaugeVec) (PrometheusGaugeVec, error) {
-			return gaugeVec, nil
-		})
-	p.RecordGauge("TEST_METRIC", value, labels)
-	monkey.Unpatch(getGaugeVec)
-	// Validate
-	gaugeVec.AssertCalled(t, "GetMetricWith", mock.Anything)
+	p := &PrometheusClient{
+		gaugeMap: map[MetricName]PrometheusGaugeVec{
+			metricName: gaugeVec,
+		},
+	}
+
+	err := p.RecordGauge(metricName, value, labels)
+	assert.NoError(t, err)
 	gaugeVec.gauge.AssertCalled(t, "Set", mock.AnythingOfType("float64"))
 	assert.Equal(t, value, gaugeVec.gauge.value)
 }
 
 // mockHistogramVec mocks a prometheus HistogramVec
 type mockHistogramVec struct {
-	mock.Mock
+	noOpCollector
 	histogram *mockHistogram
 }
 
 func (h *mockHistogramVec) GetMetricWith(labels prometheus.Labels) (prometheus.Observer, error) {
-	h.Called(labels)
-	// Return mockHistogram
 	return h.histogram, nil
 }
 
@@ -132,7 +160,7 @@ func (h *mockHistogram) Observe(duration float64) {
 	h.Called(duration)
 }
 
-var histogramMap = make(map[MetricName]*prometheus.HistogramVec)
+var histogramMap = make(map[MetricName]PrometheusHistogramVec)
 
 func TestGetHistogramVec(t *testing.T) {
 	_, err := getHistogramVec("TEST_METRIC", histogramMap)
@@ -140,39 +168,35 @@ func TestGetHistogramVec(t *testing.T) {
 }
 
 func TestMeasureDurationMsSince(t *testing.T) {
-	p := &PrometheusClient{}
+	metricName := MetricName("TEST_METRIC")
 	starttime := time.Now()
 	labels := map[string]string{}
 	testDuration := 100.0
 	// Create mock histogram vec
 	histVec := createMockHistVec(testDuration)
-	// Patch getHistogramVec for the test and run
-	monkey.Patch(getHistogramVec,
-		func(key MetricName, histogramMap map[MetricName]*prometheus.HistogramVec) (PrometheusHistogramVec, error) {
-			return histVec, nil
-		})
-	p.MeasureDurationMsSince("TEST_METRIC", starttime, labels)
-	monkey.Unpatch(getHistogramVec)
-	// Validate
-	histVec.AssertCalled(t, "GetMetricWith", mock.Anything)
+	p := &PrometheusClient{
+		histogramMap: map[MetricName]PrometheusHistogramVec{
+			metricName: histVec,
+		},
+	}
+	err := p.MeasureDurationMsSince(metricName, starttime, labels)
+	assert.NoError(t, err)
 	histVec.histogram.AssertCalled(t, "Observe", mock.AnythingOfType("float64"))
 	assert.Equal(t, testDuration, histVec.histogram.duration)
 }
 
 func TestMeasureDurationMs(t *testing.T) {
-	p := &PrometheusClient{}
+	metricName := MetricName("TEST_METRIC")
 	testDuration := 200.0
 	// Create mock histogram vec
 	histVec := createMockHistVec(testDuration)
-	// Patch getHistogramVec for the test and run
-	monkey.Patch(getHistogramVec,
-		func(key MetricName, histogramMap map[MetricName]*prometheus.HistogramVec) (PrometheusHistogramVec, error) {
-			return histVec, nil
-		})
-	p.MeasureDurationMs("TEST_METRIC", map[string]func() string{})()
-	monkey.Unpatch(getHistogramVec)
+	p := &PrometheusClient{
+		histogramMap: map[MetricName]PrometheusHistogramVec{
+			metricName: histVec,
+		},
+	}
+	p.MeasureDurationMs(metricName, map[string]func() string{})()
 	// Validate
-	histVec.AssertCalled(t, "GetMetricWith", mock.Anything)
 	histVec.histogram.AssertCalled(t, "Observe", mock.AnythingOfType("float64"))
 	assert.Equal(t, testDuration, histVec.histogram.duration)
 }
@@ -186,9 +210,21 @@ func createMockHistVec(testDuration float64) *mockHistogramVec {
 	hist.On("Observe", mock.Anything).Run(func(args mock.Arguments) {
 		hist.duration = testDuration
 	}).Return(nil)
-	histVec := &mockHistogramVec{
+	return &mockHistogramVec{
 		histogram: hist,
 	}
-	histVec.On("GetMetricWith", mock.Anything).Return(hist, nil)
-	return histVec
+}
+
+func TestCounterInc(t *testing.T) {
+	metricName := MetricName("TEST_METRIC")
+	counter := &mockCounter{}
+	counter.On("Inc").Return()
+	counterVec := &mockCounterVec{counter: counter}
+	p := &PrometheusClient{
+		counterMap: map[MetricName]PrometheusCounterVec{
+			metricName: counterVec,
+		},
+	}
+	p.Inc(metricName, map[string]string{})
+	counter.AssertCalled(t, "Inc")
 }
