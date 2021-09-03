@@ -22,6 +22,7 @@ type Collector interface {
 	// at the time of logging
 	MeasureDurationMs(key MetricName, labels map[string]func() string) func()
 	RecordGauge(key MetricName, value float64, labels map[string]string) error
+	Inc(key MetricName, labels map[string]string) error
 }
 
 // globalMetricsCollector is initialised to a Nop metrics collector. Calling

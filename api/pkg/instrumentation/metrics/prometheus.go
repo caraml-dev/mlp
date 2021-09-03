@@ -90,16 +90,17 @@ func InitPrometheusMetricsCollector(
 	return nil
 }
 
-func (p PrometheusClient) Inc(key MetricName, labels map[string]string) {
+func (p PrometheusClient) Inc(key MetricName, labels map[string]string) error {
 	counterVec, err := getCounterVec(key, p.counterMap)
 	if err != nil {
-		return
+		return err
 	}
 	counter, err := counterVec.GetMetricWith(labels)
 	if err != nil {
-		return
+		return err
 	}
 	counter.Inc()
+	return nil
 }
 
 // MeasureDurationMsSince takes in the Metric name, the start time and a map of labels and values
