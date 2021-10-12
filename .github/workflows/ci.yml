@@ -98,6 +98,6 @@ jobs:
     - name: Create mlp namespace
       run: kubectl create namespace mlp
     - name: Deploy MLP
-      run: ./scripts/e2e/deploy-mlp.sh "chart"
+      run: ./scripts/e2e/deploy-mlp.sh "charts/mlp"
     - name: Run E2E test
       run: ./scripts/e2e/run-e2e.sh "api"
