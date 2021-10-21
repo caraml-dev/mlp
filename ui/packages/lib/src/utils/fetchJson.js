@@ -50,7 +50,7 @@ const fetchData = async (url, authCtx, options) => {
 export default async (url, authCtx, options = {}) => {
   return fetchData(url, authCtx, options)
     .then(response =>
-      parseJson(response).then(result => {
+      parseJson(response, !!options.parseBigInt).then(result => {
         var headers = {};
         for (var pair of response.headers.entries()) {
           headers[pair[0]] = pair[1];
