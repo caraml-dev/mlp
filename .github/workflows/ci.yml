@@ -101,3 +101,20 @@ jobs:
       run: ./scripts/e2e/deploy-mlp.sh "charts/mlp"
     - name: Run E2E test
       run: ./scripts/e2e/run-e2e.sh "api"
+
+  release-charts:
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    needs: e2e-test
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run chart-releaser
+        uses: stefanprodan/helm-gh-pages@v1.4.1
+        with:
+          token: "${{ secrets.GH_PAGES_TOKEN }}"
+          charts_url: https://turing-ml.github.io/charts
+          charts_dir: charts
+          owner: turing-ml
+          repository: charts
+          commit_username: ${{ github.actor }}
+          commit_email: "${{ github.actor }}@users.noreply.github.com"
