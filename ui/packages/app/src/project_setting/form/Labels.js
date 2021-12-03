@@ -7,7 +7,7 @@ import {
   EuiFlexItem,
   EuiButton
 } from "@elastic/eui";
-import { validateSubdomain } from "../../validation/validateSubdomain";
+import { isDNS1123Label } from "../../validation/validation";
 
 export const Labels = ({ onChange }) => {
   const [items, setItems] = useState([]);
@@ -32,7 +32,7 @@ export const Labels = ({ onChange }) => {
       newItems[idx] = {
         ...newItems[idx],
         key: newKey,
-        isKeyValid: validateSubdomain(newKey)
+        isKeyValid: isDNS1123Label(newKey)
       };
       setItems(newItems);
       onChange(newItems);
@@ -46,7 +46,7 @@ export const Labels = ({ onChange }) => {
       newItems[idx] = {
         ...newItems[idx],
         value: newValue,
-        isValueValid: validateSubdomain(newValue)
+        isValueValid: isDNS1123Label(newValue)
       };
       setItems(newItems);
       onChange(newItems);

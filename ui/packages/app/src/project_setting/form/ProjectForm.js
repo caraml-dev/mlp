@@ -17,7 +17,7 @@ import { ProjectFormContext } from "./context";
 import { SingleSelectionComboBox } from "./SingleSelectionComboBox";
 import { EmailTextArea } from "./EmailTextArea";
 import { Labels } from "./Labels";
-import { validateSubdomain } from "../../validation/validateSubdomain";
+import { isDNS1123Label } from "../../validation/validation";
 import config from "../../config";
 
 const ProjectForm = () => {
@@ -30,15 +30,6 @@ const ProjectForm = () => {
     setReader,
     setLabels
   } = useContext(ProjectFormContext);
-  const [isValidProjectName, setValidProjectName] = useState(
-    project.name ? validateSubdomain(project.name) : true
-  );
-
-  const onProjectNameChange = e => {
-    const newValue = e.target.value;
-    setValidProjectName(validateSubdomain(newValue));
-    setName(newValue);
-  };
 
   const teamOptions = config.TEAMS.map(team => {
     return {
@@ -46,32 +37,78 @@ const ProjectForm = () => {
     };
   });
 
-  const onTeamChange = selectedTeam => {
-    setTeam(selectedTeam.label);
-  };
-  const [teamValid, setTeamValid] = useState();
-
   const streamOptions = config.STREAMS.map(stream => {
     return {
       label: stream
     };
   });
 
+  const [projectError, setProjectError] = useState("");
+  const [isValidProject, setIsValidProject] = useState(false);
+  const onProjectChange = e => {
+    const newValue = e.target.value;
+    var isValid = isDNS1123Label(newValue);
+    if (!isValid) {
+      setProjectError(
+        "Project name is invalid. It should contain only lowercase alphanumeric and dash ('-')"
+      );
+    }
+    setIsValidProject(isValid);
+    setName(newValue);
+  };
+
+  const [teamError, setTeamError] = useState("");
+  const [isValidTeam, setIsValidTeam] = useState(false);
+  const onTeamChange = selectedTeam => {
+    var isValid = isDNS1123Label(selectedTeam.label);
+    if (!isValid) {
+      setTeamError(
+        "Team name is invalid. It should contain only lowercase alphanumeric and dash (-)"
+      );
+    }
+    setIsValidTeam(isValid);
+    setTeam(selectedTeam.label);
+  };
+
+  const [streamError, setStreamError] = useState("");
+  const [isValidStream, setIsValidStream] = useState(false);
   const onStreamChange = selectedStream => {
+    var isValid = isDNS1123Label(selectedStream.label);
+    if (!isValid) {
+      setStreamError(
+        "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-)"
+      );
+    }
+    setIsValidStream(isValid);
     setStream(selectedStream.label);
   };
-  const [streamValid, setStreamValid] = useState();
 
   const onAdminValueChange = emails => {
     setAdmin(emails);
   };
-  const [adminValid, setAdminValid] = useState();
+  const [isValidAdmin, setIsValidAdmin] = useState(false);
+  const [adminError, setAdminError] = useState("");
+  const onValidAdminChange = valid => {
+    setIsValidAdmin(valid);
+    if (!valid) {
+      setAdminError("Invalid email address");
+    }
+  };
 
   const onReaderValueChange = emails => {
     setReader(emails);
   };
-  const [readerValid, setReaderValid] = useState();
+  const [isValidReader, setIsValidReader] = useState(false);
+  const [readerError, setReaderError] = useState("");
+  const onValidReaderChange = valid => {
+    setIsValidReader(valid);
+    if (!valid) {
+      setReaderError("Invalid email addess");
+    }
+  };
 
+  const [isValidLabels, setIsValidLabels] = useState(true);
+  const [labelError, setLabelError] = useState("");
   const onLabelChange = labels => {
     const labelsValid =
       labels.length === 0
@@ -79,7 +116,12 @@ const ProjectForm = () => {
         : labels.reduce((labelsValid, label) => {
             return labelsValid && label.isKeyValid && label.isValueValid;
           }, true);
-    setLabelsValid(labelsValid);
+    setIsValidLabels(labelsValid);
+    if (!labelsValid) {
+      setLabelError(
+        "Invalid labels. Both key and value of a label must contain only alphanumeric and dash (-)"
+      );
+    }
 
     //deep copy
     let newLabels = JSON.parse(JSON.stringify(labels));
@@ -92,7 +134,6 @@ const ProjectForm = () => {
 
     setLabels(newLabels);
   };
-  const [labelsValid, setLabelsValid] = useState(true);
 
   const onSubmit = () => {
     submitForm({ body: JSON.stringify(project) });
@@ -137,14 +178,14 @@ const ProjectForm = () => {
           <EuiPanel grow={false}>
             <EuiDescribedFormGroup
               title={<h3>Name</h3>}
-              description="Project name should be a valid subdomain">
-              <EuiFormRow>
+              description="Project name should contain only lowercase alphanumeric and dash ('-')">
+              <EuiFormRow isInvalid={!isValidProject} error={projectError}>
                 <EuiFieldText
                   name="name"
                   placeholder="my-new-project"
                   value={project.name}
-                  onChange={onProjectNameChange}
-                  isInvalid={!isValidProjectName}
+                  onChange={onProjectChange}
+                  isInvalid={!isValidProject}
                   aria-label="Project Name"
                 />
               </EuiFormRow>
@@ -152,45 +193,53 @@ const ProjectForm = () => {
             <EuiDescribedFormGroup
               title={<h3>Team</h3>}
               description="Owner of the project">
-              <EuiFormRow>
+              <EuiFormRow isInvalid={!isValidTeam} error={teamError}>
                 <SingleSelectionComboBox
                   options={teamOptions}
                   onChange={onTeamChange}
-                  onValidChange={setTeamValid}
+                  onValidChange={setIsValidTeam}
                 />
               </EuiFormRow>
             </EuiDescribedFormGroup>
             <EuiDescribedFormGroup
               title={<h3>Stream</h3>}
               description="Product stream the project belongs to">
-              <EuiFormRow>
+              <EuiFormRow isInvalid={!isValidStream} error={streamError}>
                 <SingleSelectionComboBox
                   options={streamOptions}
                   onChange={onStreamChange}
-                  onValidChange={setStreamValid}
+                  onValidChange={setIsValidStream}
                 />
               </EuiFormRow>
             </EuiDescribedFormGroup>
             <EuiDescribedFormGroup
               title={<h3>Project Members</h3>}
               description="Comma separated list of user / service account email. Administrators have full access to the project, whereas Readers have read-only access.">
-              <EuiFormRow label="Administrators">
+              <EuiFormRow
+                label="Administrators"
+                isInvalid={!isValidAdmin}
+                error={adminError}>
                 <EmailTextArea
                   onChange={onAdminValueChange}
-                  onValidChange={setAdminValid}
+                  onValidChange={onValidAdminChange}
                 />
               </EuiFormRow>
-              <EuiFormRow label="Readers">
+              <EuiFormRow
+                label="Readers"
+                isInvalid={!isValidReader}
+                error={readerError}>
                 <EmailTextArea
                   onChange={onReaderValueChange}
-                  onValidChange={setReaderValid}
+                  onValidChange={onValidReaderChange}
                 />
               </EuiFormRow>
             </EuiDescribedFormGroup>
             <EuiDescribedFormGroup
               title={<h3>Labels</h3>}
               description="Additional Labels">
-              <Labels onChange={onLabelChange} />
+              <EuiFormRow isInvalid={!isValidLabels} error={labelError}>
+                <Labels onChange={onLabelChange} />
+              </EuiFormRow>
             </EuiDescribedFormGroup>
           </EuiPanel>
         </EuiFlexItem>
@@ -204,12 +253,12 @@ const ProjectForm = () => {
                 onClick={onSubmit}
                 disabled={
                   !(
-                    isValidProjectName &&
-                    teamValid &&
-                    streamValid &&
-                    adminValid &&
-                    readerValid &&
-                    labelsValid
+                    isValidProject &&
+                    isValidTeam &&
+                    isValidStream &&
+                    isValidAdmin &&
+                    isValidReader &&
+                    isValidLabels
                   )
                 }
                 fill>

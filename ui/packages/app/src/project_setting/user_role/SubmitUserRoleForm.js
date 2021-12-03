@@ -14,7 +14,7 @@ import {
   EuiTitle,
   EuiToolTip
 } from "@elastic/eui";
-import { validateEmail } from "../../validation/validateEmail";
+import { validateEmail } from "../../validation/validation";
 import { addToast, useMlpApi } from "@gojek/mlp-ui";
 import UserRoleSelection from "./UserRoleSelection";
 import { ROLE_OPTIONS } from "./UserRoleListTable";
