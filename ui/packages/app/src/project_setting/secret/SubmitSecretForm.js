@@ -19,7 +19,7 @@ import { addToast, useMlpApi } from "@gojek/mlp-ui";
 import {
   validateSecretKey,
   validateSecretName
-} from "../../validation/validateSecret";
+} from "../../validation/validation";
 
 const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
   const [request, setRequest] = useState({

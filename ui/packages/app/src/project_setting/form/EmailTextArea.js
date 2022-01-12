@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { EuiTextArea } from "@elastic/eui";
-import { validateEmail } from "../../validation/validateEmail";
+import { validateEmail } from "../../validation/validation";
 
 export const EmailTextArea = ({ onChange, onValidChange }) => {
   const onValueChange = e => {
