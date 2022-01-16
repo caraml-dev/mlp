@@ -37,8 +37,12 @@ export const MultiSectionFormValidationContextProvider = ({
   const onFinishSubmitting = useCallback(() => {
     setIsTouched(false);
     setIsValidated(false);
-    setIsSubmitting(false);
-    onSubmit();
+    // Execute the onSubmit callback. At last, reset the submitting status.
+    // If the onSubmit was defined as a lazy Promise, we must chain the reset action to the Promise.
+    // This will ensure that downstream actions (such as re-enabling the Submit button) are paused
+    // until we have a success/failure response from the onSubmit call.
+    const submitted = onSubmit();
+    submitted instanceof Promise ? submitted.finally(() => { setIsSubmitting(false); }) : setIsSubmitting(false);
   }, [onSubmit]);
 
   useEffect(() => {
@@ -48,16 +52,16 @@ export const MultiSectionFormValidationContextProvider = ({
           zip(schemas, contexts).map(([schema, ctx]) => {
             return !!schema
               ? new Promise((resolve, reject) => {
-                  schema
-                    .validate(formData, {
-                      abortEarly: false,
-                      context: ctx
-                    })
-                    .then(
-                      () => resolve({}),
-                      err => resolve(extractErrors(err))
-                    );
-                })
+                schema
+                  .validate(formData, {
+                    abortEarly: false,
+                    context: ctx
+                  })
+                  .then(
+                    () => resolve({}),
+                    err => resolve(extractErrors(err))
+                  );
+              })
               : Promise.resolve({});
           })
         )
