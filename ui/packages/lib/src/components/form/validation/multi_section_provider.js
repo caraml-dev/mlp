@@ -41,8 +41,9 @@ export const MultiSectionFormValidationContextProvider = ({
     // If the onSubmit was defined as a lazy Promise, we must chain the reset action to the Promise.
     // This will ensure that downstream actions (such as re-enabling the Submit button) are paused
     // until we have a success/failure response from the onSubmit call.
-    const submitted = onSubmit();
-    submitted instanceof Promise ? submitted.finally(() => { setIsSubmitting(false); }) : setIsSubmitting(false);
+    Promise
+      .resolve(onSubmit())
+      .finally(() => { setIsSubmitting(false); })
   }, [onSubmit]);
 
   useEffect(() => {
