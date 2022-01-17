@@ -2,7 +2,39 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 import { FormContext } from "../context";
 import FormValidationContext from "./context";
 import { extractErrors } from "./errors";
+import debounce from "lodash/debounce";
 import zip from "lodash/zip";
+
+// Debounced method would only be run at most once every configured duration.
+// Setting a larger value improves the performance, however increases the
+// delay between form value changes and feedback to the user.
+const DEBOUNCE_INTERVAL_MS = 300;
+
+const debouncedValidate = debounce(
+  (schemas, contexts, formData, setErrors, setIsValidated) => {
+    Promise.all(
+      zip(schemas, contexts).map(([schema, ctx]) => {
+        return !!schema
+          ? new Promise((resolve, reject) => {
+            schema
+              .validate(formData, {
+                abortEarly: false,
+                context: ctx,
+              })
+              .then(
+                () => resolve({}),
+                (err) => resolve(extractErrors(err))
+              );
+          })
+          : Promise.resolve({});
+      })
+    )
+      .then(setErrors)
+      .then(() => setIsValidated(true));
+  },
+  DEBOUNCE_INTERVAL_MS
+);
+
 
 export const MultiSectionFormValidationContextProvider = ({
   schemas,
@@ -25,13 +57,13 @@ export const MultiSectionFormValidationContextProvider = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState([]);
 
-  const isValid = errors =>
+  const isValid = (errors) =>
     errors.reduce(
       (isValid, errors) => isValid && !Object.keys(errors).length,
       true
     );
 
-  const onStartSubmitting = event => {
+  const onStartSubmitting = (event) => {
     event && event.preventDefault();
     setIsTouched(true);
     setIsSubmitting(true);
@@ -52,25 +84,13 @@ export const MultiSectionFormValidationContextProvider = ({
   useEffect(() => {
     if (isTouched) {
       if (schemas) {
-        Promise.all(
-          zip(schemas, contexts).map(([schema, ctx]) => {
-            return !!schema
-              ? new Promise((resolve, reject) => {
-                schema
-                  .validate(formData, {
-                    abortEarly: false,
-                    context: ctx
-                  })
-                  .then(
-                    () => resolve({}),
-                    err => resolve(extractErrors(err))
-                  );
-              })
-              : Promise.resolve({});
-          })
-        )
-          .then(setErrors)
-          .then(() => setIsValidated(true));
+        debouncedValidate(
+          schemas,
+          contexts,
+          formData,
+          setErrors,
+          setIsValidated
+        );
       } else {
         setIsValidated(true);
       }
