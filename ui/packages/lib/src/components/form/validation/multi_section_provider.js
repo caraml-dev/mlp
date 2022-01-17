@@ -7,7 +7,7 @@ import zip from "lodash/zip";
 export const MultiSectionFormValidationContextProvider = ({
   schemas,
   contexts,
-  onSubmit,
+  onSubmit, // On-submit callback, return value treated as a Promise.
   children
 }) => {
   const { data: formData } = useContext(FormContext);
