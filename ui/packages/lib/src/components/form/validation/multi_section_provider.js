@@ -7,7 +7,10 @@ import zip from "lodash/zip";
 export const MultiSectionFormValidationContextProvider = ({
   schemas,
   contexts,
-  onSubmit, // On-submit callback, return value treated as a Promise.
+  /* The result of executing onSubmit will be resolved using Promise.resolve.
+     If a thenable, the resetting of the isSubmitting state will be chained to it.
+  */
+  onSubmit,
   children
 }) => {
   const { data: formData } = useContext(FormContext);
@@ -37,7 +40,7 @@ export const MultiSectionFormValidationContextProvider = ({
   const onFinishSubmitting = useCallback(() => {
     setIsTouched(false);
     setIsValidated(false);
-    // Execute the onSubmit callback. At last, reset the submitting status.
+    // Execute the onSubmit callback and at last, reset the submitting status.
     // If the onSubmit was defined as a lazy Promise, we must chain the reset action to the Promise.
     // This will ensure that downstream actions (such as re-enabling the Submit button) are paused
     // until we have a success/failure response from the onSubmit call.
