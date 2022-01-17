@@ -7,6 +7,9 @@ import zip from "lodash/zip";
 export const MultiSectionFormValidationContextProvider = ({
   schemas,
   contexts,
+  /* The result of executing onSubmit will be resolved using Promise.resolve.
+     If a thenable, the resetting of the isSubmitting state will be chained to it.
+  */
   onSubmit,
   children
 }) => {
@@ -37,8 +40,13 @@ export const MultiSectionFormValidationContextProvider = ({
   const onFinishSubmitting = useCallback(() => {
     setIsTouched(false);
     setIsValidated(false);
-    setIsSubmitting(false);
-    onSubmit();
+    // Execute the onSubmit callback and at last, reset the submitting status.
+    // If the onSubmit was defined as a lazy Promise, we must chain the reset action to the Promise.
+    // This will ensure that downstream actions (such as re-enabling the Submit button) are paused
+    // until we have a success/failure response from the onSubmit call.
+    Promise
+      .resolve(onSubmit())
+      .finally(() => { setIsSubmitting(false); })
   }, [onSubmit]);
 
   useEffect(() => {
@@ -48,16 +56,16 @@ export const MultiSectionFormValidationContextProvider = ({
           zip(schemas, contexts).map(([schema, ctx]) => {
             return !!schema
               ? new Promise((resolve, reject) => {
-                  schema
-                    .validate(formData, {
-                      abortEarly: false,
-                      context: ctx
-                    })
-                    .then(
-                      () => resolve({}),
-                      err => resolve(extractErrors(err))
-                    );
-                })
+                schema
+                  .validate(formData, {
+                    abortEarly: false,
+                    context: ctx
+                  })
+                  .then(
+                    () => resolve({}),
+                    err => resolve(extractErrors(err))
+                  );
+              })
               : Promise.resolve({});
           })
         )
