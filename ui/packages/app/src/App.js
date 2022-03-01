@@ -9,7 +9,7 @@ import {
   PrivateRoute,
   Toast
 } from "@gojek/mlp-ui";
-import { Home, Project, Settings } from "./pages";
+import { Home, Pipeline, Project, Settings } from "./pages";
 import config from "./config";
 import { PrivateLayout } from "./PrivateLayout";
 import { ProjectCreation } from "./project_setting/ProjectCreation";
@@ -24,6 +24,9 @@ export default () => (
       <AuthProvider clientId={config.OAUTH_CLIENT_ID}>
         <Router role="group">
           <Login path="/login" />
+
+          {/* PIPELINE */}
+          <PrivateRoute path="/pipeline" render={PrivateLayout(Pipeline)} />
 
           {/* PROJECT LANDING PAGE */}
           <PrivateRoute

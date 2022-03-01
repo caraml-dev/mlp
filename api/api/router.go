@@ -7,12 +7,13 @@ import (
 	"reflect"
 
 	"github.com/go-playground/validator"
-	"github.com/gojek/mlp/api/pkg/authz/enforcer"
 	"github.com/gorilla/mux"
 
 	"github.com/gojek/mlp/api/middleware"
 	"github.com/gojek/mlp/api/models"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer"
 	"github.com/gojek/mlp/api/pkg/instrumentation/newrelic"
+	"github.com/gojek/mlp/api/pkg/pipelines"
 	"github.com/gojek/mlp/api/service"
 	"github.com/gojek/mlp/api/validation"
 )
@@ -23,6 +24,7 @@ type AppContext struct {
 	ProjectsService    service.ProjectsService
 	SecretService      service.SecretService
 	UsersService       service.UsersService
+	PipelineService    pipelines.PipelineInterface
 
 	AuthorizationEnabled bool
 	Enforcer             enforcer.Enforcer
@@ -83,17 +85,18 @@ func NewRouter(appCtx AppContext) *mux.Router {
 	usersController := UsersController{&appCtx}
 	projectsController := ProjectsController{&appCtx}
 	secretController := SecretsController{&appCtx}
+	pipelinesController := PipelinesController{&appCtx}
 
 	routes := []Route{
-		//Applications API
+		// Applications API
 		{http.MethodGet, "/applications", nil, applicationsController.ListApplications, "ListApplications"},
 
-		//Users API
+		// Users API
 		{http.MethodGet, "/users/token/generate", nil, usersController.GenerateToken, "GenerateToken"},
 		{http.MethodGet, "/users/authorize", nil, usersController.AuthorizeUser, "AuthorizeUser"},
 		{http.MethodGet, "/users/token/retrieve", nil, usersController.RetrieveToken, "RetrieveToken"},
 
-		//Projects API
+		// Projects API
 		{http.MethodGet, "/projects/{project_id:[0-9]+}", nil, projectsController.GetProject, "GetProject"},
 		{http.MethodGet, "/projects", nil, projectsController.ListProjects, "ListProjects"},
 		{http.MethodPost, "/projects", models.Project{}, projectsController.CreateProject, "CreateProject"},
@@ -104,6 +107,9 @@ func NewRouter(appCtx AppContext) *mux.Router {
 		{http.MethodPost, "/projects/{project_id:[0-9]+}/secrets", models.Secret{}, secretController.CreateSecret, "CreateSecret"},
 		{http.MethodPatch, "/projects/{project_id:[0-9]+}/secrets/{secret_id}", models.Secret{}, secretController.UpdateSecret, "UpdateSecret"},
 		{http.MethodDelete, "/projects/{project_id:[0-9]+}/secrets/{secret_id}", nil, secretController.DeleteSecret, "DeleteSecret"},
+
+		// Pipelines API
+		{http.MethodGet, "/pipelines", nil, pipelinesController.ListPipelines, "ListPipelines"},
 	}
 
 	if appCtx.GitlabEnabled {

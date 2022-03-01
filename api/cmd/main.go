@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gojek/mlp/api/pkg/authz/enforcer"
 	"github.com/gorilla/mux"
 	"github.com/heptiolabs/healthcheck"
 	"github.com/jinzhu/gorm"
@@ -18,11 +18,15 @@ import (
 	"github.com/gojek/mlp/api/api"
 	"github.com/gojek/mlp/api/config"
 	"github.com/gojek/mlp/api/log"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer"
+	pipelines "github.com/gojek/mlp/api/pkg/pipelines/impl"
 	"github.com/gojek/mlp/api/service"
 	"github.com/gojek/mlp/api/storage"
 )
 
 func main() {
+	ctx := context.Background()
+
 	cfg, err := config.InitConfigEnv()
 	if err != nil {
 		log.Panicf("Failed initializing config: %v", err)
@@ -49,6 +53,9 @@ func main() {
 		URL(cfg.AuthorizationConfig.AuthorizationServerUrl).
 		Product("mlp").
 		Build()
+	if err != nil {
+		panic(err)
+	}
 
 	projectsService, err := service.NewProjectsService(cfg.MlflowConfig.TrackingUrl, storage.NewProjectStorage(db), authEnforcer, cfg.AuthorizationConfig.AuthorizationEnabled)
 	if err != nil {
@@ -57,12 +64,18 @@ func main() {
 
 	secretService := service.NewSecretService(storage.NewSecretStorage(db, cfg.EncryptionKey))
 
+	pipelineService, err := pipelines.NewFlyte(ctx)
+	if err != nil {
+		panic(err)
+	}
+
 	appCtx := api.AppContext{
 		AccountService:     accountService,
 		ApplicationService: applicationService,
 		ProjectsService:    projectsService,
 		SecretService:      secretService,
 		UsersService:       usersService,
+		PipelineService:    pipelineService,
 
 		AuthorizationEnabled: cfg.AuthorizationConfig.AuthorizationEnabled,
 		Enforcer:             authEnforcer,
