@@ -1,3 +1,4 @@
+{{/* vim: set filetype=mustache: */}}
 {{- define "mlp.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
@@ -19,6 +20,22 @@
 {{- end -}}
 {{- end -}}
 
-{{- define "postgresql.host" -}}
+{{- define "postgres.host" -}}
 {{- printf "%s-postgresql.%s.svc.cluster.local" .Release.Name .Release.Namespace -}}
+{{- end -}}
+
+{{- define "postgres.username" -}}
+{{- if .Values.postgresql.enabled -}}
+{{- .Values.postgresql.postgresqlUsername -}}
+{{- else -}}
+{{- .Values.externalPostgresql.username -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "postgres.database" -}}
+{{- if .Values.postgresql.enabled -}}
+{{- .Values.postgresql.postgresqlDatabase -}}
+{{- else -}}
+{{- .Values.externalPostgresql.database -}}
+{{- end -}}
 {{- end -}}

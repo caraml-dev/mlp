@@ -33,7 +33,7 @@ spec:
           - |
             /migrate \
             -path /migrations \
-            -database postgres://{{ .Values.postgresql.postgresqlUsername }}:$(PG_PASSWORD)@{{ template "postgresql.host" . }}:5432/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable \
+            -database postgres://{{ template "postgres.username" . }}:$(PG_PASSWORD)@{{ template "postgres.host" . }}:5432/{{ template "postgres.database" . }}?sslmode=disable \
             up
         env:
           - name: PG_PASSWORD
@@ -87,16 +87,16 @@ spec:
             - name: PORT
               value: "{{ .Values.mlp.service.internalPort }}"
             - name: DATABASE_HOST
-              value: {{ template "postgresql.host" . }}
+              value: {{ template "postgres.host" . }}
             - name: DATABASE_USER
-              value: "{{ .Values.postgresql.postgresqlUsername }}"
+              value: {{ template "postgres.username" . }}
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-postgresql
                   key: postgresql-password
             - name: DATABASE_NAME
-              value: "{{ .Values.postgresql.postgresqlDatabase }}"
+              value: {{ template "postgres.database" . }}
             - name: GITLAB_ENABLED
               value: "{{ .Values.gitlab.enabled }}"
             {{- if .Values.gitlab.enabled }}
