@@ -28,7 +28,7 @@
 {{- if .Values.postgresql.enabled -}}
 {{- .Values.postgresql.postgresqlUsername -}}
 {{- else -}}
-{{- .Values.externalPostgres.username -}}
+{{- .Values.externalPostgresql.username -}}
 {{- end -}}
 {{- end -}}
 
@@ -36,6 +36,6 @@
 {{- if .Values.postgresql.enabled -}}
 {{- .Values.postgresql.postgresqlDatabase -}}
 {{- else -}}
-{{- .Values.externalPostgres.database -}}
+{{- .Values.externalPostgresql.database -}}
 {{- end -}}
 {{- end -}}

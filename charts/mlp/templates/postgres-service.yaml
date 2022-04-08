@@ -11,5 +11,5 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   type: ExternalName
-  externalName: {{ .Values.externalPostgres.address }}
+  externalName: {{ .Values.externalPostgresql.address }}
 {{- end -}}
