@@ -25,17 +25,17 @@
 {{- end -}}
 
 {{- define "postgres.username" -}}
-{{- if .Values.externalPostgres.enabled -}}
-{{- .Values.externalPostgres.username -}}
-{{- else -}}
+{{- if .Values.postgresql.enabled -}}
 {{- .Values.postgresql.postgresqlUsername -}}
+{{- else -}}
+{{- .Values.externalPostgres.username -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "postgres.database" -}}
-{{- if .Values.externalPostgres.enabled -}}
-{{- .Values.externalPostgres.database -}}
-{{- else -}}
+{{- if .Values.postgresql.enabled -}}
 {{- .Values.postgresql.postgresqlDatabase -}}
+{{- else -}}
+{{- .Values.externalPostgres.database -}}
 {{- end -}}
 {{- end -}}

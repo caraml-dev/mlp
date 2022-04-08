@@ -79,7 +79,6 @@ gitlab:
 
 # If you would like to use an external postgres database, you can connect using these credentials
 externalPostgres:
-  enabled: false
   username: mlp
   database: mlp
   password: password
