@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ory/keto-client-go/client"
@@ -12,6 +13,7 @@ import (
 	"github.com/ory/keto-client-go/models"
 
 	"github.com/gojek/mlp/api/pkg/authz/enforcer/types"
+	"github.com/gojek/mlp/api/util"
 )
 
 const (
@@ -130,20 +132,36 @@ func (e *enforcer) GetPolicy(policyName string) (*types.Policy, error) {
 func (e *enforcer) FilterAuthorizedResource(user string, resources []string, action string) ([]string, error) {
 	user = e.formatUser(user)
 
-	allowedResources := make([]string, 0, 0)
+	var wg sync.WaitGroup
+	allowedResourcesConcurrent := util.ConcurrentSlice{}
+	errorsConcurrent := util.ConcurrentSlice{}
 	for _, resource := range resources {
-		resource = e.formatResource(resource)
+		wg.Add(1)
+		go func(u string, r string, a string) {
+			defer wg.Done()
+			r = e.formatResource(r)
 
-		allowed, err := e.isAllowed(user, resource, action)
-		if err != nil {
-			return nil, err
-		}
+			allowed, err := e.isAllowed(u, r, a)
+			if err != nil {
+				errorsConcurrent.Append(err)
+				return
+			}
+			if *allowed {
+				allowedResourcesConcurrent.Append(e.stripResourcePrefix(r))
+			}
+		}(user, resource, action)
+	}
+	wg.Wait()
 
-		if *allowed {
-			allowedResources = append(allowedResources, e.stripResourcePrefix(resource))
-		}
+	errors := errorsConcurrent.GetItems()
+	if len(errors) > 0 {
+		return nil, errors[0].(error)
 	}
 
+	allowedResources := make([]string, 0, 0)
+	for _, item := range allowedResourcesConcurrent.GetItems() {
+		allowedResources = append(allowedResources, item.(string))
+	}
 	return allowedResources, nil
 }
 
