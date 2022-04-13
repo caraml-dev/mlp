@@ -2,6 +2,7 @@ package enforcer
 
 import (
 	"os"
+	"sort"
 	"testing"
 	"time"
 
@@ -184,6 +185,8 @@ func TestEnforcer_FilterAuthorizedResource(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := enforcer.FilterAuthorizedResource(tt.user, tt.resources, tt.action)
 			assert.NoError(t, err)
+			sort.Strings(tt.expectedResources)
+			sort.Strings(res)
 			assert.Equal(t, tt.expectedResources, res)
 		})
 	}
