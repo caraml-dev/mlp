@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -162,6 +163,7 @@ func (e *enforcer) FilterAuthorizedResource(user string, resources []string, act
 	for _, item := range allowedResourcesConcurrent.GetItems() {
 		allowedResources = append(allowedResources, item.(string))
 	}
+	sort.Strings(allowedResources)
 	return allowedResources, nil
 }
 
