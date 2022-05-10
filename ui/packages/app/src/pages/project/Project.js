@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   EuiFlexGroup,
   EuiFlexItem,
@@ -23,23 +23,39 @@ const Project = () => {
   const { apps } = useContext(ApplicationsContext);
   const { projectId, project } = useContext(CurrentProjectContext);
 
+  const [projectName, setProjectName] = useState("");
+  useEffect(() => {
+    if (project) {
+      setProjectName(project.name);
+    }
+  }, [project]);
+
   const [{ data: entities }, fetchEntities] = useFeastCoreApi(
-    `/feast.core.CoreService/ListEntities`,
-    { method: "POST" },
+    `/entities?project=${projectName}`,
+    { method: "GET" },
     undefined,
     false
   );
   const [{ data: featureTables }, fetchFeatureTables] = useFeastCoreApi(
-    `/feast.core.CoreService/ListFeatureTables`,
+    `/tables?project=${projectName}`,
+    { method: "GET" },
+    undefined,
+    false
+  );
+  const [
+    { data: feastStreamIngestionJobs },
+    fetchFeastStreamIngestionJobs
+  ] = useFeastCoreApi(
+    `/jobs/ingestion/stream`,
     { method: "POST" },
     undefined,
     false
   );
   const [
-    { data: feastIngestionJobs },
-    fetchFeastIngestionJobs
+    { data: feastBatchIngestionJobs },
+    fetchFeastBatchIngestionJobs
   ] = useFeastCoreApi(
-    `/feast_spark.api.JobService/ListJobs`,
+    `/jobs/ingestion/batch`,
     { method: "POST" },
     undefined,
     false
@@ -58,27 +74,30 @@ const Project = () => {
   );
 
   useEffect(() => {
-    if (project) {
-      fetchEntities({
-        body: JSON.stringify({ filter: { project: project.name } })
-      });
-      fetchFeatureTables({
-        body: JSON.stringify({ filter: { project: project.name } })
-      });
-      fetchFeastIngestionJobs({
+    if (projectName) {
+      fetchEntities();
+      fetchFeatureTables();
+      fetchFeastBatchIngestionJobs({
         body: JSON.stringify({
           include_terminated: true,
-          project: project.name.replace(/-/g, "_")
+          project: projectName.replace(/-/g, "_")
+        })
+      });
+      fetchFeastStreamIngestionJobs({
+        body: JSON.stringify({
+          include_terminated: true,
+          project: projectName.replace(/-/g, "_")
         })
       });
       fetchModels();
       fetchRouters();
     }
   }, [
-    project,
+    projectName,
     fetchEntities,
     fetchFeatureTables,
-    fetchFeastIngestionJobs,
+    fetchFeastStreamIngestionJobs,
+    fetchFeastBatchIngestionJobs,
     fetchModels,
     fetchRouters
   ]);
@@ -115,7 +134,8 @@ const Project = () => {
               <EuiFlexItem grow={6}>
                 <Instances
                   project={project}
-                  feastIngestionJobs={feastIngestionJobs}
+                  feastStreamIngestionJobs={feastStreamIngestionJobs}
+                  feastBatchIngestionJobs={feastBatchIngestionJobs}
                   models={models}
                   routers={routers}
                 />
