@@ -5,7 +5,7 @@ export const FeastJobsTable = ({ project, feastIngestionJobs }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    if (project && feastIngestionJobs) {
+    if (project && feastIngestionJobs && feastIngestionJobs.jobs) {
       let items = [];
       feastIngestionJobs.jobs
         .filter(job => job.status === "JOB_STATUS_RUNNING")
