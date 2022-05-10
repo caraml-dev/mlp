@@ -31,13 +31,13 @@ const Project = () => {
   }, [project]);
 
   const [{ data: entities }, fetchEntities] = useFeastCoreApi(
-    `/feast/api/entities?project=${projectName}`,
+    `/entities?project=${projectName}`,
     { method: "GET" },
     undefined,
     false
   );
   const [{ data: featureTables }, fetchFeatureTables] = useFeastCoreApi(
-    `/feast/api/tables?project=${projectName}`,
+    `/tables?project=${projectName}`,
     { method: "GET" },
     undefined,
     false
@@ -46,7 +46,7 @@ const Project = () => {
     { data: feastStreamIngestionJobs },
     fetchFeastStreamIngestionJobs
   ] = useFeastCoreApi(
-    `/feast/api/jobs/ingestion/stream`,
+    `/jobs/ingestion/stream`,
     { method: "POST" },
     undefined,
     false
@@ -55,7 +55,7 @@ const Project = () => {
     { data: feastBatchIngestionJobs },
     fetchFeastBatchIngestionJobs
   ] = useFeastCoreApi(
-    `/feast/api/jobs/ingestion/batch`,
+    `/jobs/ingestion/batch`,
     { method: "POST" },
     undefined,
     false
