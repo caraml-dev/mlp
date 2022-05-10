@@ -6,7 +6,7 @@ const parseJsonHandleBigInt = (response, parseBigInt) => {
   return parseBigInt
     ? response.text().then(text => jsonBig.parse(text))
     : response.json();
-}
+};
 
 export const parseJson = (response, parseBigInt) => {
   return parseJsonHandleBigInt(response, parseBigInt).catch(error => {
