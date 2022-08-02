@@ -62,11 +62,11 @@ func (c *ProjectsController) CreateProject(r *http.Request, vars map[string]stri
 }
 
 func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]string, body interface{}) *ApiResponse {
-	projectId, _ := models.ParseId(vars["project_id"])
-	project, err := c.ProjectsService.FindById(projectId)
+	projectID, _ := models.ParseId(vars["project_id"])
+	project, err := c.ProjectsService.FindById(projectID)
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
-			return NotFound(fmt.Sprintf("Project id %s not found", projectId))
+			return NotFound(fmt.Sprintf("Project id %s not found", projectID))
 		}
 
 		return InternalServerError(err.Error())
@@ -84,19 +84,19 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 	project.Labels = newProject.Labels
 	project, err = c.ProjectsService.UpdateProject(project)
 	if err != nil {
-		log.Errorf("unable to update project %s %v", projectId, err)
-		return InternalServerError(fmt.Sprintf("Unable to update project %s", projectId))
+		log.Errorf("unable to update project %s %v", projectID, err)
+		return InternalServerError(fmt.Sprintf("Unable to update project %s", projectID))
 	}
 
 	return Ok(project)
 }
 
 func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string, body interface{}) *ApiResponse {
-	projectId, _ := models.ParseId(vars["project_id"])
-	project, err := c.ProjectsService.FindById(projectId)
+	projectID, _ := models.ParseId(vars["project_id"])
+	project, err := c.ProjectsService.FindById(projectID)
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
-			return NotFound(fmt.Sprintf("Project id %s not found", projectId))
+			return NotFound(fmt.Sprintf("Project id %s not found", projectID))
 		}
 
 		return InternalServerError(err.Error())
@@ -111,9 +111,9 @@ func (c *ProjectsController) filterAuthorizedProjects(user string, projects []*m
 		allowedProjects := make([]*models.Project, 0, 0)
 		projectMap := make(map[string]*models.Project)
 		for _, project := range projects {
-			projectId := fmt.Sprintf("projects:%s", project.Id)
-			projectIds = append(projectIds, projectId)
-			projectMap[projectId] = project
+			projectID := fmt.Sprintf("projects:%s", project.Id)
+			projectIds = append(projectIds, projectID)
+			projectMap[projectID] = project
 		}
 
 		allowedProjectIds, err := c.Enforcer.FilterAuthorizedResource(user, projectIds, action)
