@@ -24,10 +24,13 @@ spec:
       labels:
         app: {{ template "mlp.name" .}}
         release: {{ .Release.Name }}
+        {{- if .Values.mlp.podLabels }}
+        {{- toYaml .Values.mlp.podLabels | nindent 8 }}
+        {{- end }}
     spec:
       initContainers:
       - name: migrations
-        image: migrate/migrate:{{ .Values.dbMigrations.image.tag }}
+        image: "migrate/migrate:{{ .Values.dbMigrations.image.tag }}"
         command: ['/bin/sh', '-c']
         args:
           - |
@@ -46,7 +49,7 @@ spec:
             name: db-migrations
       containers:
         - name: api
-          image: {{ .Values.mlp.image.registry }}/{{ .Values.mlp.image.repository }}:{{ .Values.mlp.image.tag }}
+          image: "{{ .Values.mlp.image.registry }}/{{ .Values.mlp.image.repository }}:{{ .Values.mlp.image.tag }}"
           imagePullPolicy: {{ .Values.mlp.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.mlp.service.internalPort }}
