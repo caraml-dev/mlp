@@ -1,6 +1,6 @@
 module github.com/gojek/mlp
 
-go 1.14
+go 1.16
 
 require (
 	github.com/antihax/optional v1.0.0
