@@ -43,8 +43,6 @@ func main() {
 	defer db.Close()
 
 	applicationService, _ := service.NewApplicationService(db)
-	accountService := service.NewAccountService(db)
-	usersService := service.NewUsersService(db)
 	authEnforcer, err := enforcer.NewEnforcerBuilder().
 		URL(cfg.AuthorizationConfig.AuthorizationServerUrl).
 		Product("mlp").
@@ -58,22 +56,12 @@ func main() {
 	secretService := service.NewSecretService(storage.NewSecretStorage(db, cfg.EncryptionKey))
 
 	appCtx := api.AppContext{
-		AccountService:     accountService,
 		ApplicationService: applicationService,
 		ProjectsService:    projectsService,
 		SecretService:      secretService,
-		UsersService:       usersService,
 
 		AuthorizationEnabled: cfg.AuthorizationConfig.AuthorizationEnabled,
 		Enforcer:             authEnforcer,
-	}
-
-	if cfg.GitlabConfig.Enabled {
-		oauthConfig, _ := cfg.GitlabConfig.InitOauthConfig()
-		gitlabService := service.NewGitlabService(cfg.GitlabConfig.Host, oauthConfig)
-
-		appCtx.GitlabEnabled = true
-		appCtx.GitlabService = gitlabService
 	}
 
 	router := mux.NewRouter()

@@ -22,7 +22,6 @@ mlp:
     externalPort: 8080
     internalPort: 8080
   apiHost: "http://mlp/v1"
-  gitlabRedirectUrl: "http://mlp/settings/connected-accounts"
   mlflowTrackingUrl: "http://mlflow.mlp"
   environment: "production"
   encryption:
@@ -69,13 +68,6 @@ mlp:
 dbMigrations:
   image:
     tag: v4.7.1
-
-gitlab:
-  enabled: false
-  host: https://gitlab.com
-  oauthScopes: read_user
-  clientId: #clientId
-  clientSecret: #clientSecret
 
 # If you would like to use an external postgres database, you can connect using these credentials
 externalPostgresql:
