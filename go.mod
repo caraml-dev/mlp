@@ -1,9 +1,8 @@
 module github.com/gojek/mlp
 
-go 1.13
+go 1.14
 
 require (
-	bou.ke/monkey v1.0.2
 	github.com/antihax/optional v1.0.0
 	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 	github.com/certifi/gocertifi v0.0.0-20191021191039-0944d244cd40 // indirect
