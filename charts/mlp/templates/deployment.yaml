@@ -24,6 +24,9 @@ spec:
       labels:
         app: {{ template "mlp.name" .}}
         release: {{ .Release.Name }}
+        {{- if .Values.mlp.podLabels }}
+        {{- toYaml .Values.mlp.podLabels | nindent 8 }}
+        {{- end }}
     spec:
       initContainers:
       - name: migrations

@@ -13,6 +13,7 @@ spec:
   ports:
     - port: {{ .Values.mlp.service.externalPort }}
       targetPort: {{ .Values.mlp.service.internalPort }}
+      name: http
       protocol: TCP
   selector:
     app: {{ template "mlp.name" .}}

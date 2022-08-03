@@ -21,7 +21,11 @@
 {{- end -}}
 
 {{- define "postgres.host" -}}
-{{- printf "%s-postgresql.%s.svc.cluster.local" .Release.Name .Release.Namespace -}}
+{{ if .Values.postgresql.enabled }}
+    {{- printf "%s-postgresql.%s.svc.cluster.local" .Release.Name .Release.Namespace -}}
+{{- else -}}
+    {{- .Values.externalPostgresql.address -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "postgres.username" -}}
