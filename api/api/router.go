@@ -18,17 +18,12 @@ import (
 )
 
 type AppContext struct {
-	AccountService     service.AccountService
 	ApplicationService service.ApplicationService
 	ProjectsService    service.ProjectsService
 	SecretService      service.SecretService
-	UsersService       service.UsersService
 
 	AuthorizationEnabled bool
 	Enforcer             enforcer.Enforcer
-
-	GitlabEnabled bool
-	GitlabService service.GitlabService
 }
 
 // type ApiHandler func(r *http.Request, vars map[string]string, body interface{}) *ApiResponse
@@ -80,18 +75,12 @@ func (route Route) HandlerFunc(validate *validator.Validate) http.HandlerFunc {
 func NewRouter(appCtx AppContext) *mux.Router {
 	validator := validation.NewValidator()
 	applicationsController := ApplicationsController{&appCtx}
-	usersController := UsersController{&appCtx}
 	projectsController := ProjectsController{&appCtx}
 	secretController := SecretsController{&appCtx}
 
 	routes := []Route{
 		//Applications API
 		{http.MethodGet, "/applications", nil, applicationsController.ListApplications, "ListApplications"},
-
-		//Users API
-		{http.MethodGet, "/users/token/generate", nil, usersController.GenerateToken, "GenerateToken"},
-		{http.MethodGet, "/users/authorize", nil, usersController.AuthorizeUser, "AuthorizeUser"},
-		{http.MethodGet, "/users/token/retrieve", nil, usersController.RetrieveToken, "RetrieveToken"},
 
 		//Projects API
 		{http.MethodGet, "/projects/{project_id:[0-9]+}", nil, projectsController.GetProject, "GetProject"},
@@ -104,15 +93,6 @@ func NewRouter(appCtx AppContext) *mux.Router {
 		{http.MethodPost, "/projects/{project_id:[0-9]+}/secrets", models.Secret{}, secretController.CreateSecret, "CreateSecret"},
 		{http.MethodPatch, "/projects/{project_id:[0-9]+}/secrets/{secret_id}", models.Secret{}, secretController.UpdateSecret, "UpdateSecret"},
 		{http.MethodDelete, "/projects/{project_id:[0-9]+}/secrets/{secret_id}", nil, secretController.DeleteSecret, "DeleteSecret"},
-	}
-
-	if appCtx.GitlabEnabled {
-		userRoutes := []Route{
-			{http.MethodGet, "/users/token/generate", nil, usersController.GenerateToken, "GenerateToken"},
-			{http.MethodGet, "/users/authorize", nil, usersController.AuthorizeUser, "AuthorizeUser"},
-			{http.MethodGet, "/users/token/retrieve", nil, usersController.RetrieveToken, "RetrieveToken"},
-		}
-		routes = append(routes, userRoutes...)
 	}
 
 	var authzMiddleware *middleware.Authorizer

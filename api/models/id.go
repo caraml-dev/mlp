@@ -23,10 +23,3 @@ type CreatedUpdated struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
-
-type User struct {
-	Id       Id     `json:"-"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	CreatedUpdated
-}
