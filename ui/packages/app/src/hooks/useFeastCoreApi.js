@@ -19,13 +19,9 @@ export const useFeastCoreApi = (
       baseApiUrl: config.FEAST_CORE_API,
       timeout: config.TIMEOUT,
       useMockData: config.USE_MOCK_DATA,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authCtx.state.idToken}`
-      },
       ...options
     },
-    undefined,
+    authCtx,
     result,
     callImmediately
   );

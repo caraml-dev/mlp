@@ -39,7 +39,7 @@ const fetchData = async (url, authCtx, options) => {
   if (typeof authCtx !== "undefined") {
     optionsWithAuth.headers = {
       ...options.headers,
-      Authorization: `Bearer ${authCtx.state.accessToken}`
+      Authorization: `Bearer ${authCtx.state.jwt}`
     };
   }
   return fetchWithTimeout(url, optionsWithAuth, options.timeout).then(

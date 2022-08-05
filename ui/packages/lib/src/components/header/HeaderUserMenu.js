@@ -29,7 +29,7 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
       aria-label="Account menu"
       onClick={togglePopover}>
       <EuiAvatar
-        imageUrl={profileObj.imageUrl}
+        imageUrl={profileObj.picture}
         name={profileObj.name}
         size="s"
       />
@@ -61,7 +61,7 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
           responsive={false}>
           <EuiFlexItem grow={false}>
             <EuiAvatar
-              imageUrl={profileObj.imageUrl}
+              imageUrl={profileObj.picture}
               name={profileObj.name}
               size="xl"
             />
@@ -104,7 +104,8 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
 HeaderUserMenu.propTypes = {
   profileObj: PropTypes.shape({
     email: PropTypes.string,
-    name: PropTypes.string
+    name: PropTypes.string,
+    picture: PropTypes.string
   }).isRequired,
   logout: PropTypes.func.isRequired
 };
