@@ -7,7 +7,7 @@ import {
   EuiFlexItem,
   EuiEmptyPrompt
 } from "@elastic/eui";
-import { GoogleLogin } from "react-google-login";
+import { GoogleLogin } from "@react-oauth/google";
 import { Redirect } from "@reach/router";
 import { get } from "../utils";
 import AuthContext from "../auth/context";
@@ -15,12 +15,11 @@ import AuthContext from "../auth/context";
 export const Login = ({ location }) => {
   const {
     state: { isAuthenticated },
-    clientId,
     onLogin
   } = useContext(AuthContext);
 
-  const onFailure = response => {
-    console.log(response);
+  const onFailure = () => {
+    console.log("Login Failed");
   };
 
   return isAuthenticated ? (
@@ -40,12 +39,7 @@ export const Login = ({ location }) => {
           />
           <EuiFlexGroup direction="column" alignItems="center">
             <EuiFlexItem grow={false} style={{ maxWidth: "200px" }}>
-              <GoogleLogin
-                clientId={clientId}
-                buttonText="Login with Google"
-                onSuccess={onLogin}
-                onFailure={onFailure}
-              />
+              <GoogleLogin onSuccess={onLogin} onError={onFailure} />
             </EuiFlexItem>
           </EuiFlexGroup>
         </EuiPageContent>
