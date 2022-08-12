@@ -4,9 +4,10 @@ import eslint from "@rollup/plugin-eslint";
 import sass from "rollup-plugin-sass";
 import peerDepsExternal from "rollup-plugin-peer-deps-external";
 import ignoreImport from "rollup-plugin-ignore-import";
-import nodeSass from "node-sass";
 
 import pkg from "./package.json";
+
+const PATH_NODE_MODULES = "../../node_modules";
 
 export default {
   input: "src/index.js",
@@ -33,12 +34,13 @@ export default {
     sass({
       output: true,
       options: {
-        includePaths: ["../../node_modules/"],
-        importer(path) {
-          return { file: path[0] !== "~" ? path : path.slice(1) };
+        quietDeps: true,
+        importer(url, _) {
+          return {
+            file: url.replace(/^~/, `${PATH_NODE_MODULES}/`)
+          };
         }
-      },
-      runtime: nodeSass
+      }
     }),
     resolve(),
     babel({
