@@ -14,8 +14,10 @@ import config from "./config";
 import { PrivateLayout } from "./PrivateLayout";
 import { ProjectCreation } from "./project_setting/ProjectCreation";
 import ProjectSetting from "./project_setting/ProjectSetting";
+// import { EuiProvider } from "@elastic/eui";
 
 export default () => (
+  // <EuiProvider  colorMode="light">
   <ErrorBoundary>
     <MlpApiContextProvider
       mlpApiUrl={config.API}
@@ -60,4 +62,5 @@ export default () => (
       </AuthProvider>
     </MlpApiContextProvider>
   </ErrorBoundary>
+  // </EuiProvider>
 );

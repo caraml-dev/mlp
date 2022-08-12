@@ -35,6 +35,7 @@ export default {
       output: true,
       options: {
         quietDeps: true,
+        includePaths: [PATH_NODE_MODULES],
         importer(url, _) {
           return {
             file: url.replace(/^~/, `${PATH_NODE_MODULES}/`)

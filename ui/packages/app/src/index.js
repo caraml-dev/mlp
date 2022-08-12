@@ -4,10 +4,9 @@ import App from "./App";
 import * as Sentry from "@sentry/browser";
 import * as serviceWorker from "./serviceWorker";
 import { sentryConfig } from "./config";
+import "./style.scss";
 
 Sentry.init(sentryConfig);
-
-require("./style.scss");
 
 ReactDOM.render(<App />, document.getElementById("root"));
 

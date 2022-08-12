@@ -1,7 +1,7 @@
 # ============================================================
 # Build stage 1: Build UI
 # ============================================================
-FROM node:14-alpine as node-builder
+FROM node:16-alpine as node-builder
 WORKDIR /src/ui
 COPY ui .
 RUN yarn
