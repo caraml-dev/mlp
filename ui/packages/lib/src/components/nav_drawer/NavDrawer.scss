@@ -1,25 +1,16 @@
 @import "~@elastic/eui/src/themes/eui/eui_colors_light";
 @import "~@elastic/eui/src/themes/eui/eui_globals";
 
-.euiBody--collapsibleNavIsDocked {
-  transition: none !important;
+.euiCollapsibleNav.euiFlyout.euiFlyout--push.euiFlyout--left {
+  border-right-width: 1px !important;
 }
 
 .euiCollapsibleNav {
-  top: 49px !important;
-  height: calc(100% - 49px) !important;
-  width: 262px !important;
-
-  -webkit-animation: none !important;
-  animation: none !important;
+  width: 264px !important;
 }
 
 .euiTreeView.mlpApplications {
   padding: 0 8px;
-
-  .euiTreeView__nodeInner:focus {
-    animation: none !important;
-  }
 
   .euiTreeView__node---small {
     font-size: $euiFontSizeS;

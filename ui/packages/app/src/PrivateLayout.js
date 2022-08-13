@@ -7,7 +7,6 @@ import {
   ProjectsContextProvider
 } from "@gojek/mlp-ui";
 import config from "./config";
-import "./PrivateLayout.scss";
 
 export const PrivateLayout = Component => {
   return props => (
@@ -19,9 +18,7 @@ export const PrivateLayout = Component => {
             onProjectSelect={projectId => navigate(`/projects/${projectId}`)}
             docLinks={config.DOC_LINKS}
           />
-          <div className="main-component-layout">
-            <Component {...props} />
-          </div>
+          <Component {...props} />
         </CurrentProjectContextProvider>
       </ProjectsContextProvider>
     </ApplicationsContextProvider>

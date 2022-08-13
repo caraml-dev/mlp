@@ -125,13 +125,12 @@ const Project = () => {
                 {/* <InstancesSummary project={project} models={models} /> */}
                 <ComingSoonPanel title="Monthly Cost" iconType="visPie" />
               </EuiFlexItem>
-              <EuiFlexItem grow={1}></EuiFlexItem>
             </EuiFlexGroup>
 
             <EuiSpacer size="l" />
 
             <EuiFlexGroup>
-              <EuiFlexItem grow={6}>
+              <EuiFlexItem grow={true}>
                 <Instances
                   project={project}
                   feastStreamIngestionJobs={feastStreamIngestionJobs}
@@ -140,13 +139,12 @@ const Project = () => {
                   routers={routers}
                 />
               </EuiFlexItem>
-              <EuiFlexItem grow={4}></EuiFlexItem>
             </EuiFlexGroup>
 
             <EuiSpacer size="l" />
 
             <EuiFlexGroup>
-              <EuiFlexItem grow={5}>
+              <EuiFlexItem grow={4}>
                 <ComingSoonPanel
                   title="Health Monitoring"
                   iconType="monitoringApp"
@@ -155,7 +153,6 @@ const Project = () => {
               <EuiFlexItem grow={4}>
                 <ComingSoonPanel title="Error Summary" iconType="bug" />
               </EuiFlexItem>
-              <EuiFlexItem grow={1}></EuiFlexItem>
             </EuiFlexGroup>
           </>
         ) : (

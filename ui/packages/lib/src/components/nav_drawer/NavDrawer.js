@@ -86,10 +86,11 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
   return (
     <EuiCollapsibleNav
       aria-label="Main navigation"
+      ownFocus={false}
       isOpen={navIsOpen}
       isDocked={navIsDocked}
-      showCloseButton={false}
       showButtonIfDocked={true}
+      closeButtonProps={{ style: { display: "none" } }}
       button={
         <EuiHeaderSectionItemButton
           aria-label="Toggle main navigation"

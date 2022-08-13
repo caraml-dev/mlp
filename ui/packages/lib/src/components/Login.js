@@ -39,7 +39,11 @@ export const Login = ({ location }) => {
           />
           <EuiFlexGroup direction="column" alignItems="center">
             <EuiFlexItem grow={false} style={{ maxWidth: "200px" }}>
-              <GoogleLogin onSuccess={onLogin} onError={onFailure} />
+              <GoogleLogin
+                onSuccess={onLogin}
+                onError={onFailure}
+                useOneTap={true}
+              />
             </EuiFlexItem>
           </EuiFlexGroup>
         </EuiPageContent>
