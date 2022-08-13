@@ -45,7 +45,6 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
   return (
     <EuiPopover
       id="headerUserMenu"
-      ownFocus={false}
       button={button}
       isOpen={isOpen}
       anchorPosition="downRight"

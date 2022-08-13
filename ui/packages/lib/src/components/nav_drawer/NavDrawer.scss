@@ -1,9 +1,5 @@
-@import "~@elastic/eui/src/themes/legacy/colors_light";
-@import "~@elastic/eui/src/themes/legacy/globals";
-
-.euiCollapsibleNav.euiFlyout.euiFlyout--push.euiFlyout--left {
-  border-right-width: 1px !important;
-}
+@import "@elastic/eui/src/themes/amsterdam/colors_light";
+@import "@elastic/eui/src/themes/amsterdam/globals";
 
 .euiCollapsibleNav {
   width: 264px !important;

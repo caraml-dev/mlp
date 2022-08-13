@@ -1,13 +1,11 @@
-@import "~@elastic/eui/src/themes/legacy/colors_light";
-@import "~@elastic/eui/src/themes/legacy/globals";
+@import "@elastic/eui/src/themes/amsterdam/colors_light";
+@import "@elastic/eui/src/themes/amsterdam/globals";
 
 body {
   @include euiHeaderAffordForFixed;
 }
 
 .euiHeader {
-  //padding-right: 6px;
-
   .euiHeaderLogo.euiHeaderLogo__title {
     color: #1a1c21;
     padding-left: 10px;

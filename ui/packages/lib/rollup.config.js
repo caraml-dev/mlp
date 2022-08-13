@@ -4,10 +4,9 @@ import eslint from "@rollup/plugin-eslint";
 import sass from "rollup-plugin-sass";
 import peerDepsExternal from "rollup-plugin-peer-deps-external";
 import ignoreImport from "rollup-plugin-ignore-import";
+import path from "path";
 
 import pkg from "./package.json";
-
-const PATH_NODE_MODULES = "../../node_modules";
 
 export default {
   input: "src/index.js",
@@ -35,12 +34,7 @@ export default {
       output: true,
       options: {
         quietDeps: true,
-        includePaths: [PATH_NODE_MODULES],
-        importer(url, _) {
-          return {
-            file: url.replace(/^~/, `${PATH_NODE_MODULES}/`)
-          };
-        }
+        includePaths: [path.resolve(__dirname, "../../node_modules")]
       }
     }),
     resolve(),

@@ -65,7 +65,7 @@ export const ProjectsDropdown = ({ projects, onProjectSelect }) => {
       }
       isOpen={isPopoverOpen}
       closePopover={togglePopover}
-      panelPaddingSize="none"
+      panelPaddingSize="s"
       anchorPosition="downLeft">
       <EuiSelectable
         searchable={panels.length > NUM_PANELS_TO_ADD_SEARCH}
