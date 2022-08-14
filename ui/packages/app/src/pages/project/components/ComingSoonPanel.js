@@ -1,7 +1,7 @@
 import React from "react";
 import { EuiCard, EuiIcon } from "@elastic/eui";
 
-export const ComingSoonPanel = ({ title, iconType }) => {
+export const ComingSoonPanel = ({ title, iconType, ...rest }) => {
   return (
     <EuiCard
       icon={<EuiIcon size="xl" type={iconType} />}
@@ -9,6 +9,7 @@ export const ComingSoonPanel = ({ title, iconType }) => {
       description="Coming soon."
       layout="horizontal"
       onClick={() => {}}
+      {...rest}
     />
   );
 };

@@ -43,7 +43,7 @@ const SecretListTable = ({ secrets, projectId, fetchUpdates }) => {
 
   const columns = [
     {
-      width: "5%",
+      width: "24px",
       render: () => (
         <EuiIcon type="lock" size="m" style={{ verticalAlign: "bottom" }} />
       )

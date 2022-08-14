@@ -8,15 +8,15 @@ import {
 } from "@elastic/eui";
 import { ApplicationsContext, CurrentProjectContext } from "@gojek/mlp-ui";
 import { Instances } from "./components/Instances";
-// import { InstancesSummary } from "./components/InstancesSummary";
 import { ProjectSummary } from "./components/ProjectSummary";
 import { Resources } from "./components/Resources";
 import { useMerlinApi } from "../../hooks/useMerlinApi";
 import { useTuringApi } from "../../hooks/useTuringApi";
-
-import "./components/ListGroup.scss";
 import { useFeastCoreApi } from "../../hooks/useFeastCoreApi";
 import { ComingSoonPanel } from "./components/ComingSoonPanel";
+
+import imageCharts from "../../images/charts.svg";
+import "./components/ListGroup.scss";
 
 const Project = () => {
   const { apps } = useContext(ApplicationsContext);
@@ -121,8 +121,11 @@ const Project = () => {
                 />
               </EuiFlexItem>
               <EuiFlexItem grow={3}>
-                {/* <InstancesSummary project={project} models={models} /> */}
-                <ComingSoonPanel title="Monthly Cost" iconType="visPie" />
+                <ComingSoonPanel
+                  title="Monthly Cost"
+                  layout="vertical"
+                  image={imageCharts}
+                />
               </EuiFlexItem>
             </EuiFlexGroup>
 

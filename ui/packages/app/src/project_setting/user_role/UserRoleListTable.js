@@ -54,7 +54,7 @@ const UserRoleListTable = ({ project, fetchUpdates }) => {
 
   const columns = [
     {
-      width: "5%",
+      width: "24px",
       render: () => (
         <EuiIcon type="user" size="m" style={{ verticalAlign: "bottom" }} />
       )
