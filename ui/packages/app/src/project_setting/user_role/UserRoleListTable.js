@@ -1,9 +1,7 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   EuiFlexItem,
-  EuiPanel,
   EuiText,
-  EuiSpacer,
   EuiFlexGroup,
   EuiIcon,
   EuiButtonIcon,
@@ -108,20 +106,8 @@ const UserRoleListTable = ({ project, fetchUpdates }) => {
     }
   ];
 
-  return userRoles.length === 0 ? (
-    <EuiFlexItem>
-      <EuiText size="s">
-        <EuiFlexItem alignitems="center">
-          <EuiPanel>
-            <h4 align="center">This project has no active User Roles.</h4>
-          </EuiPanel>
-        </EuiFlexItem>
-      </EuiText>
-      <EuiSpacer size="m" />
-      <UserRoleForm project={project} fetchUpdates={fetchUpdates} />
-    </EuiFlexItem>
-  ) : (
-    <Fragment>
+  return (
+    <>
       {showDeleteModal && (
         <DeleteUserRoleModal
           project={project}
@@ -132,19 +118,25 @@ const UserRoleListTable = ({ project, fetchUpdates }) => {
       )}
       <EuiFlexGroup direction="column">
         <EuiFlexItem>
-          <EuiInMemoryTable
-            columns={columns}
-            itemId="id"
-            items={userRoles}
-            itemIdToExpandedRowMap={userRoleIdToExpandedRowMap}
-            sorting={{ sort: { field: "User", direction: "asc" } }}
-          />
+          {userRoles.length === 0 ? (
+            <EuiText size="m" textAlign="center">
+              This project has no active User Roles.
+            </EuiText>
+          ) : (
+            <EuiInMemoryTable
+              columns={columns}
+              itemId="id"
+              items={userRoles}
+              itemIdToExpandedRowMap={userRoleIdToExpandedRowMap}
+              sorting={{ sort: { field: "User", direction: "asc" } }}
+            />
+          )}
         </EuiFlexItem>
         <EuiFlexItem>
           <UserRoleForm project={project} fetchUpdates={fetchUpdates} />
         </EuiFlexItem>
       </EuiFlexGroup>
-    </Fragment>
+    </>
   );
 };
 
