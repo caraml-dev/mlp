@@ -2,18 +2,18 @@ import React from "react";
 import { Router } from "@reach/router";
 import {
   AuthProvider,
-  Empty,
+  Page404,
   ErrorBoundary,
   Login,
   MlpApiContextProvider,
   PrivateRoute,
   Toast
 } from "@gojek/mlp-ui";
-import { Home, Project, Settings } from "./pages";
+import { Home, Project } from "./pages";
 import config from "./config";
 import { PrivateLayout } from "./PrivateLayout";
 import { ProjectCreation } from "./project_setting/ProjectCreation";
-import ProjectSetting from "./project_setting/ProjectSetting";
+// import ProjectSetting from "./project_setting/ProjectSetting";
 import { EuiProvider } from "@elastic/eui";
 
 const App = () => (
@@ -33,11 +33,11 @@ const App = () => (
               render={PrivateLayout(Project)}
             />
 
-            {/* PROJECT SETTING */}
-            <PrivateRoute
-              path="/projects/:projectId/settings/*"
-              render={PrivateLayout(ProjectSetting)}
-            />
+            {/*  /!* PROJECT SETTING *!/*/}
+            {/*  <PrivateRoute*/}
+            {/*    path="/projects/:projectId/settings/*"*/}
+            {/*    render={PrivateLayout(ProjectSetting)}*/}
+            {/*  />*/}
 
             {/* LANDING */}
             <PrivateRoute path="/" render={PrivateLayout(Home)} />
@@ -48,15 +48,8 @@ const App = () => (
               render={PrivateLayout(ProjectCreation)}
             />
 
-            {/* SETTINGS */}
-            <PrivateRoute path="/settings" render={PrivateLayout(Settings)} />
-            <PrivateRoute
-              path="/settings/:section"
-              render={PrivateLayout(Settings)}
-            />
-
             {/* DEFAULT */}
-            <Empty default />
+            <Page404 default />
           </Router>
           <Toast />
         </AuthProvider>

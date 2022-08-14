@@ -7,10 +7,8 @@ import {
   EuiDescribedFormGroup,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiTitle,
   EuiButton,
-  EuiForm,
-  EuiIcon
+  EuiForm
 } from "@elastic/eui";
 import { addToast, useMlpApi } from "@gojek/mlp-ui";
 import { ProjectFormContext } from "./context";
@@ -162,17 +160,6 @@ const ProjectForm = () => {
 
   return (
     <EuiForm>
-      <EuiFlexGroup>
-        <EuiFlexItem grow={false}>
-          <EuiTitle size="m">
-            <h1>
-              <EuiIcon type="folderClosed" size="xl" />
-              &nbsp; Create New Project
-            </h1>
-          </EuiTitle>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-
       <EuiFlexGroup direction="column">
         <EuiFlexItem grow={false}>
           <EuiPanel grow={false}>

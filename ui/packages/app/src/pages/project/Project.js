@@ -3,9 +3,8 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiLoadingContent,
-  EuiPage,
-  EuiPageBody,
-  EuiSpacer
+  EuiSpacer,
+  EuiPageTemplate
 } from "@elastic/eui";
 import { ApplicationsContext, CurrentProjectContext } from "@gojek/mlp-ui";
 import { Instances } from "./components/Instances";
@@ -103,8 +102,8 @@ const Project = () => {
   ]);
 
   return (
-    <EuiPage>
-      <EuiPageBody>
+    <EuiPageTemplate panelled={false} restrictWidth="90%">
+      <EuiPageTemplate.Section>
         {apps && project ? (
           <>
             <EuiFlexGroup>
@@ -158,8 +157,8 @@ const Project = () => {
         ) : (
           <EuiLoadingContent lines={5} />
         )}
-      </EuiPageBody>
-    </EuiPage>
+      </EuiPageTemplate.Section>
+    </EuiPageTemplate>
   );
 };
 

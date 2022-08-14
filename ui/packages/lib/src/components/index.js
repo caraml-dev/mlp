@@ -13,7 +13,7 @@ export * from "./page_navigation";
 export * from "./projects_dropdown";
 
 export * from "./DateFromNow";
-export * from "./Empty";
+export * from "./Page404";
 export * from "./ErrorBoundary";
 export * from "./Login";
 export * from "./StatefulRedirect";

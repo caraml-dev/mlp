@@ -46,39 +46,40 @@ const ProjectSetting = ({ "*": section, navigate }) => {
   ];
 
   return (
-    <EuiPage>
-      <EuiPageBody>
-        <EuiPageHeader>
-          <EuiPageHeaderSection>
-            <EuiTitle size="l">
-              <h1>
-                <EuiIcon type="gear" size="xl" /> Project Settings
-              </h1>
-            </EuiTitle>
-          </EuiPageHeaderSection>
-        </EuiPageHeader>
-        <EuiFlexGroup>
-          <EuiFlexItem grow={1}>
-            <EuiSideNav
-              mobileTitle="Project Settings Menu"
-              toggleOpenOnMobile={toggleOpenOnMobile}
-              isOpenOnMobile={isSideNavOpenOnMobile}
-              items={nav}
-            />
-          </EuiFlexItem>
-          <EuiFlexItem grow={6}>
-            <EuiPageContent>
-              <Router primary={false}>
-                <Redirect from="/" to="user-roles" noThrow />
-                <UserRoleSetting path="/user-roles" />
-                <SecretSetting path="/secrets-management" />
-                <Redirect default from="any" to="/errors/404" noThrow />
-              </Router>
-            </EuiPageContent>
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </EuiPageBody>
-    </EuiPage>
+    <div />
+    // <EuiPage>
+    //   <EuiPageBody>
+    //     <EuiPageHeader>
+    //       <EuiPageHeaderSection>
+    //         <EuiTitle size="l">
+    //           <h1>
+    //             <EuiIcon type="gear" size="xl" /> Project Settings
+    //           </h1>
+    //         </EuiTitle>
+    //       </EuiPageHeaderSection>
+    //     </EuiPageHeader>
+    //     <EuiFlexGroup>
+    //       <EuiFlexItem grow={1}>
+    //         <EuiSideNav
+    //           mobileTitle="Project Settings Menu"
+    //           toggleOpenOnMobile={toggleOpenOnMobile}
+    //           isOpenOnMobile={isSideNavOpenOnMobile}
+    //           items={nav}
+    //         />
+    //       </EuiFlexItem>
+    //       <EuiFlexItem grow={6}>
+    //         <EuiPageContent>
+    //           <Router primary={false}>
+    //             <Redirect from="/" to="user-roles" noThrow />
+    //             <UserRoleSetting path="/user-roles" />
+    //             <SecretSetting path="/secrets-management" />
+    //             <Redirect default from="any" to="/errors/404" noThrow />
+    //           </Router>
+    //         </EuiPageContent>
+    //       </EuiFlexItem>
+    //     </EuiFlexGroup>
+    //   </EuiPageBody>
+    // </EuiPage>
   );
 };
 

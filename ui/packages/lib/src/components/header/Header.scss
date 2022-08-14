@@ -1,10 +1,6 @@
 @import "@elastic/eui/src/themes/amsterdam/colors_light";
 @import "@elastic/eui/src/themes/amsterdam/globals";
 
-body {
-  @include euiHeaderAffordForFixed;
-}
-
 .euiHeader {
   .euiHeaderLogo.euiHeaderLogo__title {
     color: #1a1c21;
