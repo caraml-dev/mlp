@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
-import { replaceBreadcrumbs, useMlpApi } from "@gojek/mlp-ui";
+import React from "react";
+import { useMlpApi } from "@gojek/mlp-ui";
 import { EuiCallOut, EuiLoadingChart, EuiTextAlign } from "@elastic/eui";
-import { SettingsSection } from "./ProjectSetting";
 import SecretListTable from "./secret/SecretListTable";
 
 const SecretSetting = ({ projectId }) => {
@@ -9,16 +8,8 @@ const SecretSetting = ({ projectId }) => {
     `/projects/${projectId}/secrets`
   );
 
-  useEffect(() => {
-    replaceBreadcrumbs([
-      {
-        text: "Secrets Management"
-      }
-    ]);
-  }, [projectId]);
-
   return (
-    <SettingsSection title="Secrets">
+    <>
       {!isLoaded ? (
         <EuiTextAlign textAlign="center">
           <EuiLoadingChart size="xl" mono />
@@ -37,7 +28,7 @@ const SecretSetting = ({ projectId }) => {
           fetchUpdates={() => fetchSecrets()}
         />
       )}
-    </SettingsSection>
+    </>
   );
 };
 

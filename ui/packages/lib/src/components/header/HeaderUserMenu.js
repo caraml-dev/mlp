@@ -10,7 +10,6 @@ import {
   EuiContextMenuItem,
   EuiText,
   EuiTitle,
-  EuiSpacer,
   EuiPopover
 } from "@elastic/eui";
 import PropTypes from "prop-types";
@@ -46,12 +45,11 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
   return (
     <EuiPopover
       id="headerUserMenu"
-      ownFocus
       button={button}
       isOpen={isOpen}
       anchorPosition="downRight"
       closePopover={togglePopover}
-      panelPaddingSize="none">
+      panelPaddingSize="s">
       <EuiContextMenuPanel
         hasFocus={false}
         className="euiContextMenuPanel--headerUserMenu">
@@ -94,8 +92,6 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
           onClick={logout}>
           Log out
         </EuiContextMenuItem>
-
-        <EuiSpacer size="xs" />
       </EuiContextMenuPanel>
     </EuiPopover>
   );

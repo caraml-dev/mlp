@@ -88,8 +88,8 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
       aria-label="Main navigation"
       isOpen={navIsOpen}
       isDocked={navIsDocked}
-      showCloseButton={false}
       showButtonIfDocked={true}
+      closeButtonProps={{ style: { display: "none" } }}
       button={
         <EuiHeaderSectionItemButton
           aria-label="Toggle main navigation"

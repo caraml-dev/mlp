@@ -1,12 +1,5 @@
-import React, { Fragment, useContext } from "react";
-import {
-  EuiPage,
-  EuiPageBody,
-  EuiPageContent,
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiEmptyPrompt
-} from "@elastic/eui";
+import React, { useContext } from "react";
+import { EuiFlexGroup, EuiFlexItem, EuiPageTemplate } from "@elastic/eui";
 import { GoogleLogin } from "@react-oauth/google";
 import { Redirect } from "@reach/router";
 import { get } from "../utils";
@@ -25,25 +18,26 @@ export const Login = ({ location }) => {
   return isAuthenticated ? (
     <Redirect to={get(location, "state.referer") || "/"} noThrow />
   ) : (
-    <EuiPage className="eui-fullHeight">
-      <EuiPageBody>
-        <EuiPageContent verticalPosition="center" horizontalPosition="center">
-          <EuiEmptyPrompt
-            iconType="machineLearningApp"
-            title={<h2>Machine Learning Platform</h2>}
-            body={
-              <Fragment>
-                <p>Use your Google account to sign in</p>
-              </Fragment>
-            }
-          />
-          <EuiFlexGroup direction="column" alignItems="center">
+    <EuiPageTemplate>
+      <EuiPageTemplate.EmptyPrompt
+        iconType="machineLearningApp"
+        title={<h2>Machine Learning Platform</h2>}
+        body={<p>Use your Google account to sign in</p>}
+        actions={
+          <EuiFlexGroup
+            direction="column"
+            alignItems="center"
+            gutterSize="none">
             <EuiFlexItem grow={false} style={{ maxWidth: "200px" }}>
-              <GoogleLogin onSuccess={onLogin} onError={onFailure} />
+              <GoogleLogin
+                onSuccess={onLogin}
+                onError={onFailure}
+                useOneTap={true}
+              />
             </EuiFlexItem>
           </EuiFlexGroup>
-        </EuiPageContent>
-      </EuiPageBody>
-    </EuiPage>
+        }
+      />
+    </EuiPageTemplate>
   );
 };

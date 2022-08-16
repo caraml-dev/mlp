@@ -3,21 +3,20 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiLoadingContent,
-  EuiPage,
-  EuiPageBody,
-  EuiSpacer
+  EuiSpacer,
+  EuiPageTemplate
 } from "@elastic/eui";
 import { ApplicationsContext, CurrentProjectContext } from "@gojek/mlp-ui";
 import { Instances } from "./components/Instances";
-// import { InstancesSummary } from "./components/InstancesSummary";
 import { ProjectSummary } from "./components/ProjectSummary";
 import { Resources } from "./components/Resources";
 import { useMerlinApi } from "../../hooks/useMerlinApi";
 import { useTuringApi } from "../../hooks/useTuringApi";
-
-import "./components/ListGroup.scss";
 import { useFeastCoreApi } from "../../hooks/useFeastCoreApi";
 import { ComingSoonPanel } from "./components/ComingSoonPanel";
+
+import imageCharts from "../../images/charts.svg";
+import "./components/ListGroup.scss";
 
 const Project = () => {
   const { apps } = useContext(ApplicationsContext);
@@ -103,8 +102,8 @@ const Project = () => {
   ]);
 
   return (
-    <EuiPage>
-      <EuiPageBody>
+    <EuiPageTemplate panelled={false} restrictWidth="90%">
+      <EuiPageTemplate.Section>
         {apps && project ? (
           <>
             <EuiFlexGroup>
@@ -122,16 +121,18 @@ const Project = () => {
                 />
               </EuiFlexItem>
               <EuiFlexItem grow={3}>
-                {/* <InstancesSummary project={project} models={models} /> */}
-                <ComingSoonPanel title="Monthly Cost" iconType="visPie" />
+                <ComingSoonPanel
+                  title="Monthly Cost"
+                  layout="vertical"
+                  image={imageCharts}
+                />
               </EuiFlexItem>
-              <EuiFlexItem grow={1}></EuiFlexItem>
             </EuiFlexGroup>
 
             <EuiSpacer size="l" />
 
             <EuiFlexGroup>
-              <EuiFlexItem grow={6}>
+              <EuiFlexItem grow={true}>
                 <Instances
                   project={project}
                   feastStreamIngestionJobs={feastStreamIngestionJobs}
@@ -140,13 +141,12 @@ const Project = () => {
                   routers={routers}
                 />
               </EuiFlexItem>
-              <EuiFlexItem grow={4}></EuiFlexItem>
             </EuiFlexGroup>
 
             <EuiSpacer size="l" />
 
             <EuiFlexGroup>
-              <EuiFlexItem grow={5}>
+              <EuiFlexItem grow={4}>
                 <ComingSoonPanel
                   title="Health Monitoring"
                   iconType="monitoringApp"
@@ -155,14 +155,13 @@ const Project = () => {
               <EuiFlexItem grow={4}>
                 <ComingSoonPanel title="Error Summary" iconType="bug" />
               </EuiFlexItem>
-              <EuiFlexItem grow={1}></EuiFlexItem>
             </EuiFlexGroup>
           </>
         ) : (
           <EuiLoadingContent lines={5} />
         )}
-      </EuiPageBody>
-    </EuiPage>
+      </EuiPageTemplate.Section>
+    </EuiPageTemplate>
   );
 };
 
