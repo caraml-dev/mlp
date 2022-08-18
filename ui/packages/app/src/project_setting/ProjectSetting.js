@@ -38,6 +38,7 @@ const ProjectSetting = ({ "*": section, navigate }) => {
   return (
     <EuiPageTemplate>
       <EuiPageTemplate.Header
+        restrictWidth={false}
         iconType={(sections[section] || {}).iconType}
         pageTitle={(sections[section] || {}).name}
         bottomBorder={false}

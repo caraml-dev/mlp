@@ -38,7 +38,4 @@ const config = {
   TURING_UI_HOMEPAGE: getEnv("REACT_APP_TURING_UI_HOMEPAGE") || "/turing"
 };
 
-export default {
-  // Add common config values here
-  ...config
-};
+export default config;
