@@ -51,11 +51,14 @@ const SubmitUserRoleForm = ({ userRole, project, fetchUpdates, toggleAdd }) => {
     }
   }, [submissionResponse, fetchUpdates, toggleAdd, userRole]);
 
-  const onChange = field => {
-    return value => {
-      setRequest(r => ({ ...r, [field]: value }));
-    };
-  };
+  const onChange = useCallback(
+    field => {
+      return value => {
+        setRequest(r => ({ ...r, [field]: value }));
+      };
+    },
+    [setRequest]
+  );
 
   const [isValidUser, setValidUser] = useState(validateEmail(request.user));
 
@@ -70,7 +73,9 @@ const SubmitUserRoleForm = ({ userRole, project, fetchUpdates, toggleAdd }) => {
     });
   };
 
-  const onRolesChanges = useCallback(onChange("roles"), []);
+  const onRolesChanges = useCallback(role => onChange("roles")(role), [
+    onChange
+  ]);
 
   return (
     <EuiPanel paddingSize="m">

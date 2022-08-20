@@ -4,7 +4,10 @@ import App from "./App";
 import * as Sentry from "@sentry/browser";
 import * as serviceWorker from "./serviceWorker";
 import { sentryConfig } from "./config";
-import "./style.scss";
+
+// Styles
+import "@elastic/eui/dist/eui_theme_light.css";
+import "@gojek/mlp-ui/dist/index.css";
 
 Sentry.init(sentryConfig);
 
