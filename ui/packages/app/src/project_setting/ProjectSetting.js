@@ -1,9 +1,15 @@
 import React, { useState } from "react";
 import { EuiSideNav, EuiIcon, EuiPageTemplate } from "@elastic/eui";
 import { slugify } from "@gojek/mlp-ui/src/utils";
-import { Redirect, Router } from "@reach/router";
 import UserRoleSetting from "./UserRoleSetting";
 import SecretSetting from "./SecretSetting";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useParams
+} from "react-router-dom";
 
 const sections = {
   "user-roles": {
@@ -16,7 +22,10 @@ const sections = {
   }
 };
 
-const ProjectSetting = ({ "*": section, navigate }) => {
+const ProjectSetting = () => {
+  const { "*": section } = useParams();
+
+  const navigate = useNavigate();
   const [isSideNavOpenOnMobile, setSideNavOpenOnMobile] = useState(true);
   const toggleOpenOnMobile = () =>
     setSideNavOpenOnMobile(!isSideNavOpenOnMobile);
@@ -29,7 +38,7 @@ const ProjectSetting = ({ "*": section, navigate }) => {
       items: Object.entries(sections).map(([id, settingsItem]) => ({
         id: slugify(id),
         name: settingsItem.name,
-        onClick: () => navigate(`./${id}`),
+        onClick: () => navigate(`${id}`),
         isSelected: slugify(id) === section
       }))
     }
@@ -52,12 +61,15 @@ const ProjectSetting = ({ "*": section, navigate }) => {
         />
       </EuiPageTemplate.Sidebar>
       <EuiPageTemplate.Section restrictWidth="95%">
-        <Router primary={false}>
-          <Redirect from="/" to="user-roles" noThrow />
-          <UserRoleSetting path="/user-roles" />
-          <SecretSetting path="/secrets-management" />
-          <Redirect default from="any" to="/errors/404" noThrow />
-        </Router>
+        <Routes>
+          <Route index element={<Navigate to="user-roles" replace={true} />} />
+          <Route path="user-roles" element={<UserRoleSetting />} />
+          <Route path="secrets-management" element={<SecretSetting />} />
+          <Route
+            path="*"
+            element={<Navigate to="/pages/404" replace={true} />}
+          />
+        </Routes>
       </EuiPageTemplate.Section>
     </EuiPageTemplate>
   );

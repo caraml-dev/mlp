@@ -1,11 +1,11 @@
 import React from "react";
-import { EuiIcon, EuiLink, EuiText } from "@elastic/eui";
-// import { CollapsibleLabelsPanel } from "@gojek/mlp-ui";
+import { EuiIcon, EuiText } from "@elastic/eui";
 import { Panel } from "./Panel";
+import { Link } from "react-router-dom";
 
 const moment = require("moment");
 
-export const ProjectSummary = ({ project, environments }) => {
+export const ProjectSummary = ({ project }) => {
   const items = [
     {
       title: "Name",
@@ -30,11 +30,11 @@ export const ProjectSummary = ({ project, environments }) => {
   ];
 
   const actions = (
-    <EuiLink href={`/projects/${project.id}/settings`}>
+    <Link to={`settings`}>
       <EuiText size="s">
         <EuiIcon type="arrowRight" /> Go to Project Settings
       </EuiText>
-    </EuiLink>
+    </Link>
   );
 
   return (

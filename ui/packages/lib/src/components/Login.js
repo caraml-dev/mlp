@@ -1,23 +1,30 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { EuiFlexGroup, EuiFlexItem, EuiPageTemplate } from "@elastic/eui";
 import { GoogleLogin } from "@react-oauth/google";
-import { Redirect } from "@reach/router";
 import { get } from "../utils";
 import AuthContext from "../auth/context";
+import { useLocation, useNavigate } from "react-router-dom";
 
-export const Login = ({ location }) => {
+export const Login = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const {
     state: { isAuthenticated },
     onLogin
   } = useContext(AuthContext);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(get(location, "state.referer") || "/");
+    }
+  }, [isAuthenticated, location, navigate]);
+
   const onFailure = () => {
     console.log("Login Failed");
   };
 
-  return isAuthenticated ? (
-    <Redirect to={get(location, "state.referer") || "/"} noThrow />
-  ) : (
+  return (
     <EuiPageTemplate>
       <EuiPageTemplate.EmptyPrompt
         iconType="machineLearningApp"

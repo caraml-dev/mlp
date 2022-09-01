@@ -1,19 +1,14 @@
 import React, { useContext } from "react";
-import { EuiLoadingContent, EuiPage, EuiPageBody } from "@elastic/eui";
-import { CurrentProjectContext } from "@gojek/mlp-ui";
-import { Redirect } from "@reach/router";
+import { PagePlaceholder, ProjectsContext } from "@gojek/mlp-ui";
+import { Navigate } from "react-router-dom";
 
 const Home = () => {
-  const { projectId } = useContext(CurrentProjectContext);
+  const { currentProject } = useContext(ProjectsContext);
 
-  return projectId === null ? (
-    <EuiPage>
-      <EuiPageBody>
-        <EuiLoadingContent lines={5} />
-      </EuiPageBody>
-    </EuiPage>
+  return !currentProject ? (
+    <PagePlaceholder />
   ) : (
-    <Redirect to={`/projects/${projectId}`} noThrow />
+    <Navigate to={`/projects/${currentProject.id}`} replace={true} />
   );
 };
 

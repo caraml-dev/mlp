@@ -103,8 +103,7 @@ Context providers that supply config/data to children components:
 
 - [`MlpApiContextProvider`](./src/providers/api)
 - [`ApplicationsContextProvider`](./src/providers/application)
-- [`ProjectsContextProvider`](./src/providers/project/projectsContext.js)
-- [`CurrentProjectContextProvider`](./src/providers/project/currentProjectContext.js)
+- [`ProjectsContextProvider`](./src/providers/project)
 
 ---
 

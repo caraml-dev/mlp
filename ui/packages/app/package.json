@@ -1,30 +1,34 @@
 {
   "name": "mlp-ui",
-  "version": "1.5.5",
+  "version": "1.6.1",
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "@emotion/react": "^11.9.0",
     "@elastic/datemath": "^5.0.3",
-    "@elastic/eui": "64.0.0",
-    "@gojek/mlp-ui": "1.5.5",
-    "@reach/router": "1.3.4",
+    "@elastic/eui": "65.0.2",
+    "@emotion/react": "^11.9.0",
+    "@gojek/mlp-ui": "1.6.1",
     "@sentry/browser": "5.15.5",
     "moment": "^2.29.4",
     "object-assign-deep": "0.4.0",
+    "proper-url-join": "2.1.1",
     "query-string": "^7.0.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
+    "react-router-dom": "^6.3.0"
+  },
+  "devDependencies": {
+    "@craco/craco": "^6.4.5",
     "react-scripts": "^5.0.1"
   },
   "scripts": {
-    "build": "react-scripts build",
+    "build": "craco build",
     "postbuild": "mv build ../../build",
-    "eject": "react-scripts eject",
+    "eject": "craco eject",
     "lint": "eslint --max-warnings 0 src",
     "lint:fix": "eslint --fix src",
-    "start": "PORT=3001 react-scripts start",
-    "test": "react-scripts test"
+    "start": "craco start",
+    "test": "craco test"
   },
   "proxy": "http://localhost:8080/v1",
   "browserslist": {

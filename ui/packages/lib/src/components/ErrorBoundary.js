@@ -1,6 +1,5 @@
-import React, { Fragment } from "react";
-import { EuiButton, EuiEmptyPrompt } from "@elastic/eui";
-
+import React from "react";
+import { EuiButton, EuiPageTemplate } from "@elastic/eui";
 import * as Sentry from "@sentry/browser";
 
 export class ErrorBoundary extends React.Component {
@@ -24,31 +23,46 @@ export class ErrorBoundary extends React.Component {
 
   render() {
     return !!this.state.errorInfo ? (
-      <EuiEmptyPrompt
-        iconType="editorStrike"
-        title={<h2>Something Went Wrong</h2>}
-        body={
-          <Fragment>
-            <p>
-              Something wen't wrong with the UI, no worries, we will fix this as
-              soon possible
-            </p>
-            <p>Please report this to maintainer my friend</p>
-          </Fragment>
-        }
-        actions={
-          <EuiButton
-            color="primary"
-            fill
-            onClick={() =>
-              Sentry.showReportDialog({ eventId: this.state.eventId })
-            }>
-            Report Feedback
-          </EuiButton>
-        }
-      />
+      <EuiPageTemplate>
+        <EuiPageTemplate.EmptyPrompt
+          color="subdue"
+          iconType="editorStrike"
+          title={<h2>Something Went Wrong</h2>}
+          body={
+            <>
+              <p>
+                Something went wrong with the UI, no worries, we will fix
+                <br />
+                this as soon as possible
+              </p>
+              <p>Please report this to maintainer my friend</p>
+            </>
+          }
+          actions={
+            <EuiButton
+              color="primary"
+              fill
+              onClick={() =>
+                Sentry.showReportDialog({ eventId: this.state.eventId })
+              }>
+              Report Feedback
+            </EuiButton>
+          }
+        />
+      </EuiPageTemplate>
     ) : (
       this.props.children
     );
   }
 }
+
+export const ErrorBox = ({ error }) => {
+  const Error = () => {
+    throw error;
+  };
+  return (
+    <ErrorBoundary>
+      <Error />
+    </ErrorBoundary>
+  );
+};
