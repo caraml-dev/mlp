@@ -5,26 +5,23 @@ import { useMatch } from "react-router-dom";
 import urlJoin from "proper-url-join";
 
 const projectIdKey = "lastSelectedProjectId";
+
+const isInt = str => !isNaN(parseInt(str));
+
 const getSelectedProjectId = (projectId, projects) => {
-  if (!!projectId) {
-    localStorage.setItem(projectIdKey, projectId);
-    return projectId;
-  }
-
-  let lastSelectedProjectId = localStorage.getItem(projectIdKey);
-
-  if (localStorage.getItem(projectIdKey) === null) {
-    if (projects.length > 0) {
-      const selectedProject = projects.sort((a, b) =>
-        a.name.localeCompare(b.name)
-      )[0];
-      lastSelectedProjectId = selectedProject.id;
+  // If projectId is not a valid ID, read last selected projectId from the local storage
+  if (!isInt(projectId)) {
+    projectId = localStorage.getItem(projectIdKey);
+    // If local storage doesn't contain valid projectId, sort projects alphabetically
+    // and select ID of the first project from the list
+    if (!isInt(projectId)) {
+      projectId = projects.sort((a, b) => a.name.localeCompare(b.name))?.[0]
+        ?.id;
     }
   }
-  if (lastSelectedProjectId !== null) {
-    localStorage.setItem(projectIdKey, lastSelectedProjectId);
-  }
-  return lastSelectedProjectId;
+
+  localStorage.setItem(projectIdKey, projectId);
+  return projectId;
 };
 
 const Context = React.createContext({
