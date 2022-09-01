@@ -1,6 +1,8 @@
 import React from "react";
 
 const urlCache = new Set();
+
+// See: https://github.com/module-federation/module-federation-examples/blob/7fc92f8f7678a7af76f925b9d5d1d03eb472109e/advanced-api/dynamic-remotes/app1/src/App.js#L17-L61
 export const useDynamicScript = url => {
   const [ready, setReady] = React.useState(false);
   const [errorLoading, setErrorLoading] = React.useState(false);

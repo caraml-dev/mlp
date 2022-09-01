@@ -20,7 +20,7 @@
     "prettier": "prettier \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "lint": "yarn workspaces run lint",
     "wait-for-lib": "wait-on packages/lib/dist/index.js packages/lib/dist/index.es.js",
-    "start:app": "sleep 1; run-s wait-for-lib \"app start -- --port {1}\" --",
+    "start:app": "sleep 1; run-s wait-for-lib \"app start\"",
     "start:lib": "yarn lib start",
     "start": "run-p start:lib start:app",
     "version:app": "yarn lib version",

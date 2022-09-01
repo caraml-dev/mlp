@@ -3,6 +3,7 @@
 import React from "react";
 import { useDynamicScript } from "./useDynamicScript";
 
+// See: https://github.com/module-federation/module-federation-examples/blob/7fc92f8f7678a7af76f925b9d5d1d03eb472109e/advanced-api/dynamic-remotes/app1/src/App.js#L64-L84
 function loadComponent(scope, module) {
   return async () => {
     // Initializes the share scope. This fills it with known provided modules from this build and all remotes
