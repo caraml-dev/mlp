@@ -48,7 +48,7 @@
   },
   "peerDependencies": {
     "@emotion/react": "^11.9.0",
-    "@elastic/eui": "^65.0.2",
+    "@elastic/eui": "^66.0.0",
     "@sentry/browser": "5.15.5",
     "moment": "^2.29.4",
     "react": "^17.0.2",

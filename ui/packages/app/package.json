@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@elastic/datemath": "^5.0.3",
-    "@elastic/eui": "65.0.2",
+    "@elastic/eui": "66.0.0",
     "@emotion/react": "^11.9.0",
     "@gojek/mlp-ui": "1.6.1",
     "@sentry/browser": "5.15.5",
