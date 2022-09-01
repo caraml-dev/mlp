@@ -17,11 +17,11 @@ export const PrivateLayout = () => {
       <ApplicationsContextProvider>
         <ProjectsContextProvider>
           <ApplicationsContext.Consumer>
-            {({ currentApp = {} }) => (
+            {({ currentApp }) => (
               <Header
                 appIcon="graphApp"
                 onProjectSelect={pId =>
-                  navigate(urlJoin(currentApp.href, "projects", pId))
+                  navigate(urlJoin(currentApp?.href, "projects", pId))
                 }
                 docLinks={config.DOC_LINKS}
               />

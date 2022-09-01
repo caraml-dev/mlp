@@ -13,7 +13,7 @@ import {
   EuiTreeView
 } from "@elastic/eui";
 import { useToggle } from "../../hooks";
-import { get, slugify } from "../../utils";
+import { slugify } from "../../utils";
 import urlJoin from "proper-url-join";
 import { useNavigate } from "react-router-dom";
 import { ApplicationsContext, ProjectsContext } from "../../providers";
@@ -31,24 +31,23 @@ export const NavDrawer = ({ docLinks }) => {
     return apps.map(a => {
       const isAppActive = a === currentApp;
 
-      const children =
-        !!currentProject && get(a, "config.sections")
-          ? a.config.sections.map(s => ({
-              id: slugify(`${a.name}.${s.name}`),
-              label: s.name,
-              callback: () => {
-                const dest = urlJoin(
-                  a.href,
-                  "projects",
-                  currentProject.id,
-                  s.href
-                );
+      const children = !!currentProject
+        ? a?.config?.sections.map(s => ({
+            id: slugify(`${a.name}.${s.name}`),
+            label: s.name,
+            callback: () => {
+              const dest = urlJoin(
+                a.href,
+                "projects",
+                currentProject.id,
+                s.href
+              );
 
-                isAppActive ? navigate(dest) : (window.location.href = dest);
-              },
-              className: "euiTreeView__node---small---subsection"
-            }))
-          : undefined;
+              isAppActive ? navigate(dest) : (window.location.href = dest);
+            },
+            className: "euiTreeView__node---small---subsection"
+          }))
+        : undefined;
 
       return {
         id: slugify(a.name),

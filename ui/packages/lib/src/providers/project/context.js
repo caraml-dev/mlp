@@ -3,7 +3,6 @@ import { ApplicationsContext } from "../application";
 import { useMlpApi } from "../../hooks/useMlpApi";
 import { useMatch } from "react-router-dom";
 import urlJoin from "proper-url-join";
-import { get } from "../../utils";
 
 const projectIdKey = "lastSelectedProjectId";
 const getSelectedProjectId = (projectId, projects) => {
@@ -47,7 +46,7 @@ export const ProjectsContextProvider = ({ children }) => {
 
   const currentProject = useMemo(() => {
     const selectedProjectId = getSelectedProjectId(
-      get(projectIdMatch, "params.projectId"),
+      projectIdMatch?.params?.projectId,
       projects
     );
     return (projects || []).find(p => String(p.id) === selectedProjectId);

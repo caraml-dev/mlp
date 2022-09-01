@@ -143,12 +143,12 @@ const UserRoleListTable = ({ project, fetchUpdates }) => {
 export default UserRoleListTable;
 
 const formatUserRoles = project => {
-  const administrators = (project.administrators || []).map(user => ({
+  const administrators = project.administrators?.map(user => ({
     user: user,
     role: ADMINISTRATOR_ROLE
   }));
 
-  const readers = (project.readers || []).map(user => ({
+  const readers = project.readers?.map(user => ({
     user: user,
     role: READER_ROLE
   }));

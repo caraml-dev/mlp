@@ -19,7 +19,7 @@ export const AppRoutes = () => (
     </Route>
 
     {/* DEFAULT */}
-    <Route path="*" element={<Navigate to="/pages/404" />} />
+    <Route path="*" element={<Navigate to="/pages/404" replace={true} />} />
   </Routes>
 );
 

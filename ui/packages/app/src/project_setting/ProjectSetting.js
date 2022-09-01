@@ -48,8 +48,8 @@ const ProjectSetting = () => {
     <EuiPageTemplate>
       <EuiPageTemplate.Header
         restrictWidth={false}
-        iconType={(sections[section] || {}).iconType}
-        pageTitle={(sections[section] || {}).name}
+        iconType={sections[section]?.iconType}
+        pageTitle={sections[section]?.name}
         bottomBorder={false}
       />
       <EuiPageTemplate.Sidebar>

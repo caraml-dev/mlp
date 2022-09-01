@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 
 const ApplicationsContext = React.createContext({
   apps: [],
-  currentApp: {}
+  currentApp: undefined
 });
 
 export const ApplicationsContextProvider = ({ children }) => {
