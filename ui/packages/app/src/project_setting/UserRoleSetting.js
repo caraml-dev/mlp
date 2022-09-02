@@ -1,19 +1,19 @@
 import React, { useContext } from "react";
 import UserRoleListTable from "./user_role/UserRoleListTable";
-import { CurrentProjectContext } from "@gojek/mlp-ui";
+import { ProjectsContext } from "@gojek/mlp-ui";
 import { EuiLoadingChart, EuiTextAlign } from "@elastic/eui";
 
 const UserRoleSetting = () => {
-  const { project, refresh } = useContext(CurrentProjectContext);
+  const { currentProject, refresh } = useContext(ProjectsContext);
 
   return (
     <>
-      {!project ? (
+      {!currentProject ? (
         <EuiTextAlign textAlign="center">
           <EuiLoadingChart size="xl" mono />
         </EuiTextAlign>
       ) : (
-        <UserRoleListTable project={project} fetchUpdates={() => refresh()} />
+        <UserRoleListTable project={currentProject} fetchUpdates={refresh} />
       )}
     </>
   );

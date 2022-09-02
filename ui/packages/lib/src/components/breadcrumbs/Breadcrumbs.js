@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { EuiHeaderBreadcrumbs } from "@elastic/eui";
 import "./Breadcrumbs.scss";
 
-let replaceBreadcrumbsHandler;
+let replaceBreadcrumbsHandler = () => {};
 
 export const replaceBreadcrumbs = breadcrumbs => {
   replaceBreadcrumbsHandler(breadcrumbs);

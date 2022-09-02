@@ -50,9 +50,7 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
       anchorPosition="downRight"
       closePopover={togglePopover}
       panelPaddingSize="s">
-      <EuiContextMenuPanel
-        hasFocus={false}
-        className="euiContextMenuPanel--headerUserMenu">
+      <EuiContextMenuPanel className="euiContextMenuPanel--headerUserMenu">
         <EuiFlexGroup
           gutterSize="m"
           className="euiHeaderProfile"

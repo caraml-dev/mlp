@@ -1,6 +1,6 @@
 {
   "name": "@gojek/mlp-ui",
-  "version": "1.5.5",
+  "version": "1.6.1",
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -48,12 +48,12 @@
   },
   "peerDependencies": {
     "@emotion/react": "^11.9.0",
-    "@elastic/eui": "^64.0.0",
-    "@reach/router": "1.3.4",
+    "@elastic/eui": "^66.0.0",
     "@sentry/browser": "5.15.5",
     "moment": "^2.29.4",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "react-router-dom": "^6.3.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.18.10",

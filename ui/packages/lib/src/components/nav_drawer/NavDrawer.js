@@ -12,38 +12,42 @@ import {
   EuiSpacer,
   EuiTreeView
 } from "@elastic/eui";
-import ApplicationsContext from "../../providers/application/context";
-import { CurrentProjectContext } from "../../providers/project";
 import { useToggle } from "../../hooks";
-import { navigate } from "@reach/router";
-import { get, slugify } from "../../utils";
+import { slugify } from "../../utils";
 import urlJoin from "proper-url-join";
+import { useNavigate } from "react-router-dom";
+import { ApplicationsContext, ProjectsContext } from "../../providers";
 
 import "./NavDrawer.scss";
 
-export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
-  const { projectId } = useContext(CurrentProjectContext);
-  const { apps } = useContext(ApplicationsContext);
+export const NavDrawer = ({ docLinks }) => {
+  const navigate = useNavigate();
+  const { apps, currentApp } = useContext(ApplicationsContext);
+  const { currentProject } = useContext(ProjectsContext);
 
   const mlpLinks = useMemo(() => {
-    const isRootApplication = homeUrl === "/";
+    const isRootApplication = !currentApp;
 
     return apps.map(a => {
-      const isAppActive = a.href === homeUrl;
+      const isAppActive = a === currentApp;
 
-      const children =
-        !!projectId && get(a, "config.sections")
-          ? a.config.sections.map(s => ({
-              id: slugify(`${a.name}.${s.name}`),
-              label: s.name,
-              callback: () => {
-                const dest = urlJoin(a.href, "projects", projectId, s.href);
+      const children = !!currentProject
+        ? a?.config?.sections.map(s => ({
+            id: slugify(`${a.name}.${s.name}`),
+            label: s.name,
+            callback: () => {
+              const dest = urlJoin(
+                a.href,
+                "projects",
+                currentProject.id,
+                s.href
+              );
 
-                isAppActive ? navigate(dest) : (window.location.href = dest);
-              },
-              className: "euiTreeView__node---small---subsection"
-            }))
-          : undefined;
+              isAppActive ? navigate(dest) : (window.location.href = dest);
+            },
+            className: "euiTreeView__node---small---subsection"
+          }))
+        : undefined;
 
       return {
         id: slugify(a.name),
@@ -55,21 +59,21 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
           : "euiTreeView__node---small",
 
         callback: () =>
-          !children || !projectId
-            ? (window.location.href = !!projectId
-                ? urlJoin(a.href, "projects", projectId)
+          !children || !currentProject
+            ? (window.location.href = !!currentProject
+                ? urlJoin(a.href, "projects", currentProject.id)
                 : a.href)
             : {},
         children: children
       };
     });
-  }, [apps, homeUrl, projectId]);
+  }, [apps, currentApp, navigate, currentProject]);
 
   const adminLinks = [
     {
       label: "Project Settings",
       iconType: "managementApp",
-      href: `/projects/${projectId}/settings`
+      href: `/projects/${currentProject?.id}/settings`
     }
   ];
 
@@ -138,7 +142,7 @@ export const NavDrawer = ({ homeUrl = "/", docLinks }) => {
         </EuiFlexItem>
 
         <EuiFlexItem grow={false}>
-          {projectId && (
+          {!!currentProject && (
             <EuiCollapsibleNavGroup>
               <EuiListGroup
                 listItems={adminLinks}

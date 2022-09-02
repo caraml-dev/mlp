@@ -1,22 +1,19 @@
 import React, { useContext } from "react";
 import { EuiFlexGroup, EuiFlexItem, EuiPageTemplate } from "@elastic/eui";
 import { GoogleLogin } from "@react-oauth/google";
-import { Redirect } from "@reach/router";
-import { get } from "../utils";
 import AuthContext from "../auth/context";
+import { Navigate, useLocation } from "react-router-dom";
 
-export const Login = ({ location }) => {
-  const {
-    state: { isAuthenticated },
-    onLogin
-  } = useContext(AuthContext);
+export const Login = () => {
+  const location = useLocation();
+  const { state, onLogin } = useContext(AuthContext);
 
   const onFailure = () => {
     console.log("Login Failed");
   };
 
-  return isAuthenticated ? (
-    <Redirect to={get(location, "state.referer") || "/"} noThrow />
+  return !!state.isAuthenticated ? (
+    <Navigate to={location?.state?.referer || "/"} replace={true} />
   ) : (
     <EuiPageTemplate>
       <EuiPageTemplate.EmptyPrompt

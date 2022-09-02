@@ -1,5 +1,4 @@
 import React, { useContext, useState, useEffect } from "react";
-import { navigate } from "@reach/router";
 import {
   EuiPanel,
   EuiFormRow,
@@ -17,8 +16,11 @@ import { EmailTextArea } from "./EmailTextArea";
 import { Labels } from "./Labels";
 import { isDNS1123Label } from "../../validation/validation";
 import config from "../../config";
+import { useNavigate } from "react-router-dom";
 
 const ProjectForm = () => {
+  const navigate = useNavigate();
+
   const {
     project,
     setName,
@@ -45,7 +47,7 @@ const ProjectForm = () => {
   const [isValidProject, setIsValidProject] = useState(false);
   const onProjectChange = e => {
     const newValue = e.target.value;
-    var isValid = isDNS1123Label(newValue);
+    let isValid = isDNS1123Label(newValue);
     if (!isValid) {
       setProjectError(
         "Project name is invalid. It should contain only lowercase alphanumeric and dash ('-')"
@@ -58,7 +60,7 @@ const ProjectForm = () => {
   const [teamError, setTeamError] = useState("");
   const [isValidTeam, setIsValidTeam] = useState(false);
   const onTeamChange = selectedTeam => {
-    var isValid = isDNS1123Label(selectedTeam.label);
+    let isValid = isDNS1123Label(selectedTeam.label);
     if (!isValid) {
       setTeamError(
         "Team name is invalid. It should contain only lowercase alphanumeric and dash (-)"
@@ -71,7 +73,7 @@ const ProjectForm = () => {
   const [streamError, setStreamError] = useState("");
   const [isValidStream, setIsValidStream] = useState(false);
   const onStreamChange = selectedStream => {
-    var isValid = isDNS1123Label(selectedStream.label);
+    let isValid = isDNS1123Label(selectedStream.label);
     if (!isValid) {
       setStreamError(
         "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-)"
@@ -101,7 +103,7 @@ const ProjectForm = () => {
   const onValidReaderChange = valid => {
     setIsValidReader(valid);
     if (!valid) {
-      setReaderError("Invalid email addess");
+      setReaderError("Invalid email address");
     }
   };
 
@@ -156,7 +158,7 @@ const ProjectForm = () => {
       });
       navigate(`/projects/${submissionResponse.data.id}`);
     }
-  }, [submissionResponse]);
+  }, [navigate, submissionResponse]);
 
   return (
     <EuiForm>

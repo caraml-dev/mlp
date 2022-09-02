@@ -1,0 +1,1 @@
+export { FederatedComponent } from "./FederatedComponent";

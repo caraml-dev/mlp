@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import {
   EuiFlexGroup,
   EuiFlexItem,
@@ -6,7 +6,7 @@ import {
   EuiSpacer,
   EuiPageTemplate
 } from "@elastic/eui";
-import { ApplicationsContext, CurrentProjectContext } from "@gojek/mlp-ui";
+import { ApplicationsContext, ProjectsContext } from "@gojek/mlp-ui";
 import { Instances } from "./components/Instances";
 import { ProjectSummary } from "./components/ProjectSummary";
 import { Resources } from "./components/Resources";
@@ -20,100 +20,70 @@ import "./components/ListGroup.scss";
 
 const Project = () => {
   const { apps } = useContext(ApplicationsContext);
-  const { projectId, project } = useContext(CurrentProjectContext);
+  const { currentProject } = useContext(ProjectsContext);
 
-  const [projectName, setProjectName] = useState("");
-  useEffect(() => {
-    if (project) {
-      setProjectName(project.name);
-    }
-  }, [project]);
-
-  const [{ data: entities }, fetchEntities] = useFeastCoreApi(
-    `/entities?project=${projectName}`,
+  const [{ data: entities }] = useFeastCoreApi(
+    `/entities?project=${currentProject?.name}`,
     { method: "GET" },
     undefined,
-    false
+    !!currentProject
   );
-  const [{ data: featureTables }, fetchFeatureTables] = useFeastCoreApi(
-    `/tables?project=${projectName}`,
+  const [{ data: featureTables }] = useFeastCoreApi(
+    `/tables?project=${currentProject?.name}`,
     { method: "GET" },
     undefined,
-    false
+    !!currentProject
   );
-  const [
-    { data: feastStreamIngestionJobs },
-    fetchFeastStreamIngestionJobs
-  ] = useFeastCoreApi(
+  const [{ data: feastStreamIngestionJobs }] = useFeastCoreApi(
     `/jobs/ingestion/stream`,
-    { method: "POST" },
+    {
+      method: "POST",
+      body: JSON.stringify({
+        include_terminated: true,
+        project: (currentProject?.name || "").replace(/-/g, "_")
+      })
+    },
     undefined,
-    false
+    !!currentProject
   );
-  const [
-    { data: feastBatchIngestionJobs },
-    fetchFeastBatchIngestionJobs
-  ] = useFeastCoreApi(
+  const [{ data: feastBatchIngestionJobs }] = useFeastCoreApi(
     `/jobs/ingestion/batch`,
-    { method: "POST" },
+    {
+      method: "POST",
+      body: JSON.stringify({
+        include_terminated: true,
+        project: (currentProject?.name || "").replace(/-/g, "_")
+      })
+    },
     undefined,
-    false
+    !!currentProject
   );
-  const [{ data: models }, fetchModels] = useMerlinApi(
-    `/projects/${projectId}/models`,
+  const [{ data: models }] = useMerlinApi(
+    `/projects/${currentProject?.id}/models`,
     { method: "GET" },
     undefined,
-    false
+    !!currentProject
   );
-  const [{ data: routers }, fetchRouters] = useTuringApi(
-    `/projects/${projectId}/routers`,
+  const [{ data: routers }] = useTuringApi(
+    `/projects/${currentProject?.id}/routers`,
     { method: "GET" },
     undefined,
-    false
+    !!currentProject
   );
-
-  useEffect(() => {
-    if (projectName) {
-      fetchEntities();
-      fetchFeatureTables();
-      fetchFeastBatchIngestionJobs({
-        body: JSON.stringify({
-          include_terminated: true,
-          project: projectName.replace(/-/g, "_")
-        })
-      });
-      fetchFeastStreamIngestionJobs({
-        body: JSON.stringify({
-          include_terminated: true,
-          project: projectName.replace(/-/g, "_")
-        })
-      });
-      fetchModels();
-      fetchRouters();
-    }
-  }, [
-    projectName,
-    fetchEntities,
-    fetchFeatureTables,
-    fetchFeastStreamIngestionJobs,
-    fetchFeastBatchIngestionJobs,
-    fetchModels,
-    fetchRouters
-  ]);
 
   return (
     <EuiPageTemplate panelled={false} restrictWidth="90%">
       <EuiPageTemplate.Section>
-        {apps && project ? (
+        {apps && !!currentProject ? (
           <>
             <EuiFlexGroup>
               <EuiFlexItem grow={3}>
-                <ProjectSummary project={project} />
+                <ProjectSummary project={currentProject} />
               </EuiFlexItem>
               <EuiFlexItem grow={3}>
                 <Resources
                   apps={apps}
-                  project={project}
+                  project={currentProject}
                   entities={entities}
                   featureTables={featureTables}
                   models={models}
@@ -134,7 +104,7 @@ const Project = () => {
             <EuiFlexGroup>
               <EuiFlexItem grow={true}>
                 <Instances
-                  project={project}
+                  project={currentProject}
                   feastStreamIngestionJobs={feastStreamIngestionJobs}
                   feastBatchIngestionJobs={feastBatchIngestionJobs}
                   models={models}
