@@ -60,11 +60,12 @@ type UIConfig struct {
 }
 
 type DatabaseConfig struct {
-	Host     string `envconfig:"DATABASE_HOST" required:"true"`
-	Port     int    `envconfig:"DATABASE_PORT" default:"5432"`
-	User     string `envconfig:"DATABASE_USER" required:"true"`
-	Password string `envconfig:"DATABASE_PASSWORD" required:"true"`
-	Database string `envconfig:"DATABASE_NAME" default:"mlp"`
+	Host          string `envconfig:"DATABASE_HOST" required:"true"`
+	Port          int    `envconfig:"DATABASE_PORT" default:"5432"`
+	User          string `envconfig:"DATABASE_USER" required:"true"`
+	Password      string `envconfig:"DATABASE_PASSWORD" required:"true"`
+	Database      string `envconfig:"DATABASE_NAME" default:"mlp"`
+	MigrationPath string `envconfig:"DATABASE_MIGRATIONS_PATH" default:"file://db-migrations"`
 }
 
 type AuthorizationConfig struct {

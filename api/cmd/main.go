@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,6 +11,8 @@ import (
 
 	"github.com/gojek/mlp/api/pkg/authz/enforcer"
 	"github.com/gorilla/mux"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/heptiolabs/healthcheck"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -41,6 +44,8 @@ func main() {
 	}
 	db.LogMode(false)
 	defer db.Close()
+
+	runDBMigration(db, cfg.DbConfig.MigrationPath)
 
 	applicationService, _ := service.NewApplicationService(db)
 	authEnforcer, err := enforcer.NewEnforcerBuilder().
@@ -159,4 +164,19 @@ func (h uiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// otherwise, use http.FileServer to serve the static dir
 	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
+}
+
+func runDBMigration(db *gorm.DB, migrationPath string) {
+	driver, err := postgres.WithInstance(db.DB(), &postgres.Config{})
+	if err != nil {
+		panic(err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(migrationPath, "postgres", driver)
+	if err != nil {
+		panic(err)
+	}
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		panic(err)
+	}
 }

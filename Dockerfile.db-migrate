@@ -1,5 +1,0 @@
-# ============================================================
-# Copy db-migrations into image
-# ============================================================
-FROM migrate/migrate:v4.7.1
-COPY db-migrations /migrations
