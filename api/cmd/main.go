@@ -11,12 +11,11 @@ import (
 	"github.com/gojek/mlp/api/pkg/authz/enforcer"
 	"github.com/gorilla/mux"
 	"github.com/heptiolabs/healthcheck"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/rs/cors"
 
 	"github.com/gojek/mlp/api/api"
 	"github.com/gojek/mlp/api/config"
+	"github.com/gojek/mlp/api/database"
 	"github.com/gojek/mlp/api/log"
 	"github.com/gojek/mlp/api/service"
 	"github.com/gojek/mlp/api/storage"
@@ -28,22 +27,15 @@ func main() {
 		log.Panicf("Failed initializing config: %v", err)
 	}
 
-	db, err := gorm.Open(
-		"postgres",
-		fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=disable",
-			cfg.DbConfig.Host,
-			cfg.DbConfig.Port,
-			cfg.DbConfig.User,
-			cfg.DbConfig.Database,
-			cfg.DbConfig.Password))
+	// init db
+	db, err := database.InitDB(&cfg.DbConfig)
 	if err != nil {
 		panic(err)
 	}
-	db.LogMode(false)
 	defer db.Close()
 
 	applicationService, _ := service.NewApplicationService(db)
-	authEnforcer, err := enforcer.NewEnforcerBuilder().
+	authEnforcer, _ := enforcer.NewEnforcerBuilder().
 		URL(cfg.AuthorizationConfig.AuthorizationServerUrl).
 		Product("mlp").
 		Build()
@@ -69,7 +61,7 @@ func main() {
 	mount(router, "/v1", api.NewRouter(appCtx))
 
 	uiEnv := uiEnvHandler{
-		ApiURL:        cfg.APIHost,
+		APIURL:        cfg.APIHost,
 		OauthClientID: cfg.OauthClientID,
 		Environment:   cfg.Environment,
 		SentryDSN:     cfg.SentryDSN,
@@ -86,7 +78,7 @@ func main() {
 	router.PathPrefix("/").Handler(ui)
 
 	log.Infof("listening at port %d", cfg.Port)
-	http.ListenAndServe(cfg.ListenAddress(), cors.AllowAll().Handler(router))
+	_ = http.ListenAndServe(cfg.ListenAddress(), cors.AllowAll().Handler(router))
 }
 
 func mount(r *mux.Router, path string, handler http.Handler) {
@@ -99,7 +91,7 @@ func mount(r *mux.Router, path string, handler http.Handler) {
 }
 
 type uiEnvHandler struct {
-	ApiURL        string                `json:"REACT_APP_API_URL,omitempty"`
+	APIURL        string                `json:"REACT_APP_API_URL,omitempty"`
 	OauthClientID string                `json:"REACT_APP_OAUTH_CLIENT_ID,omitempty"`
 	Environment   string                `json:"REACT_APP_ENVIRONMENT,omitempty"`
 	SentryDSN     string                `json:"REACT_APP_SENTRY_DSN,omitempty"`

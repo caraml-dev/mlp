@@ -4,7 +4,6 @@
 
 bin/
 chart/
-db-migrations/
 ui/**/build/
 ui/**/node_modules/
 
