@@ -21,25 +21,6 @@ services:
       - POSTGRESQL_PASSWORD=mlp
       - POSTGRESQL_DATABASE=mlp
 
-  migrations:
-    depends_on:
-      - postgres
-    image: migrate/migrate:v4.7.1
-    volumes:
-      - ./db-migrations:/migrations
-    environment:
-      - POSTGRESQL_USERNAME=mlp
-      - POSTGRESQL_PASSWORD=mlp
-      - POSTGRESQL_DATABASE=mlp
-    entrypoint: ["sh", "-c"]
-    command:
-      - |
-        export CONNECTION_URL=postgres://$$POSTGRESQL_USERNAME:$$POSTGRESQL_PASSWORD@postgres:5432/$$POSTGRESQL_DATABASE?sslmode=disable
-        echo "Waiting for database..."
-        until `/migrate  -path=/migrations/ -database $$CONNECTION_URL up`; do
-          sleep 0.5
-        done
-        echo "Done!"
 
   keto:
     depends_on:

@@ -64,6 +64,7 @@ it-test-api-local: local-db start-keto
 	@echo "> API integration testing locally..."
 	@cd ${API_PATH} && go test -race -short -cover -coverprofile cover.out -tags integration_local ${API_ALL_PACKAGES}
 	@cd ${API_PATH} && go tool cover -func cover.out
+	@make stop-docker
 
 .PHONY: it-test-api-ci
 it-test-api-ci:
@@ -129,7 +130,7 @@ generate-client:
 .PHONY: local-db
 local-db:
 	@echo "> Starting up DB ..."
-	@docker-compose up -d postgres && docker-compose run migrations
+	@docker-compose up -d postgres
 
 .PHONY: start-keto
 start-keto:
