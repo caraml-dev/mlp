@@ -29,25 +29,29 @@ func InitDB(dbCfg *config.DatabaseConfig) (*gorm.DB, error) {
 			dbCfg.Database,
 			dbCfg.Password))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	db.LogMode(false)
-	runDBMigration(db, dbCfg.MigrationPath)
+	err = runDBMigration(db, dbCfg.MigrationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	return db, nil
 }
 
-func runDBMigration(db *gorm.DB, migrationPath string) {
+func runDBMigration(db *gorm.DB, migrationPath string) error {
 	driver, err := postgres.WithInstance(db.DB(), &postgres.Config{})
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(migrationPath, "postgres", driver)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		panic(err)
+		return err
 	}
+	return nil
 }
