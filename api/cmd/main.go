@@ -74,7 +74,7 @@ func main() {
 	mount(router, "/v1", api.NewRouter(appCtx))
 
 	uiEnv := uiEnvHandler{
-		ApiURL:        cfg.APIHost,
+		APIURL:        cfg.APIHost,
 		OauthClientID: cfg.OauthClientID,
 		Environment:   cfg.Environment,
 		SentryDSN:     cfg.SentryDSN,
@@ -104,7 +104,7 @@ func mount(r *mux.Router, path string, handler http.Handler) {
 }
 
 type uiEnvHandler struct {
-	ApiURL        string                `json:"REACT_APP_API_URL,omitempty"`
+	APIURL        string                `json:"REACT_APP_API_URL,omitempty"`
 	OauthClientID string                `json:"REACT_APP_OAUTH_CLIENT_ID,omitempty"`
 	Environment   string                `json:"REACT_APP_ENVIRONMENT,omitempty"`
 	SentryDSN     string                `json:"REACT_APP_SENTRY_DSN,omitempty"`
