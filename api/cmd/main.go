@@ -48,7 +48,7 @@ func main() {
 	runDBMigration(db, cfg.DbConfig.MigrationPath)
 
 	applicationService, _ := service.NewApplicationService(db)
-	authEnforcer, err := enforcer.NewEnforcerBuilder().
+	authEnforcer, _ := enforcer.NewEnforcerBuilder().
 		URL(cfg.AuthorizationConfig.AuthorizationServerUrl).
 		Product("mlp").
 		Build()
@@ -91,7 +91,7 @@ func main() {
 	router.PathPrefix("/").Handler(ui)
 
 	log.Infof("listening at port %d", cfg.Port)
-	http.ListenAndServe(cfg.ListenAddress(), cors.AllowAll().Handler(router))
+	_ = http.ListenAndServe(cfg.ListenAddress(), cors.AllowAll().Handler(router))
 }
 
 func mount(r *mux.Router, path string, handler http.Handler) {
