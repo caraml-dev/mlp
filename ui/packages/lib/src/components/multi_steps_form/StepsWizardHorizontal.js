@@ -32,8 +32,7 @@ export const StepsWizardHorizontal = ({
           <EuiStepsHorizontal
             steps={steps.map((step, idx) => ({
               title: step.title,
-              isSelected: idx === currentStep,
-              isComplete: idx < currentStep,
+              status: (idx === currentStep ? "current" : (idx < currentStep ? "complete" : "incomplete")),
               onClick: () => {
                 idx < currentStep && setCurrentStep(idx);
               }
