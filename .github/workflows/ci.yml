@@ -22,6 +22,7 @@ jobs:
         go-version: 1.16
     - name: Install dependencies
       run: |
+        npm install --global yarn
         make setup
         make init-dep
     - name: Lint source code
@@ -103,8 +104,12 @@ jobs:
     - uses: actions/setup-go@v2
       with:
         go-version: 1.16
-    - name: Setup cluster
-      run: kind create cluster --image=kindest/node:v1.17.11
+    - name: Set up Helm
+      uses: azure/setup-helm@v1
+      with:
+        version: v3.8.1
+    - name: Create kind cluster
+      uses: helm/kind-action@v1.3.0
     - name: Create mlp namespace
       run: kubectl create namespace mlp
     - name: Deploy MLP
