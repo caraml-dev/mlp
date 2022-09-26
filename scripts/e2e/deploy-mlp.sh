@@ -6,14 +6,16 @@ set -o pipefail
 
 CHART_PATH="$1"
 
-helm install mlp ${CHART_PATH} --namespace=mlp \
+helm repo add caraml https://caraml-dev.github.io/helm-charts/
+
+helm install mlp caraml/mlp --namespace=mlp \
     --values=${CHART_PATH}/values-e2e.yaml \
     --set mlp.image.tag=${GITHUB_REF#refs/*/} \
     --dry-run
 
-helm install mlp ${CHART_PATH} --namespace=mlp \
+helm install mlp caraml/mlp --namespace=mlp \
     --values=${CHART_PATH}/values-e2e.yaml \
-    --set mlp.image.tag=${GITHUB_REF#refs/*/} \
-    --wait --timeout=5m
+    --wait --timeout=5m \
+    --set mlp.image.tag=${GITHUB_REF#refs/*/}
 
 kubectl get all --namespace=mlp
