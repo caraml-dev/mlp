@@ -90,7 +90,7 @@ MLP requires Postgresql to run. We uses Docker to make the task of setting up Po
 make local-db
 ```
 
-The script runs Postgresql Docker container and do the database migration.
+The script runs Postgresql Docker container.
 
 ## Build a Docker image
 

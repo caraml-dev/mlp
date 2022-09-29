@@ -68,9 +68,6 @@ mlp:
     merlinHomepage: "http://merlin.dev"
     turingHomepage: "http://turing.dev"
 
-dbMigrations:
-  image:
-    tag: v4.7.1
 
 # If you would like to use an external postgres database, you can connect using these credentials
 externalPostgresql:
