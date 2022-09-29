@@ -3,7 +3,7 @@ mlp:
     pullPolicy: IfNotPresent
     registry: ghcr.io
     repository: gojek/mlp
-    tag: v1.5.4
+    tag: v1.7.2
   replicaCount: 1
 
   # Additional labels to apply on the pod level
