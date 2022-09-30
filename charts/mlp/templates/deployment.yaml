@@ -28,25 +28,6 @@ spec:
         {{- toYaml .Values.mlp.podLabels | nindent 8 }}
         {{- end }}
     spec:
-      initContainers:
-      - name: migrations
-        image: "migrate/migrate:{{ .Values.dbMigrations.image.tag }}"
-        command: ['/bin/sh', '-c']
-        args:
-          - |
-            /migrate \
-            -path /migrations \
-            -database postgres://{{ template "postgres.username" . }}:$(PG_PASSWORD)@{{ template "postgres.host" . }}:5432/{{ template "postgres.database" . }}?sslmode=disable \
-            up
-        env:
-          - name: PG_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-postgresql
-                key: postgresql-password
-        volumeMounts:
-          - mountPath: /migrations
-            name: db-migrations
       containers:
         - name: api
           image: "{{ .Values.mlp.image.registry }}/{{ .Values.mlp.image.repository }}:{{ .Values.mlp.image.tag }}"
@@ -141,10 +122,6 @@ spec:
               value: "{{ .Values.mlp.ui.merlinHomepage }}"
             - name: REACT_APP_TURING_UI_HOMEPAGE
               value: "{{ .Values.mlp.ui.turingHomepage }}"
-      volumes:
-      - name: db-migrations
-        configMap:
-          name: {{ .Release.Name }}-db-migrations
 
 {{- if .Values.mlp.imagePullSecrets }}
       imagePullSecrets:

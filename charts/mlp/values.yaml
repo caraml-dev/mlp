@@ -3,7 +3,7 @@ mlp:
     pullPolicy: IfNotPresent
     registry: ghcr.io
     repository: gojek/mlp
-    tag: v1.5.4
+    tag: v1.7.2
   replicaCount: 1
 
   # Additional labels to apply on the pod level
@@ -68,9 +68,6 @@ mlp:
     merlinHomepage: "http://merlin.dev"
     turingHomepage: "http://turing.dev"
 
-dbMigrations:
-  image:
-    tag: v4.7.1
 
 # If you would like to use an external postgres database, you can connect using these credentials
 externalPostgresql:
