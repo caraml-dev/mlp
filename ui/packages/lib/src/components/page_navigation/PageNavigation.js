@@ -88,7 +88,6 @@ const MoreActionsButton = ({ actions }) => {
       panelPaddingSize="none"
       anchorPosition="downRight">
       <EuiContextMenuPanel
-        hasFocus={false}
         className="euiContextPanel--moreActions"
         items={items}
       />
