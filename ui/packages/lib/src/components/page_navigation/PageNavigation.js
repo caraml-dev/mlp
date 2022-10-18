@@ -9,6 +9,7 @@ import {
   EuiTab,
   EuiTabs
 } from "@elastic/eui";
+import { useNavigate } from "react-router-dom";
 
 import "./PageNavigation.scss";
 
@@ -16,31 +17,33 @@ export const PageNavigation = ({
   tabs,
   actions,
   selectedTab = "",
-  ...props
-}) => (
-  <EuiFlexGroup direction="row" gutterSize="none">
-    <EuiFlexItem grow={true}>
-      <EuiTabs>
-        {tabs.map((tab, index) => (
-          <EuiTab
-            {...(tab.href
-              ? { href: tab.href, target: "_blank" }
-              : { onClick: () => props.navigate(`./${tab.id}`) })}
-            isSelected={selectedTab.startsWith(tab.id)}
-            disabled={tab.disabled}
-            key={index}>
-            {tab.name}
-          </EuiTab>
-        ))}
-      </EuiTabs>
-    </EuiFlexItem>
-    {actions && actions.length && (
-      <EuiFlexItem grow={false}>
-        <MoreActionsButton actions={actions} />
+}) => {
+  const navigate = useNavigate();
+  return (
+    <EuiFlexGroup direction="row" gutterSize="none">
+      <EuiFlexItem grow={true}>
+        <EuiTabs>
+          {tabs.map((tab, index) => (
+            <EuiTab
+              {...(tab.href
+                ? { href: tab.href, target: "_blank" }
+                : { onClick: () => navigate(`./${tab.id}`) })}
+              isSelected={selectedTab.startsWith(tab.id)}
+              disabled={tab.disabled}
+              key={index}>
+              {tab.name}
+            </EuiTab>
+          ))}
+        </EuiTabs>
       </EuiFlexItem>
-    )}
-  </EuiFlexGroup>
-);
+      {actions && actions.length && (
+        <EuiFlexItem grow={false}>
+          <MoreActionsButton actions={actions} />
+        </EuiFlexItem>
+      )}
+    </EuiFlexGroup>
+  )
+};
 
 const MoreActionsButton = ({ actions }) => {
   const [isPopoverOpen, setPopover] = useState(false);
@@ -85,7 +88,6 @@ const MoreActionsButton = ({ actions }) => {
       panelPaddingSize="none"
       anchorPosition="downRight">
       <EuiContextMenuPanel
-        hasFocus={false}
         className="euiContextPanel--moreActions"
         items={items}
       />
