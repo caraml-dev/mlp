@@ -8,6 +8,6 @@ SET config = '{
         {
             "name": "Standard Transformer Simulator",
             "href": "/simulator"
-        },
+        }
     ]
 }' WHERE name = 'Merlin';
