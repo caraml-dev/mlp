@@ -19,7 +19,6 @@ export const PrivateLayout = () => {
           <ApplicationsContext.Consumer>
             {({ currentApp }) => (
               <Header
-                appIcon="graphApp"
                 onProjectSelect={pId =>
                   navigate(urlJoin(currentApp?.href, "projects", pId))
                 }

@@ -15,7 +15,7 @@ all: setup init-dep lint test clean build run
 .PHONY: setup
 setup:
 	@echo "> Setting up tools ..."
-	@test -x ${GOPATH}/bin/golint || go get -u golang.org/x/lint/golint
+	@test -x $(shell go env GOPATH)/bin/golint || go install golang.org/x/lint/golint
 
 .PHONY: init-dep
 init-dep: init-dep-ui init-dep-api
