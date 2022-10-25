@@ -11,7 +11,7 @@ RUN yarn app build
 # ============================================================
 # Build stage 2: Build API
 # ============================================================
-FROM golang:1.16-alpine as go-builder
+FROM golang:1.18-alpine as go-builder
 WORKDIR /src/api
 COPY api api/
 COPY go.mod .
