@@ -6,7 +6,7 @@ SET config = '{
             "href": "/models"
         },
         {
-            "name": "Standard Transformer Simulator",
+            "name": "Transformer Simulator",
             "href": "/transformer-simulator"
         }
     ]
