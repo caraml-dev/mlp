@@ -9,7 +9,7 @@ const mockData = async file => {
   });
 };
 
-export default async (file, options) => {
+const fetchMockData = async (file, options) => {
   let blob = "mock-".concat(
     Math.random()
       .toString(36)
@@ -39,3 +39,5 @@ export default async (file, options) => {
       throw error;
     });
 };
+
+export default fetchMockData;

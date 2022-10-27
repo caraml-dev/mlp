@@ -4,7 +4,7 @@ import eslint from "@rollup/plugin-eslint";
 import sass from "rollup-plugin-sass";
 import peerDepsExternal from "rollup-plugin-peer-deps-external";
 import ignoreImport from "rollup-plugin-ignore-import";
-import nodeSass from "node-sass";
+import path from "path";
 
 import pkg from "./package.json";
 
@@ -33,12 +33,9 @@ export default {
     sass({
       output: true,
       options: {
-        includePaths: ["../../node_modules/"],
-        importer(path) {
-          return { file: path[0] !== "~" ? path : path.slice(1) };
-        }
-      },
-      runtime: nodeSass
+        quietDeps: true,
+        includePaths: [path.resolve(__dirname, "../../node_modules")]
+      }
     }),
     resolve(),
     babel({

@@ -1,94 +1,78 @@
-import React, { Fragment, useState } from "react";
-import {
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiIcon,
-  EuiPage,
-  EuiPageBody,
-  EuiPageContent,
-  EuiPageHeader,
-  EuiPageHeaderSection,
-  EuiSideNav,
-  EuiTitle
-} from "@elastic/eui";
+import React, { useState } from "react";
+import { EuiSideNav, EuiIcon, EuiPageTemplate } from "@elastic/eui";
 import { slugify } from "@gojek/mlp-ui/src/utils";
-import { Redirect, Router } from "@reach/router";
 import UserRoleSetting from "./UserRoleSetting";
 import SecretSetting from "./SecretSetting";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useParams
+} from "react-router-dom";
 
-const sections = [
-  {
-    id: "user-roles",
+const sections = {
+  "user-roles": {
+    iconType: "user",
     name: "User Roles"
   },
-  {
-    id: "secrets-management",
+  "secrets-management": {
+    iconType: "lock",
     name: "Secrets Management"
   }
-];
+};
 
-const ProjectSetting = ({ "*": section, navigate }) => {
+const ProjectSetting = () => {
+  const { "*": section } = useParams();
+
+  const navigate = useNavigate();
   const [isSideNavOpenOnMobile, setSideNavOpenOnMobile] = useState(true);
   const toggleOpenOnMobile = () =>
     setSideNavOpenOnMobile(!isSideNavOpenOnMobile);
 
   const nav = [
     {
-      name: "Settings",
+      name: "Project Settings",
+      icon: <EuiIcon type="gear" />,
       id: "settings",
-      items: sections.map(settingsItem => ({
-        id: settingsItem.id,
+      items: Object.entries(sections).map(([id, settingsItem]) => ({
+        id: slugify(id),
         name: settingsItem.name,
-        onClick: () => navigate(`./${settingsItem.id}`),
-        isSelected: slugify(settingsItem.id) === section
+        onClick: () => navigate(`${id}`),
+        isSelected: slugify(id) === section
       }))
     }
   ];
 
   return (
-    <EuiPage>
-      <EuiPageBody>
-        <EuiPageHeader>
-          <EuiPageHeaderSection>
-            <EuiTitle size="l">
-              <h1>
-                <EuiIcon type="gear" size="xl" /> Project Settings
-              </h1>
-            </EuiTitle>
-          </EuiPageHeaderSection>
-        </EuiPageHeader>
-        <EuiFlexGroup>
-          <EuiFlexItem grow={1}>
-            <EuiSideNav
-              mobileTitle="Project Settings Menu"
-              toggleOpenOnMobile={toggleOpenOnMobile}
-              isOpenOnMobile={isSideNavOpenOnMobile}
-              items={nav}
-            />
-          </EuiFlexItem>
-          <EuiFlexItem grow={6}>
-            <EuiPageContent>
-              <Router primary={false}>
-                <Redirect from="/" to="user-roles" noThrow />
-                <UserRoleSetting path="/user-roles" />
-                <SecretSetting path="/secrets-management" />
-                <Redirect default from="any" to="/errors/404" noThrow />
-              </Router>
-            </EuiPageContent>
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </EuiPageBody>
-    </EuiPage>
+    <EuiPageTemplate>
+      <EuiPageTemplate.Header
+        restrictWidth={false}
+        iconType={sections[section]?.iconType}
+        pageTitle={sections[section]?.name}
+        bottomBorder={false}
+      />
+      <EuiPageTemplate.Sidebar>
+        <EuiSideNav
+          mobileTitle="Project Settings Menu"
+          toggleOpenOnMobile={toggleOpenOnMobile}
+          isOpenOnMobile={isSideNavOpenOnMobile}
+          items={nav}
+        />
+      </EuiPageTemplate.Sidebar>
+      <EuiPageTemplate.Section restrictWidth="95%">
+        <Routes>
+          <Route index element={<Navigate to="user-roles" replace={true} />} />
+          <Route path="user-roles" element={<UserRoleSetting />} />
+          <Route path="secrets-management" element={<SecretSetting />} />
+          <Route
+            path="*"
+            element={<Navigate to="/pages/404" replace={true} />}
+          />
+        </Routes>
+      </EuiPageTemplate.Section>
+    </EuiPageTemplate>
   );
 };
 
 export default ProjectSetting;
-
-export const SettingsSection = ({ title, children }) => (
-  <Fragment>
-    <EuiTitle size="m">
-      <h3>{title}</h3>
-    </EuiTitle>
-    {children}
-  </Fragment>
-);

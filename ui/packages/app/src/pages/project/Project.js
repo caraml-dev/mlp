@@ -1,101 +1,89 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiLoadingContent,
-  EuiPage,
-  EuiPageBody,
-  EuiSpacer
+  EuiSpacer,
+  EuiPageTemplate
 } from "@elastic/eui";
-import { ApplicationsContext, CurrentProjectContext } from "@gojek/mlp-ui";
+import { ApplicationsContext, ProjectsContext } from "@gojek/mlp-ui";
 import { Instances } from "./components/Instances";
-// import { InstancesSummary } from "./components/InstancesSummary";
 import { ProjectSummary } from "./components/ProjectSummary";
 import { Resources } from "./components/Resources";
 import { useMerlinApi } from "../../hooks/useMerlinApi";
 import { useTuringApi } from "../../hooks/useTuringApi";
-
-import "./components/ListGroup.scss";
 import { useFeastCoreApi } from "../../hooks/useFeastCoreApi";
 import { ComingSoonPanel } from "./components/ComingSoonPanel";
 
+import imageCharts from "../../images/charts.svg";
+import "./components/ListGroup.scss";
+
 const Project = () => {
   const { apps } = useContext(ApplicationsContext);
-  const { projectId, project } = useContext(CurrentProjectContext);
+  const { currentProject } = useContext(ProjectsContext);
 
-  const [{ data: entities }, fetchEntities] = useFeastCoreApi(
-    `/feast.core.CoreService/ListEntities`,
-    { method: "POST" },
-    undefined,
-    false
-  );
-  const [{ data: featureTables }, fetchFeatureTables] = useFeastCoreApi(
-    `/feast.core.CoreService/ListFeatureTables`,
-    { method: "POST" },
-    undefined,
-    false
-  );
-  const [
-    { data: feastIngestionJobs },
-    fetchFeastIngestionJobs
-  ] = useFeastCoreApi(
-    `/feast_spark.api.JobService/ListJobs`,
-    { method: "POST" },
-    undefined,
-    false
-  );
-  const [{ data: models }, fetchModels] = useMerlinApi(
-    `/projects/${projectId}/models`,
+  const [{ data: entities }] = useFeastCoreApi(
+    `/entities?project=${currentProject?.name}`,
     { method: "GET" },
     undefined,
-    false
+    !!currentProject
   );
-  const [{ data: routers }, fetchRouters] = useTuringApi(
-    `/projects/${projectId}/routers`,
+  const [{ data: featureTables }] = useFeastCoreApi(
+    `/tables?project=${currentProject?.name}`,
     { method: "GET" },
     undefined,
-    false
+    !!currentProject
   );
-
-  useEffect(() => {
-    if (project) {
-      fetchEntities({
-        body: JSON.stringify({ filter: { project: project.name } })
-      });
-      fetchFeatureTables({
-        body: JSON.stringify({ filter: { project: project.name } })
-      });
-      fetchFeastIngestionJobs({
-        body: JSON.stringify({
-          include_terminated: true,
-          project: project.name.replace(/-/g, "_")
-        })
-      });
-      fetchModels();
-      fetchRouters();
-    }
-  }, [
-    project,
-    fetchEntities,
-    fetchFeatureTables,
-    fetchFeastIngestionJobs,
-    fetchModels,
-    fetchRouters
-  ]);
+  const [{ data: feastStreamIngestionJobs }] = useFeastCoreApi(
+    `/jobs/ingestion/stream`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        include_terminated: true,
+        project: (currentProject?.name || "").replace(/-/g, "_")
+      })
+    },
+    undefined,
+    !!currentProject
+  );
+  const [{ data: feastBatchIngestionJobs }] = useFeastCoreApi(
+    `/jobs/ingestion/batch`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        include_terminated: true,
+        project: (currentProject?.name || "").replace(/-/g, "_")
+      })
+    },
+    undefined,
+    !!currentProject
+  );
+  const [{ data: models }] = useMerlinApi(
+    `/projects/${currentProject?.id}/models`,
+    { method: "GET" },
+    undefined,
+    !!currentProject
+  );
+  const [{ data: routers }] = useTuringApi(
+    `/projects/${currentProject?.id}/routers`,
+    { method: "GET" },
+    undefined,
+    !!currentProject
+  );
 
   return (
-    <EuiPage>
-      <EuiPageBody>
-        {apps && project ? (
+    <EuiPageTemplate panelled={false} restrictWidth="90%">
+      <EuiPageTemplate.Section>
+        {apps && !!currentProject ? (
           <>
             <EuiFlexGroup>
               <EuiFlexItem grow={3}>
-                <ProjectSummary project={project} />
+                <ProjectSummary project={currentProject} />
               </EuiFlexItem>
               <EuiFlexItem grow={3}>
                 <Resources
                   apps={apps}
-                  project={project}
+                  project={currentProject}
                   entities={entities}
                   featureTables={featureTables}
                   models={models}
@@ -103,30 +91,32 @@ const Project = () => {
                 />
               </EuiFlexItem>
               <EuiFlexItem grow={3}>
-                {/* <InstancesSummary project={project} models={models} /> */}
-                <ComingSoonPanel title="Monthly Cost" iconType="visPie" />
+                <ComingSoonPanel
+                  title="Monthly Cost"
+                  layout="vertical"
+                  image={imageCharts}
+                />
               </EuiFlexItem>
-              <EuiFlexItem grow={1}></EuiFlexItem>
             </EuiFlexGroup>
 
             <EuiSpacer size="l" />
 
             <EuiFlexGroup>
-              <EuiFlexItem grow={6}>
+              <EuiFlexItem grow={true}>
                 <Instances
-                  project={project}
-                  feastIngestionJobs={feastIngestionJobs}
+                  project={currentProject}
+                  feastStreamIngestionJobs={feastStreamIngestionJobs}
+                  feastBatchIngestionJobs={feastBatchIngestionJobs}
                   models={models}
                   routers={routers}
                 />
               </EuiFlexItem>
-              <EuiFlexItem grow={4}></EuiFlexItem>
             </EuiFlexGroup>
 
             <EuiSpacer size="l" />
 
             <EuiFlexGroup>
-              <EuiFlexItem grow={5}>
+              <EuiFlexItem grow={4}>
                 <ComingSoonPanel
                   title="Health Monitoring"
                   iconType="monitoringApp"
@@ -135,14 +125,13 @@ const Project = () => {
               <EuiFlexItem grow={4}>
                 <ComingSoonPanel title="Error Summary" iconType="bug" />
               </EuiFlexItem>
-              <EuiFlexItem grow={1}></EuiFlexItem>
             </EuiFlexGroup>
           </>
         ) : (
           <EuiLoadingContent lines={5} />
         )}
-      </EuiPageBody>
-    </EuiPage>
+      </EuiPageTemplate.Section>
+    </EuiPageTemplate>
   );
 };
 

@@ -11,9 +11,9 @@ const argumentsReducer = (state, action) => {
   const updated = action.value;
   return !isStringifyEqual(previous, updated)
     ? {
-      ...state,
-      [action.name]: updated
-    }
+        ...state,
+        [action.name]: updated
+      }
     : state;
 };
 
@@ -94,25 +94,25 @@ export const useApi = (
 
       const apiOptions = !!options
         ? {
-          ...args.options,
-          ...options
-        }
+            ...args.options,
+            ...options
+          }
         : args.options;
 
       dispatch({ type: "FETCH_INIT" });
       const promise = (apiOptions.useMockData && apiOptions.mock
         ? fetchMockData(apiOptions.mock, apiOptions)
         : fetchJson(
-          queryString.stringifyUrl({
-            url: urlJoin(apiOptions.baseApiUrl, endpoint),
-            // query params supplied via `apiOptions` have a higher priority
-            // and will override query param with the same name if it is
-            // present in the `endpoint`
-            query: apiOptions.query
-          }),
-          args.authCtx,
-          apiOptions
-        )
+            queryString.stringifyUrl({
+              url: urlJoin(apiOptions.baseApiUrl, endpoint),
+              // query params supplied via `apiOptions` have a higher priority
+              // and will override query param with the same name if it is
+              // present in the `endpoint`
+              query: apiOptions.query
+            }),
+            args.authCtx,
+            apiOptions
+          )
       )
         .then(result => {
           if (!didCancel)
@@ -130,7 +130,7 @@ export const useApi = (
         cancel: () => {
           didCancel = true;
         },
-        promise: promise,
+        promise: promise
       };
     },
     [args, endpoint]

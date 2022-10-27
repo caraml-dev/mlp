@@ -39,22 +39,20 @@ const fetchData = async (url, authCtx, options) => {
   if (typeof authCtx !== "undefined") {
     optionsWithAuth.headers = {
       ...options.headers,
-      Authorization: `Bearer ${authCtx.state.accessToken}`
+      Authorization: `Bearer ${authCtx.state.jwt}`
     };
   }
-  return fetchWithTimeout(url, optionsWithAuth, options.timeout).then(
-    handleHttpStatus(authCtx)
-  );
-};
-
-export default async (url, authCtx, options = {}) => {
-  return fetchData(url, authCtx, options)
+  return fetchWithTimeout(url, optionsWithAuth, options.timeout)
+    .then(handleHttpStatus(authCtx))
     .then(response =>
       parseJson(response, !!options.parseBigInt).then(result => {
-        var headers = {};
-        for (var pair of response.headers.entries()) {
-          headers[pair[0]] = pair[1];
-        }
+        const headers = Array.from(response.headers.entries()).reduce(
+          (acc, [header, value]) => {
+            acc[header] = value;
+            return acc;
+          },
+          {}
+        );
         return { body: result, headers: headers };
       })
     )
@@ -82,3 +80,5 @@ export default async (url, authCtx, options = {}) => {
       throw error;
     });
 };
+
+export default fetchData;

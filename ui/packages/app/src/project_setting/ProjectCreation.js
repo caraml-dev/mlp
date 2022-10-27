@@ -1,20 +1,22 @@
-import React, { Fragment } from "react";
-import { EuiFlexGroup, EuiFlexItem, EuiSpacer } from "@elastic/eui";
+import React from "react";
 import ProjectForm from "./form/ProjectForm";
 import { ProjectFormContextProvider } from "./form/context";
 import { Project } from "./form/project";
+import { EuiPageTemplate } from "@elastic/eui";
 
 export const ProjectCreation = () => {
   return (
-    <Fragment>
-      <EuiFlexGroup justifyContent="spaceAround">
-        <EuiFlexItem style={{ maxWidth: 720 }}>
-          <EuiSpacer />
-          <ProjectFormContextProvider project={new Project()}>
-            <ProjectForm />
-          </ProjectFormContextProvider>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-    </Fragment>
+    <EuiPageTemplate restrictWidth={720} panelled={false}>
+      <EuiPageTemplate.Header
+        bottomBorder={false}
+        iconType="folderClosed"
+        pageTitle="Create New Project"
+      />
+      <EuiPageTemplate.Section paddingSize="none">
+        <ProjectFormContextProvider project={new Project()}>
+          <ProjectForm />
+        </ProjectFormContextProvider>
+      </EuiPageTemplate.Section>
+    </EuiPageTemplate>
   );
 };

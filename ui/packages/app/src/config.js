@@ -27,9 +27,9 @@ const config = {
     }
   ],
 
-  FEAST_CORE_API: getEnv("REACT_APP_FEAST_CORE_API"),
-  MERLIN_API: getEnv("REACT_APP_MERLIN_API"),
-  TURING_API: getEnv("REACT_APP_TURING_API"),
+  FEAST_CORE_API: getEnv("REACT_APP_FEAST_CORE_API"), // ${MLP_HOST}/feast/api
+  MERLIN_API: getEnv("REACT_APP_MERLIN_API"), // ${MLP_HOST}/api/merlin/v1
+  TURING_API: getEnv("REACT_APP_TURING_API"), // ${MLP_HOST}/api/turing/v1
 
   CLOCKWORK_UI_HOMEPAGE: getEnv("REACT_APP_CLOCKWORK_UI_HOMEPAGE"),
   FEAST_UI_HOMEPAGE: getEnv("REACT_APP_FEAST_UI_HOMEPAGE") || "/feast",
@@ -38,7 +38,4 @@ const config = {
   TURING_UI_HOMEPAGE: getEnv("REACT_APP_TURING_UI_HOMEPAGE") || "/turing"
 };
 
-export default {
-  // Add common config values here
-  ...config
-};
+export default config;

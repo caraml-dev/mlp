@@ -103,8 +103,7 @@ Context providers that supply config/data to children components:
 
 - [`MlpApiContextProvider`](./src/providers/api)
 - [`ApplicationsContextProvider`](./src/providers/application)
-- [`ProjectsContextProvider`](./src/providers/project/projectsContext.js)
-- [`CurrentProjectContextProvider`](./src/providers/project/currentProjectContext.js)
+- [`ProjectsContextProvider`](./src/providers/project)
 
 ---
 
@@ -159,7 +158,7 @@ yarn link react-dom
 When you no longer want to have a local link of `@gojek/mlp-ui` and want to resolve the library from the npm registry, run:
 
 ```shell script
-cd </path/to/mlp-iu/packages/lib>
+cd </path/to/mlp-ui/packages/lib>
 
 yarn run unlink
 ```

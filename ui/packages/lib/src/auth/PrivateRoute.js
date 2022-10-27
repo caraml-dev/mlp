@@ -1,27 +1,26 @@
-import React, { useContext, useMemo } from "react";
+import React, { useContext } from "react";
 import PropTypes from "prop-types";
 import AuthContext from "./context";
-import { StatefulRedirect } from "../components";
+import { Navigate, useLocation } from "react-router-dom";
 
-export const PrivateRoute = ({ redirectTo = "/login", render, ...props }) => {
+export const PrivateRoute = ({ redirectTo = "/login", children }) => {
+  const location = useLocation();
+
   const {
     state: { isAuthenticated }
   } = useContext(AuthContext);
 
-  const referer = useMemo(
-    () => props.location.pathname + props.location.search,
-    [props.location.pathname, props.location.search]
-  );
-
   return isAuthenticated ? (
-    render(props)
+    children
   ) : (
-    <StatefulRedirect to={redirectTo} state={{ referer: referer }} />
+    <Navigate
+      to={redirectTo}
+      state={{ referer: location.pathname + location.search }}
+      replace={true}
+    />
   );
 };
 
 PrivateRoute.propTypes = {
-  path: PropTypes.string.isRequired,
-  redirectTo: PropTypes.string,
-  render: PropTypes.func.isRequired
+  redirectTo: PropTypes.string
 };

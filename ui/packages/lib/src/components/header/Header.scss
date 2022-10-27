@@ -1,6 +1,10 @@
-.header-title {
-  padding: 10px;
-  h4 {
-    font-weight: 480;
+@import "@elastic/eui/src/themes/amsterdam/colors_light";
+@import "@elastic/eui/src/themes/amsterdam/globals";
+
+.euiHeader {
+  .euiHeaderLogo.euiHeaderLogo__title {
+    color: #1a1c21;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 }

@@ -1,55 +1,40 @@
-import React, { Fragment, useContext } from "react";
-import {
-  EuiPage,
-  EuiPageBody,
-  EuiPageContent,
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiEmptyPrompt
-} from "@elastic/eui";
-import { GoogleLogin } from "react-google-login";
-import { Redirect } from "@reach/router";
-import { get } from "../utils";
+import React, { useContext } from "react";
+import { EuiFlexGroup, EuiFlexItem, EuiPageTemplate } from "@elastic/eui";
+import { GoogleLogin } from "@react-oauth/google";
 import AuthContext from "../auth/context";
+import { Navigate, useLocation } from "react-router-dom";
 
-export const Login = ({ location }) => {
-  const {
-    state: { isAuthenticated },
-    clientId,
-    onLogin
-  } = useContext(AuthContext);
+export const Login = () => {
+  const location = useLocation();
+  const { state, onLogin } = useContext(AuthContext);
 
-  const onFailure = response => {
-    console.log(response);
+  const onFailure = () => {
+    console.log("Login Failed");
   };
 
-  return isAuthenticated ? (
-    <Redirect to={get(location, "state.referer") || "/"} noThrow />
+  return !!state.isAuthenticated ? (
+    <Navigate to={location?.state?.referer || "/"} replace={true} />
   ) : (
-    <EuiPage className="eui-fullHeight">
-      <EuiPageBody>
-        <EuiPageContent verticalPosition="center" horizontalPosition="center">
-          <EuiEmptyPrompt
-            iconType="machineLearningApp"
-            title={<h2>Machine Learning Platform</h2>}
-            body={
-              <Fragment>
-                <p>Use your Google account to sign in</p>
-              </Fragment>
-            }
-          />
-          <EuiFlexGroup direction="column" alignItems="center">
+    <EuiPageTemplate>
+      <EuiPageTemplate.EmptyPrompt
+        iconType="machineLearningApp"
+        title={<h2>Machine Learning Platform</h2>}
+        body={<p>Use your Google account to sign in</p>}
+        actions={
+          <EuiFlexGroup
+            direction="column"
+            alignItems="center"
+            gutterSize="none">
             <EuiFlexItem grow={false} style={{ maxWidth: "200px" }}>
               <GoogleLogin
-                clientId={clientId}
-                buttonText="Login with Google"
                 onSuccess={onLogin}
-                onFailure={onFailure}
+                onError={onFailure}
+                useOneTap={true}
               />
             </EuiFlexItem>
           </EuiFlexGroup>
-        </EuiPageContent>
-      </EuiPageBody>
-    </EuiPage>
+        }
+      />
+    </EuiPageTemplate>
   );
 };

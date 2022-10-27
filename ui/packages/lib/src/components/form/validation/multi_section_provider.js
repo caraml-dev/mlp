@@ -16,16 +16,16 @@ const debouncedValidate = debounce(
       zip(schemas, contexts).map(([schema, ctx]) => {
         return !!schema
           ? new Promise((resolve, reject) => {
-            schema
-              .validate(formData, {
-                abortEarly: false,
-                context: ctx,
-              })
-              .then(
-                () => resolve({}),
-                (err) => resolve(extractErrors(err))
-              );
-          })
+              schema
+                .validate(formData, {
+                  abortEarly: false,
+                  context: ctx
+                })
+                .then(
+                  () => resolve({}),
+                  err => resolve(extractErrors(err))
+                );
+            })
           : Promise.resolve({});
       })
     )
@@ -34,7 +34,6 @@ const debouncedValidate = debounce(
   },
   DEBOUNCE_INTERVAL_MS
 );
-
 
 export const MultiSectionFormValidationContextProvider = ({
   schemas,
@@ -57,13 +56,13 @@ export const MultiSectionFormValidationContextProvider = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState([]);
 
-  const isValid = (errors) =>
+  const isValid = errors =>
     errors.reduce(
       (isValid, errors) => isValid && !Object.keys(errors).length,
       true
     );
 
-  const onStartSubmitting = (event) => {
+  const onStartSubmitting = event => {
     event && event.preventDefault();
     setIsTouched(true);
     setIsSubmitting(true);
@@ -76,9 +75,9 @@ export const MultiSectionFormValidationContextProvider = ({
     // If the onSubmit was defined as a lazy Promise, we must chain the reset action to the Promise.
     // This will ensure that downstream actions (such as re-enabling the Submit button) are paused
     // until we have a success/failure response from the onSubmit call.
-    Promise
-      .resolve(onSubmit())
-      .finally(() => { setIsSubmitting(false); })
+    Promise.resolve(onSubmit()).finally(() => {
+      setIsSubmitting(false);
+    });
   }, [onSubmit]);
 
   useEffect(() => {

@@ -1,40 +1,54 @@
 import React, { useEffect, useState } from "react";
 import { EuiInMemoryTable } from "@elastic/eui";
 
-export const FeastJobsTable = ({ project, feastIngestionJobs }) => {
+export const FeastJobsTable = ({
+  project,
+  feastStreamIngestionJobs,
+  feastBatchIngestionJobs
+}) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    if (project && feastIngestionJobs) {
-      let items = [];
-      feastIngestionJobs.jobs
-        .filter(job => job.status === "JOB_STATUS_RUNNING")
+    let items = [];
+
+    if (feastStreamIngestionJobs) {
+      feastStreamIngestionJobs
+        .filter(job => job.status === "IN PROGRESS")
         .sort((a, b) => (a.startTime > b.startTime ? 1 : -1))
         .forEach(job => {
           if (items.length >= 5) {
             return;
           }
 
-          let tableName = "";
-          let jobType = "";
-          if (job.type === "STREAM_INGESTION_JOB") {
-            tableName = job.streamIngestion.tableName;
-            jobType = "stream";
-          } else if (job.type === "BATCH_INGESTION_JOB") {
-            tableName = job.batchIngestion.tableName;
-            jobType = "batch";
-          }
-
           items.push({
-            id: job.id,
-            table_name: tableName,
-            type: jobType,
+            id: job.job_id,
+            table_name: job.feature_table,
+            type: "stream",
             status: "running"
           });
         });
-      setItems(items);
     }
-  }, [project, feastIngestionJobs]);
+
+    if (feastBatchIngestionJobs) {
+      console.log("feastBatchIngestionJobs", feastBatchIngestionJobs);
+      feastBatchIngestionJobs
+        .filter(job => job.status === "IN PROGRESS")
+        .sort((a, b) => (a.startTime > b.startTime ? 1 : -1))
+        .forEach(job => {
+          if (items.length >= 5) {
+            return;
+          }
+
+          items.push({
+            id: job.job_id,
+            table_name: job.feature_table,
+            type: "batch",
+            status: "running"
+          });
+        });
+    }
+    setItems(items);
+  }, [feastStreamIngestionJobs, feastBatchIngestionJobs]);
 
   const columns = [
     {

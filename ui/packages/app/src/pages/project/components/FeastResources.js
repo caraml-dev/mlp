@@ -7,7 +7,13 @@ export const FeastResources = ({ project, entities, featureTables }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    if (project && entities && featureTables) {
+    if (
+      project &&
+      entities &&
+      entities.entities &&
+      featureTables &&
+      featureTables.tables
+    ) {
       setItems([
         {
           className: "listGroupItem",

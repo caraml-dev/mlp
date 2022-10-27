@@ -1,26 +1,20 @@
-// don't stretch all the way
-@media only screen and (min-width: 960px) {
-  .euiPage {
-    max-width: 89%;
-    margin: 0 auto;
-  }
+@import "@elastic/eui/src/themes/amsterdam/colors_light";
+@import "@elastic/eui/src/themes/amsterdam/globals";
+
+body {
+  @include euiHeaderAffordForFixed;
+
+  padding-top: 0 !important;
 }
 
-// header breadcrumbs
-.euiHeader .euiBreadcrumb {
-  .euiButtonEmpty {
-    &:active {
-      background-color: transparent;
-    }
-  }
-}
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 
-// set the page height to 100%
-body,
-#root,
-div[role="group"][tabindex],
-.eui-fullHeight {
-  height: 100%;
+  .euiBody--headerIsFixed & {
+    min-height: calc(100vh - #{$euiHeaderHeightCompensation});
+  }
 }
 
 // table actions

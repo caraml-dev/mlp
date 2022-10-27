@@ -10,7 +10,6 @@ import {
   EuiContextMenuItem,
   EuiText,
   EuiTitle,
-  EuiSpacer,
   EuiPopover
 } from "@elastic/eui";
 import PropTypes from "prop-types";
@@ -29,7 +28,7 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
       aria-label="Account menu"
       onClick={togglePopover}>
       <EuiAvatar
-        imageUrl={profileObj.imageUrl}
+        imageUrl={profileObj.picture}
         name={profileObj.name}
         size="s"
       />
@@ -46,22 +45,19 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
   return (
     <EuiPopover
       id="headerUserMenu"
-      ownFocus
       button={button}
       isOpen={isOpen}
       anchorPosition="downRight"
       closePopover={togglePopover}
-      panelPaddingSize="none">
-      <EuiContextMenuPanel
-        hasFocus={false}
-        className="euiContextMenuPanel--headerUserMenu">
+      panelPaddingSize="s">
+      <EuiContextMenuPanel className="euiContextMenuPanel--headerUserMenu">
         <EuiFlexGroup
           gutterSize="m"
           className="euiHeaderProfile"
           responsive={false}>
           <EuiFlexItem grow={false}>
             <EuiAvatar
-              imageUrl={profileObj.imageUrl}
+              imageUrl={profileObj.picture}
               name={profileObj.name}
               size="xl"
             />
@@ -94,8 +90,6 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
           onClick={logout}>
           Log out
         </EuiContextMenuItem>
-
-        <EuiSpacer size="xs" />
       </EuiContextMenuPanel>
     </EuiPopover>
   );
@@ -104,7 +98,8 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
 HeaderUserMenu.propTypes = {
   profileObj: PropTypes.shape({
     email: PropTypes.string,
-    name: PropTypes.string
+    name: PropTypes.string,
+    picture: PropTypes.string
   }).isRequired,
   logout: PropTypes.func.isRequired
 };

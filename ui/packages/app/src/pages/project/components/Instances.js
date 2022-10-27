@@ -22,14 +22,21 @@ const Title = ({ title, href }) => {
   );
 };
 
-export const Instances = ({ project, feastIngestionJobs, models, routers }) => {
+export const Instances = ({
+  project,
+  feastStreamIngestionJobs,
+  feastBatchIngestionJobs,
+  models,
+  routers
+}) => {
   const items = [
     {
-      title: <Title title="Features Ingestion" href={`/feast/jobs/batch`} />,
+      title: <Title title="Features Ingestion" href={`/feast/jobs/stream`} />,
       description: (
         <FeastJobsTable
           project={project}
-          feastIngestionJobs={feastIngestionJobs}
+          feastStreamIngestionJobs={feastStreamIngestionJobs}
+          feastBatchIngestionJobs={feastBatchIngestionJobs}
         />
       )
     },

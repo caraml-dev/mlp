@@ -21,6 +21,6 @@ type applicationService struct {
 }
 
 func (service *applicationService) List() (apps []*models.Application, err error) {
-	err = service.Where("is_disabled = FALSE").Find(&apps).Error
+	err = service.Where("is_disabled = FALSE").Order("id ASC").Find(&apps).Error
 	return
 }

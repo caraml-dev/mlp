@@ -1,10 +1,4 @@
-import React, {
-  Fragment,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from "react";
+import React, { Fragment, useContext, useEffect, useState } from "react";
 import {
   EuiButton,
   EuiIcon,
@@ -13,21 +7,16 @@ import {
   EuiPopoverTitle,
   EuiSelectable
 } from "@elastic/eui";
-import { CurrentProjectContext } from "../../providers/project";
 import { useToggle } from "../../hooks";
+import { ProjectsContext } from "../../providers";
 import "./ProjectDropdown.scss";
 
 const NUM_PANELS_TO_ADD_SEARCH = 7;
 
-export const ProjectsDropdown = ({ projects, onProjectSelect }) => {
-  const { project = {} } = useContext(CurrentProjectContext);
-
-  const popoverLabel = useMemo(() => {
-    return project.name || "Projects";
-  }, [project.name]);
+export const ProjectsDropdown = ({ onProjectSelect }) => {
+  const { projects, currentProject } = useContext(ProjectsContext);
 
   const [isPopoverOpen, togglePopover] = useToggle();
-
   const [panels, setPanels] = useState([]);
 
   useEffect(() => {
@@ -36,13 +25,13 @@ export const ProjectsDropdown = ({ projects, onProjectSelect }) => {
       .map(p => {
         return {
           label: p.name,
-          checked: p.name === project.name ? "on" : undefined,
+          checked: p.id === currentProject?.id ? "on" : undefined,
           id: p.id,
           prepend: <EuiIcon type="folderClosed" />
         };
       });
     setPanels(panels);
-  }, [projects, project.name]);
+  }, [projects, currentProject]);
 
   const onChange = panels => {
     const selectedProject = panels.filter(panel => panel.checked)[0];
@@ -53,6 +42,7 @@ export const ProjectsDropdown = ({ projects, onProjectSelect }) => {
   return (
     <EuiPopover
       id="projectSelector"
+      initialFocus=".euiFieldSearch"
       button={
         <EuiButton
           iconSide="right"
@@ -60,12 +50,12 @@ export const ProjectsDropdown = ({ projects, onProjectSelect }) => {
           size="s"
           fill
           onClick={togglePopover}>
-          {popoverLabel}
+          {currentProject?.name || "Projects"}
         </EuiButton>
       }
       isOpen={isPopoverOpen}
       closePopover={togglePopover}
-      panelPaddingSize="none"
+      panelPaddingSize="s"
       anchorPosition="downLeft">
       <EuiSelectable
         searchable={panels.length > NUM_PANELS_TO_ADD_SEARCH}

@@ -3,49 +3,47 @@ import {
   EuiContextMenuItem,
   EuiHeader,
   EuiHeaderLink,
-  EuiText,
   EuiHeaderSection,
-  EuiHeaderSectionItem
+  EuiHeaderSectionItem,
+  EuiText
 } from "@elastic/eui";
 import AuthContext from "../../auth/context";
-import ProjectsContext from "../../providers/project/projectsContext";
 import { ProjectsDropdown } from "../projects_dropdown";
 import { Breadcrumbs } from "../breadcrumbs";
 import { HeaderUserMenu } from "./HeaderUserMenu";
 import { slugify } from "../../utils";
 import { NavDrawer } from "../nav_drawer";
 import "./Header.scss";
-import { Link } from "@reach/router";
 
 export const Header = ({
-  homeUrl = "/",
   onProjectSelect,
   userMenuItems,
   helpLink,
   docLinks,
-  homepage
+  homepage = "/"
 }) => {
   const { state, onLogout } = useContext(AuthContext);
-  const { projects } = useContext(ProjectsContext);
 
   return (
     <EuiHeader position="fixed">
       <EuiHeaderSection grow={false}>
         <EuiHeaderSectionItem>
-          <NavDrawer homeUrl={homeUrl} docLinks={docLinks} />
+          <NavDrawer docLinks={docLinks} />
         </EuiHeaderSectionItem>
 
-        <EuiHeaderSectionItem border="right">
-          <Link to={homepage ? homepage : "/"}>
-            <EuiText className="header-title">
+        <EuiHeaderSectionItem border="none">
+          <a href={homepage} className="euiHeaderLogo euiHeaderLogo__title">
+            <EuiText>
               <h4>Machine Learning Platform</h4>
             </EuiText>
-          </Link>
+          </a>
         </EuiHeaderSectionItem>
-        <ProjectsDropdown
-          projects={projects}
-          onProjectSelect={onProjectSelect}
-        />
+      </EuiHeaderSection>
+
+      <EuiHeaderSection>
+        <EuiHeaderSectionItem>
+          <ProjectsDropdown onProjectSelect={onProjectSelect} />
+        </EuiHeaderSectionItem>
       </EuiHeaderSection>
 
       <EuiHeaderSection

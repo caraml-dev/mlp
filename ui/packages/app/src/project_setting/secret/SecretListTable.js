@@ -6,7 +6,6 @@ import {
   EuiIcon,
   EuiButtonIcon,
   EuiToolTip,
-  EuiPanel,
   EuiText
 } from "@elastic/eui";
 import SecretForm from "./SecretForm";
@@ -43,7 +42,7 @@ const SecretListTable = ({ secrets, projectId, fetchUpdates }) => {
 
   const columns = [
     {
-      width: "5%",
+      width: "24px",
       render: () => (
         <EuiIcon type="lock" size="m" style={{ verticalAlign: "bottom" }} />
       )
@@ -107,38 +106,23 @@ const SecretListTable = ({ secrets, projectId, fetchUpdates }) => {
     }
   ];
 
-  if (secrets.length === 0) {
-    return (
-      <Fragment>
-        <EuiFlexGroup direction="column">
-          <EuiFlexItem>
-            <EuiText size="s">
-              <EuiFlexItem alignitems="center">
-                <EuiPanel>
-                  <h4 align="center">This project has no active Secrets.</h4>
-                </EuiPanel>
-              </EuiFlexItem>
+  return (
+    <Fragment>
+      {showDeleteModal && (
+        <DeleteSecretModal
+          projectId={projectId}
+          secret={secretToDelete}
+          closeModal={() => setShowDeleteModal(false)}
+          fetchUpdates={fetchUpdates}
+        />
+      )}
+      <EuiFlexGroup direction="column">
+        <EuiFlexItem>
+          {secrets.length === 0 ? (
+            <EuiText size="m" textAlign="center">
+              This project has no active Secrets.
             </EuiText>
-          </EuiFlexItem>
-          <EuiFlexItem>
-            <SecretForm projectId={projectId} fetchUpdates={fetchUpdates} />
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </Fragment>
-    );
-  } else {
-    return (
-      <Fragment>
-        {showDeleteModal && (
-          <DeleteSecretModal
-            projectId={projectId}
-            secret={secretToDelete}
-            closeModal={() => setShowDeleteModal(false)}
-            fetchUpdates={fetchUpdates}
-          />
-        )}
-        <EuiFlexGroup direction="column">
-          <EuiFlexItem>
+          ) : (
             <EuiInMemoryTable
               columns={columns}
               itemId="id"
@@ -146,13 +130,13 @@ const SecretListTable = ({ secrets, projectId, fetchUpdates }) => {
               itemIdToExpandedRowMap={secretIdToExpandedRowMap}
               sorting={{ sort: { field: "Name", direction: "asc" } }}
             />
-          </EuiFlexItem>
-          <EuiFlexItem>
-            <SecretForm projectId={projectId} fetchUpdates={fetchUpdates} />
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </Fragment>
-    );
-  }
+          )}
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <SecretForm projectId={projectId} fetchUpdates={fetchUpdates} />
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    </Fragment>
+  );
 };
 export default SecretListTable;

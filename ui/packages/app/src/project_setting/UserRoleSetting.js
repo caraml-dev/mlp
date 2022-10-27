@@ -1,32 +1,21 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import UserRoleListTable from "./user_role/UserRoleListTable";
-import { CurrentProjectContext, replaceBreadcrumbs } from "@gojek/mlp-ui";
-import { SettingsSection } from "./ProjectSetting";
+import { ProjectsContext } from "@gojek/mlp-ui";
 import { EuiLoadingChart, EuiTextAlign } from "@elastic/eui";
 
 const UserRoleSetting = () => {
-  const { project, refresh } = useContext(CurrentProjectContext);
-
-  useEffect(() => {
-    if (project) {
-      replaceBreadcrumbs([
-        {
-          text: "User Roles"
-        }
-      ]);
-    }
-  }, [project]);
+  const { currentProject, refresh } = useContext(ProjectsContext);
 
   return (
-    <SettingsSection title="User Roles">
-      {!project ? (
+    <>
+      {!currentProject ? (
         <EuiTextAlign textAlign="center">
           <EuiLoadingChart size="xl" mono />
         </EuiTextAlign>
       ) : (
-        <UserRoleListTable project={project} fetchUpdates={() => refresh()} />
+        <UserRoleListTable project={currentProject} fetchUpdates={refresh} />
       )}
-    </SettingsSection>
+    </>
   );
 };
 

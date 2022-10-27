@@ -24,29 +24,13 @@ spec:
       labels:
         app: {{ template "mlp.name" .}}
         release: {{ .Release.Name }}
+        {{- if .Values.mlp.podLabels }}
+        {{- toYaml .Values.mlp.podLabels | nindent 8 }}
+        {{- end }}
     spec:
-      initContainers:
-      - name: migrations
-        image: migrate/migrate:{{ .Values.dbMigrations.image.tag }}
-        command: ['/bin/sh', '-c']
-        args:
-          - |
-            /migrate \
-            -path /migrations \
-            -database postgres://{{ template "postgres.username" . }}:$(PG_PASSWORD)@{{ template "postgres.host" . }}:5432/{{ template "postgres.database" . }}?sslmode=disable \
-            up
-        env:
-          - name: PG_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-postgresql
-                key: postgresql-password
-        volumeMounts:
-          - mountPath: /migrations
-            name: db-migrations
       containers:
         - name: api
-          image: {{ .Values.mlp.image.registry }}/{{ .Values.mlp.image.repository }}:{{ .Values.mlp.image.tag }}
+          image: "{{ .Values.mlp.image.registry }}/{{ .Values.mlp.image.repository }}:{{ .Values.mlp.image.tag }}"
           imagePullPolicy: {{ .Values.mlp.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.mlp.service.internalPort }}
@@ -97,26 +81,6 @@ spec:
                   key: postgresql-password
             - name: DATABASE_NAME
               value: {{ template "postgres.database" . }}
-            - name: GITLAB_ENABLED
-              value: "{{ .Values.gitlab.enabled }}"
-            {{- if .Values.gitlab.enabled }}
-            - name: GITLAB_HOST
-              value: "{{ .Values.gitlab.host }}"
-            - name: GITLAB_REDIRECT_URL
-              value: "{{ .Values.mlp.gitlabRedirectUrl }}"
-            - name: GITLAB_OAUTH_SCOPES
-              value: "{{ .Values.gitlab.oauthScopes }}"
-            - name: GITLAB_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-gitlab
-                  key: clientId
-            - name: GITLAB_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-gitlab
-                  key: clientSecret
-            {{- end }}
             - name: MLFLOW_TRACKING_URL
               value: "{{ .Values.mlp.mlflowTrackingUrl }}"
             - name: ENCRYPTION_KEY
@@ -158,10 +122,6 @@ spec:
               value: "{{ .Values.mlp.ui.merlinHomepage }}"
             - name: REACT_APP_TURING_UI_HOMEPAGE
               value: "{{ .Values.mlp.ui.turingHomepage }}"
-      volumes:
-      - name: db-migrations
-        configMap:
-          name: {{ .Release.Name }}-db-migrations
 
 {{- if .Values.mlp.imagePullSecrets }}
       imagePullSecrets:

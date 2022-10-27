@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import jwtDecode from "jwt-decode";
 
 const emptyState = {
   isAuthenticated: false,
   profileObj: null,
-  accessToken: "",
-  expiresAt: 0
+  jwt: ""
 };
 
 const AuthContext = React.createContext({
@@ -13,38 +14,38 @@ const AuthContext = React.createContext({
 });
 
 export const AuthProvider = ({ clientId, children }) => {
-  const [state, setState] = useState(undefined);
+  const [state, setState] = useState(emptyState);
+
+  const onJWTUpdate = useCallback(
+    jwt => {
+      try {
+        const profileObj = jwtDecode(jwt);
+        if (profileObj.exp * 1000 > Date.now()) {
+          setState({
+            isAuthenticated: true,
+            profileObj: profileObj,
+            jwt: jwt
+          });
+        }
+      } catch (error) {
+        console.debug("failed to decode JWT: \n", jwt);
+      }
+    },
+    [setState]
+  );
 
   useEffect(() => {
-    // TODO: not safe!
-    const localStateStr = localStorage.getItem("auth");
+    onJWTUpdate(localStorage.getItem("auth"));
+  }, [onJWTUpdate]);
 
-    if (localStateStr) {
-      const authObject = JSON.parse(localStateStr);
-      setState(authObject.expiresAt > Date.now() ? authObject : emptyState);
-    } else {
-      setState(emptyState);
-    }
-  }, []);
-
-  const setAuth = data => {
-    setState(data);
-    localStorage.setItem("auth", JSON.stringify(data));
-  };
-
-  const login = ({ profileObj, accessToken, tokenObj }) => {
-    setAuth({
-      ...state,
-      isAuthenticated: true,
-      profileObj: profileObj,
-      accessToken: accessToken,
-      idToken: tokenObj.id_token,
-      expiresAt: tokenObj.expires_at
-    });
+  const login = ({ credential }) => {
+    onJWTUpdate(credential);
+    localStorage.setItem("auth", credential);
   };
 
   const logout = () => {
-    setAuth(emptyState);
+    setState(emptyState);
+    localStorage.removeItem("auth");
   };
 
   return !!state ? (
@@ -55,7 +56,7 @@ export const AuthProvider = ({ clientId, children }) => {
         onLogin: login,
         onLogout: logout
       }}>
-      {children}
+      <GoogleOAuthProvider clientId={clientId}>{children}</GoogleOAuthProvider>
     </AuthContext.Provider>
   ) : null;
 };
