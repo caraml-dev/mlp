@@ -1,7 +1,7 @@
 # ============================================================
 # Build stage 1: Build UI
 # ============================================================
-FROM node:14-alpine as node-builder
+FROM node:18-alpine as node-builder
 WORKDIR /src/ui
 COPY ui .
 RUN yarn
@@ -11,7 +11,7 @@ RUN yarn app build
 # ============================================================
 # Build stage 2: Build API
 # ============================================================
-FROM golang:1.14-alpine as go-builder
+FROM golang:1.18-alpine as go-builder
 WORKDIR /src/api
 COPY api api/
 COPY go.mod .

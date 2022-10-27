@@ -10,7 +10,7 @@ jobs:
         node-version: 12
     - uses: actions/setup-go@v2
       with:
-        go-version: 1.13
+        go-version: 1.18
     - name: Install dependencies
       run: |
         make setup
@@ -40,7 +40,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-go@v2
       with:
-        go-version: 1.13
+        go-version: 1.18
     - name: Integration test
       env:
         POSTGRES_HOST: localhost
@@ -92,9 +92,9 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-go@v2
       with:
-        go-version: 1.13
+        go-version: 1.18
     - name: Setup cluster
-      run: kind create cluster --image=kindest/node:v1.17.11
+      run: kind create cluster --image=kindest/node:v1.22.15
     - name: Create mlp namespace
       run: kubectl create namespace mlp
     - name: Deploy MLP
