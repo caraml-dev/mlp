@@ -33,6 +33,7 @@ mlp:
     serverUrl: http://mlp-authorization-keto
   ingress:
     enabled: false
+    # class: istio
   teams:
     - marketing
     - operation

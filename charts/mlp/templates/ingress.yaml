@@ -20,6 +20,7 @@ spec:
       http:
         paths:
           - path: {{ .Values.mlp.ingress.path | default "/" }}
+            pathType: Prefix
             backend:
               service:
                 name: {{ template "mlp.fullname" .}}
