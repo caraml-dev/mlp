@@ -1,5 +1,5 @@
 {{- if .Values.mlp.ingress.enabled }}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ template "mlp.fullname" .}}
@@ -20,7 +20,10 @@ spec:
       http:
         paths:
           - path: {{ .Values.mlp.ingress.path | default "/" }}
+            pathType: Prefix
             backend:
-              serviceName: {{ template "mlp.fullname" .}}
-              servicePort: {{ .Values.mlp.service.externalPort }}
+              service:
+                name: {{ template "mlp.fullname" .}}
+                port: 
+                  number: {{ .Values.mlp.service.externalPort }}
 {{- end }}

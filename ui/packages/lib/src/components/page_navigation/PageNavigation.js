@@ -13,11 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import "./PageNavigation.scss";
 
-export const PageNavigation = ({
-  tabs,
-  actions,
-  selectedTab = "",
-}) => {
+export const PageNavigation = ({ tabs, actions, selectedTab = "" }) => {
   const navigate = useNavigate();
   return (
     <EuiFlexGroup direction="row" gutterSize="none">
@@ -42,7 +38,7 @@ export const PageNavigation = ({
         </EuiFlexItem>
       )}
     </EuiFlexGroup>
-  )
+  );
 };
 
 const MoreActionsButton = ({ actions }) => {
