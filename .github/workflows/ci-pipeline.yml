@@ -25,7 +25,6 @@ env:
   ARTIFACT_RETENTION_DAYS: 7
 
 jobs:
-
   build-ui:
     runs-on: ubuntu-latest
     steps:
@@ -146,3 +145,15 @@ jobs:
         run: |
           make setup
           make lint-api
+
+  release-rules:
+    runs-on: ubuntu-latest
+    outputs:
+      release-type: ${{ steps.release-rules.outputs.release-type }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: caraml-dev/turing
+
+      - id: release-rules
+        uses: ./.github/actions/release-rules
