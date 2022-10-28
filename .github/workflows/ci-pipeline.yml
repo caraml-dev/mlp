@@ -1,0 +1,67 @@
+name: CaraML CI Pipeline
+
+on:
+  # Automatically run CI on Release and Pre-Release tags and main branch
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+
+  # Automatically run CI on branches, that have active PR opened
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+
+  # To make it possible to trigger e2e CI workflow for any arbitrary git ref
+  workflow_dispatch:
+
+env:
+  ARTIFACT_RETENTION_DAYS: 7
+
+jobs:
+
+  build-ui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Node 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+
+      - name: Cache Dependencies
+        uses: actions/cache@v2
+        with:
+          path: ui/node_modules
+          key: |
+            ${{ runner.os }}-modules-${{ hashFiles('ui/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-modules-
+
+      - name: Install
+        run: yarn install --network-concurrency 1
+
+      - name: Lint code
+        run: yarn lint
+
+      - name: Build UI
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
+        run: yarn app build
+
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: mlp-ui-dist
+          path: ui/build/
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
