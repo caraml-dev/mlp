@@ -21,6 +21,7 @@ on:
   workflow_dispatch:
 
 env:
+  GO_VERSION: 1.18
   ARTIFACT_RETENTION_DAYS: 7
 
 jobs:
@@ -78,13 +79,13 @@ jobs:
         run: |
           set -o pipefail
           make build-api-image | tee output.log
-          echo "::set-output name=api-version::$(sed -n 's%version: \(.*\)%\1%p' output.log)"
+          echo "api-version=$(sed -n 's%version: \(.*\)%\1%p' output.log)" >> $GITHUB_OUTPUT
 
       - name: Save Docker image
         run: |
           docker image save \
             --output mlp-api.${{ steps.build-image.outputs.api-version }}.tar \
-            mlp-api:${{ steps.build-image.outputs.api-version }}
+            mlp:${{ steps.build-image.outputs.api-version }}
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v2
@@ -93,3 +94,55 @@ jobs:
           path: mlp-api.${{ steps.build-image.outputs.api-version }}.tar
           retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
 
+  test-api:
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: ${{ github.workspace }}/.go
+    services:
+      postgres:
+        image: postgres:12.4
+        env:
+          POSTGRES_DB: mlp
+          POSTGRES_USER: mlp
+          POSTGRES_PASSWORD: mlp
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      keto:
+        image: oryd/keto:v0.4.5
+        env:
+          DSN: memory
+        ports:
+          - 4466:4466
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Dependencies
+        uses: actions/cache@v2
+        with:
+          path: .go/pkg/mod/
+          key: |
+            gomod-${{ hashFiles('go.mod') }}
+          restore-keys: gomod-
+
+      - name: Run Integration Test
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_DB: mlp
+          POSTGRES_USER: mlp
+          POSTGRES_PASSWORD: mlp
+          KETO_URL: http://localhost:4466
+        run: make it-test-api-ci
+
+      - name: Lint code
+        run: |
+          make setup
+          make lint-api
