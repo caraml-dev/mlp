@@ -27,9 +27,6 @@ jobs:
 
   build-ui:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ui
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -51,17 +48,49 @@ jobs:
         run: yarn install --network-concurrency 1
 
       - name: Lint code
+        working-directory: ui
         run: yarn lint
 
       - name: Build UI
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
-        run: yarn app build
+        run: |
+          make build-ui
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v2
         with:
           name: mlp-ui-dist
           path: ui/build/
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  build-api:
+    runs-on: ubuntu-latest
+    outputs:
+      api-version: ${{ steps.build-image.outputs.api-version }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Build Docker image
+        id: build-image
+        run: |
+          set -o pipefail
+          make build-api-image | tee output.log
+          echo "::set-output name=api-version::$(sed -n 's%version: \(.*\)%\1%p' output.log)"
+
+      - name: Save Docker image
+        run: |
+          docker image save \
+            --output mlp-api.${{ steps.build-image.outputs.api-version }}.tar \
+            mlp-api:${{ steps.build-image.outputs.api-version }}
+
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: mlp-api.${{ steps.build-image.outputs.api-version }}.tar
+          path: mlp-api.${{ steps.build-image.outputs.api-version }}.tar
           retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
 
