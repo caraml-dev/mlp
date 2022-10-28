@@ -152,4 +152,4 @@ jobs:
       release-type: ${{ steps.release-rules.outputs.release-type }}
     steps:
       - id: release-rules
-        uses: caraml-dev/turing/.github/actions/release-rules/action.yaml@main
+        uses: caraml-dev/turing/.github/actions/release-rules@main
