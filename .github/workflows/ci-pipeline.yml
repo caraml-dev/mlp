@@ -202,18 +202,11 @@ jobs:
           docker push ${{ env.DOCKER_REGISTRY }}/mlp:${{ env.OVERWRITE_VERSION }}
 
   detect-ui-lib-changes:
-    if: >-
-      contains('release,pre-release', needs.release-rules.outputs.release-type)
-        || ( github.event_name == 'push' )
-        || ( github.event.pull_request.head.repo.full_name == github.repository )
-    needs:
-      - release-rules
     outputs:
       changed: ${{ steps.changes.outputs.ui-lib }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: echo "${{ toJSON(github) }}"
       - uses: dorny/paths-filter@v2
         id: changes
         with:
