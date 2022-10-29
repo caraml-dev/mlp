@@ -197,7 +197,7 @@ jobs:
           
           helm install mlp caraml/mlp --namespace=mlp \
             --wait --timeout=5m \
-            --values=chart/mlp/values-e2e.yaml \
+            --values=charts/mlp/values-e2e.yaml \
             --set mlp.image.registry=${{ env.LOCAL_REGISTRY }}
             --set mlp.image.repository=${{ github.repository }}/mlp-api \
             --set mlp.image.tag=${{ needs.build-api.outputs.api-version }}
@@ -258,6 +258,7 @@ jobs:
       - build-ui
       - build-api
       - test-api
+      - e2e-test
       - release-rules
     runs-on: ubuntu-latest
     environment: ${{ needs.release-rules.outputs.release-type == 'dev' && 'manual' || '' }}
