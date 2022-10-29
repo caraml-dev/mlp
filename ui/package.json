@@ -29,7 +29,7 @@
     "set-version-from-git:package": "run-p \"version:* --new-version {1} --no-git-tag-version\" --",
     "set-version-from-git:depenency": "run-s \"app add @gojek/mlp-ui@{1}\" --",
     "set-version-from-git": "run-s \"set-version-from-git:* $(yarn --silent version-from-git)\"",
-    "version-from-git": "../scripts/vertagen/vertagen.sh -f docker"
+    "version-from-git": "../scripts/vertagen/vertagen.sh"
   },
   "devDependencies": {
     "husky": "^8.0.1",

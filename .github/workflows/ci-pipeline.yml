@@ -22,6 +22,7 @@ on:
 
 env:
   GO_VERSION: 1.18
+  NODE_VERSION: 16
   ARTIFACT_RETENTION_DAYS: 7
   CONTAINER_REGISTRY: ghcr.io
 
@@ -29,13 +30,10 @@ jobs:
   build-ui:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Set up Node 16.x
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Cache Dependencies
         uses: actions/cache@v3
@@ -47,7 +45,7 @@ jobs:
 
       - name: Install
         working-directory: ui
-        run: yarn install --network-concurrency 1
+        run: yarn install
 
       - name: Lint code
         run: make lint-ui
@@ -69,8 +67,7 @@ jobs:
     outputs:
       api-version: ${{ steps.build-image.outputs.api-version }}
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
@@ -120,7 +117,6 @@ jobs:
           - 4466:4466
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}
@@ -173,9 +169,9 @@ jobs:
       - test-api
       - release-rules
     runs-on: ubuntu-latest
+    environment: ${{ needs.release-rules.outputs.release-type == 'dev' && 'manual' || '' }}
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Log in to the Container registry
         uses: docker/login-action@v2
@@ -204,3 +200,72 @@ jobs:
           docker image load --input mlp-api.${{ needs.build-api.outputs.api-version }}.tar
           make build-image
           docker push ${{ env.DOCKER_REGISTRY }}/mlp:${{ env.OVERWRITE_VERSION }}
+
+  detect-ui-lib-changes:
+    if: >-
+      contains('release,pre-release', needs.release-rules.outputs.release-type)
+        || ( github.event_name == 'push' )
+        || ( github.event.pull_request.head.repo.full_name == github.repository )
+    outputs:
+      changed: ${{ steps.changes.outputs.ui-lib }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            ui-lib:
+              - 'ui/packages/lib/**'
+
+  publish-ui-lib:
+    # Automatically publish release and pre-release UI lib
+    # (if any library component has been changed).
+    #
+    # As for dev releases, make it possible to publish the UI lib bundle
+    # manually by approving 'deployment' in the 'manual' environment.
+    #
+    # Dev build can be released either from the 'main' branch or
+    # from the PR opened to the 'main' branch from the same (not forked) repo.
+    if: >-
+      needs.detect-ui-lib-changes.outputs.changed == 'true'
+        && (
+          contains('release,pre-release', needs.release-rules.outputs.release-type)
+            || ( github.event_name == 'push' )
+            || ( github.event.pull_request.head.repo.full_name == github.repository )
+        )
+    needs:
+      - build-ui
+      - release-rules
+      - detect-ui-lib-changes
+    runs-on: ubuntu-latest
+    environment: ${{ needs.release-rules.outputs.release-type == 'dev' && 'manual' || '' }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: https://registry.npmjs.org
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ui/node_modules
+          key: |
+            ${{ runner.os }}-modules-${{ hashFiles('ui/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-modules-
+
+      - name: Install dependencies
+        working-directory: ui
+        run: yarn install
+
+      - name: Publish @gojek/mlp-ui library
+        working-directory: ui
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          yarn set-version-from-git
+          yarn lib publish
