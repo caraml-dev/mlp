@@ -196,7 +196,7 @@ jobs:
           
           helm install mlp caraml/mlp --namespace=mlp \
             --wait --timeout=5m \
-            --values=charts/mlp/values-e2e.yaml \
+            --values=.github/e2e/values.yaml \
             --set mlp.image.registry=${{ env.LOCAL_REGISTRY }} \
             --set mlp.image.repository=${{ github.repository }}/mlp-api \
             --set mlp.image.tag=${{ needs.build-api.outputs.api-version }}
@@ -209,7 +209,7 @@ jobs:
       - name: Setup MLP project
         shell: bash
         run: |
-          sleep 5
+          sleep 2
           
           tee payload.json <<EOF
           {
