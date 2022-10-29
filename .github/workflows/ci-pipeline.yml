@@ -198,7 +198,7 @@ jobs:
           helm install mlp caraml/mlp --namespace=mlp \
             --wait --timeout=5m \
             --values=charts/mlp/values-e2e.yaml \
-            --set mlp.image.registry=${{ env.LOCAL_REGISTRY }}
+            --set mlp.image.registry=${{ env.LOCAL_REGISTRY }} \
             --set mlp.image.repository=${{ github.repository }}/mlp-api \
             --set mlp.image.tag=${{ needs.build-api.outputs.api-version }}
           
