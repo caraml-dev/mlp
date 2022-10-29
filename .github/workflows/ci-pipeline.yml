@@ -163,12 +163,12 @@ jobs:
           version: v3.9.3
 
       - name: Setup local k8s cluster
-        uses: AbsaOSS/k3d-action@v2.3.0
+        uses: AbsaOSS/k3d-action@v2.1.0
         with:
           cluster-name: mlp-e2e
           args: >-
             --servers 1
-            --agents 3
+            --agents 2
             --port 80:80@agent:*
             --registry-create ${{ env.LOCAL_REGISTRY }}
             --k3s-arg "--no-deploy=traefik,metrics-server@server:*"
