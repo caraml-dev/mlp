@@ -90,14 +90,20 @@ build-api: clean-bin
 
 .PHONY: build-api-image
 build-api-image: version
+	@$(eval IMAGE_TAG = $(if $(DOCKER_REGISTRY),$(DOCKER_REGISTRY)/,)${BIN_NAME}-api:${VERSION})
+	@echo "Building docker image: ${IMAGE_TAG}"
+	docker build . \
+		--tag ${IMAGE_TAG} \
+		--file api.Dockerfile
+
+.PHONY: build-image
+build-image: version
 	@$(eval IMAGE_TAG = $(if $(DOCKER_REGISTRY),$(DOCKER_REGISTRY)/,)${BIN_NAME}:${VERSION})
 	@echo "Building docker image: ${IMAGE_TAG}"
-	docker build --tag ${IMAGE_TAG} --file api.Dockerfile .
-
-.PHONY: build-docker
-build-docker:
-	@echo "> Building docker image ..."
-	@docker build --tag gojektech/mlp:dev .
+	docker build . \
+		--build-arg MLP_API_IMAGE \
+		--tag ${IMAGE_TAG} \
+		--file full.Dockerfile
 
 # ============================================================
 # Run recipes
