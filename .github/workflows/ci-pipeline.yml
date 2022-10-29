@@ -209,6 +209,8 @@ jobs:
       - name: Setup MLP project
         shell: bash
         run: |
+          sleep 5
+          
           tee payload.json <<EOF
           {
             "name": "e2e-test",
