@@ -204,6 +204,7 @@ jobs:
           
           echo "::group::Check cluster resources"
           kubectl get all --namespace=mlp
+          kubectl get ingress --namespace=mlp
           echo "::endgroup::"
 
       - name: Setup MLP project
