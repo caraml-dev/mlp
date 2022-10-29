@@ -29,5 +29,5 @@ postgresql:
 
 ingress:
   enabled: true
-  class: ""
+  class: traefik
   host: mlp.127.0.0.1.nip.io

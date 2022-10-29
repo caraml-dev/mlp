@@ -171,7 +171,7 @@ jobs:
             --agents 2
             --port 80:80@agent:*
             --registry-create ${{ env.LOCAL_REGISTRY }}
-            --k3s-arg "--no-deploy=traefik,metrics-server@server:*"
+            --k3s-arg "--no-deploy=metrics-server@server:*"
 
       - name: Download API image tar
         uses: actions/download-artifact@v3
