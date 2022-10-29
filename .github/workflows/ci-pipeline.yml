@@ -167,9 +167,8 @@ jobs:
         with:
           cluster-name: mlp-e2e
           args: >-
-            --servers 1
-            --agents 2
-            --port 80:80@loadbalancer
+            --agents 1
+            --port 80:80@agent:*
             --registry-create ${{ env.LOCAL_REGISTRY }}
             --k3s-arg "--no-deploy=metrics-server@server:*"
 
@@ -226,7 +225,7 @@ jobs:
 
       - name: Run E2E tests
         env:
-          MLP_API_BASEPATH: http://mlp.127.0.0.1/v1
+          MLP_API_BASEPATH: http://mlp.127.0.0.1.nip.io/v1
         shell: bash
         run: |
           for example in api/client/examples/*; do
