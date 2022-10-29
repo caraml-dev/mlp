@@ -211,7 +211,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: echo ${{ toJSON(github.event) }}
+      - run: echo "${{ toJSON(github) }}"
       - uses: dorny/paths-filter@v2
         id: changes
         with:
