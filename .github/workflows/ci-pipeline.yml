@@ -206,6 +206,8 @@ jobs:
       contains('release,pre-release', needs.release-rules.outputs.release-type)
         || ( github.event_name == 'push' )
         || ( github.event.pull_request.head.repo.full_name == github.repository )
+    needs:
+      - release-rules
     outputs:
       changed: ${{ steps.changes.outputs.ui-lib }}
     runs-on: ubuntu-latest
