@@ -26,3 +26,8 @@ postgresql:
       enabled: false
   replication:
     enabled: false
+
+ingress:
+  enabled: true
+  class: ""
+  host: mlp.127.0.0.1.nip.io

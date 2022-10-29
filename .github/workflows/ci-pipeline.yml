@@ -197,7 +197,7 @@ jobs:
           
           helm install mlp caraml/mlp --namespace=mlp \
             --wait --timeout=5m \
-            --values=chart/values-e2e.yaml \
+            --values=chart/mlp/values-e2e.yaml \
             --set mlp.image.registry=${{ env.LOCAL_REGISTRY }}
             --set mlp.image.repository=${{ github.repository }}/mlp-api \
             --set mlp.image.tag=${{ needs.build-api.outputs.api-version }}
@@ -222,9 +222,17 @@ jobs:
             --request POST \
             --data @payload.json \
             http://mlp.127.0.0.1.nip.io/v1/projects
-          
-          
-          
+
+      - name: Run E2E tests
+        env:
+          MLP_API_BASEPATH: http://mlp.127.0.0.1/v1
+        shell: bash
+        run: |
+          for example in api/client/examples/*; do
+            [[ -e $example ]] || continue
+            echo $example
+            go run $example/main.go
+          done
 
   release-rules:
     runs-on: ubuntu-latest
