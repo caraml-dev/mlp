@@ -25,6 +25,7 @@ env:
   NODE_VERSION: 16
   ARTIFACT_RETENTION_DAYS: 7
   CONTAINER_REGISTRY: ghcr.io
+  LOCAL_REGISTRY: registry.localhost:5000
 
 jobs:
   build-ui:
@@ -117,7 +118,7 @@ jobs:
           - 4466:4466
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -142,6 +143,88 @@ jobs:
         run: |
           make setup
           make lint-api
+          
+
+  e2e-test:
+    runs-on: ubuntu-latest
+    needs:
+      - build-api
+      - test-api
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.9.3
+
+      - name: Setup local k8s cluster
+        uses: AbsaOSS/k3d-action@v2.3.0
+        with:
+          cluster-name: mlp-e2e
+          args: >-
+            --servers 1
+            --agents 3
+            --port 80:80@agent:*
+            --registry-create ${{ env.LOCAL_REGISTRY }}
+            --k3s-arg "--no-deploy=traefik,metrics-server@server:*"
+
+      - name: Download API image tar
+        uses: actions/download-artifact@v3
+        with:
+          name: mlp-api.${{ needs.build-api.outputs.api-version }}.tar
+
+      - name: Publish image to the local registry
+        env:
+          DOCKER_REPOSITORY: ${{ env.LOCAL_REGISTRY }}/${{ github.repository }}
+        shell: bash
+        run: |
+          docker image load --input mlp-api.${{ needs.build-api.outputs.api-version }}.tar
+          docker tag \
+            mlp-api:${{ needs.build-api.outputs.api-version }} \
+            ${{ env.DOCKER_REPOSITORY }}/mlp-api:${{ needs.build-api.outputs.api-version }}
+          docker push ${{ env.DOCKER_REPOSITORY }}/mlp-api:${{ needs.build-api.outputs.api-version }}
+
+      - name: Deploy MLP to the local cluster
+        run: |
+          helm repo add caraml https://caraml-dev.github.io/helm-charts/
+          
+          kubectl create ns mlp
+          
+          helm install mlp caraml/mlp --namespace=mlp \
+            --wait --timeout=5m \
+            --values=chart/values-e2e.yaml \
+            --set mlp.image.registry=${{ env.LOCAL_REGISTRY }}
+            --set mlp.image.repository=${{ github.repository }}/mlp-api \
+            --set mlp.image.tag=${{ needs.build-api.outputs.api-version }}
+          
+          echo "::group::Check cluster resources"
+          kubectl get all --namespace=mlp
+          echo "::endgroup::"
+
+      - name: Setup MLP project
+        shell: bash
+        run: |
+          tee payload.json <<EOF
+          {
+            "name": "e2e-test",
+            "team": "myteam",
+            "stream": "mystream"
+          }
+          EOF
+
+          curl -v \
+            --header 'Content-Type: application/json' \
+            --request POST \
+            --data @payload.json \
+            http://mlp.127.0.0.1.nip.io/v1/projects
+          
+          
+          
 
   release-rules:
     runs-on: ubuntu-latest
