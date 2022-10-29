@@ -169,7 +169,7 @@ jobs:
           args: >-
             --servers 1
             --agents 2
-            --port 80:80@agent:*
+            --port 80:80@loadbalancer
             --registry-create ${{ env.LOCAL_REGISTRY }}
             --k3s-arg "--no-deploy=metrics-server@server:*"
 
