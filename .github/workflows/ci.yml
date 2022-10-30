@@ -35,9 +35,9 @@ jobs:
       postgres:
         image: postgres:12.4
         env:
-          POSTGRES_DB: &DATABASE_NAME mlp
-          POSTGRES_USER: &DATABASE_USER mlp
-          POSTGRES_PASSWORD: &DATABASE_PASSWORD mlp
+          POSTGRES_DB: mlp
+          POSTGRES_USER: mlp
+          POSTGRES_PASSWORD: mlp
         ports:
           - 5432:5432
       keto:
@@ -54,9 +54,9 @@ jobs:
       - name: Integration test
         env:
           DATABASE_HOST: localhost
-          DATABASE_NAME: *DATABASE_NAME
-          DATABASE_USER: *DATABASE_USER
-          DATABASE_PASSWORD: *DATABASE_PASSWORD
+          DATABASE_NAME: mlp
+          DATABASE_USER: mlp
+          DATABASE_PASSWORD: mlp
           KETO_URL: http://localhost:4466
         run: make it-test-api-ci
 
