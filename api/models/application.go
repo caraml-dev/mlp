@@ -7,7 +7,7 @@ import (
 )
 
 type Application struct {
-	Id          Id                 `json:"id"`
+	ID          ID                 `json:"id"`
 	Name        string             `json:"name"`
 	Description string             `json:"description"`
 	Href        string             `json:"href"`

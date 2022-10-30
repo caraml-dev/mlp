@@ -20,12 +20,12 @@ var KetoURL = getEnvOrDefault("KETO_URL", "http://localhost:4466")
 
 var BootstrapRoles = []types.Role{
 	{
-		"bootrap-role-1",
-		[]string{"user-1@example.com", "user-2@example.com"},
+		ID:      "bootrap-role-1",
+		Members: []string{"user-1@example.com", "user-2@example.com"},
 	},
 	{
-		"bootrap-role-2",
-		[]string{"user-3@example.com", "user-4@example.com"},
+		ID:      "bootrap-role-2",
+		Members: []string{"user-3@example.com", "user-4@example.com"},
 	},
 }
 

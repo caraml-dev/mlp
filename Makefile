@@ -14,8 +14,9 @@ all: setup init-dep lint test clean build run
 # ============================================================
 .PHONY: setup
 setup:
-	@echo "> Setting up tools ..."
-	@test -x $(shell go env GOPATH)/bin/golint || go install golang.org/x/lint/golint
+	@echo "> Setting up tools..."
+	@test -x $(shell go env GOPATH)/bin/golangci-lint || \
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/v1.48.0/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.48.0
 
 .PHONY: init-dep
 init-dep: init-dep-ui init-dep-api
@@ -42,10 +43,20 @@ lint-ui:
 	@echo "> Linting the UI source code ..."
 	@cd ${UI_PATH} && yarn lint
 
+.PHONY: fmt
+fmt:
+	@echo "Formatting code..."
+	gofmt -s -w ${SRC_ROOT}
+
 .PHONY: lint-api
-lint-api:
-	@echo "> Analyzing API source code..."
-	@cd ${API_PATH} && golint ${API_ALL_PACKAGES}
+lint-api: setup
+	@echo "Linting code..."
+	golangci-lint -v run --timeout 3m $(if $(filter true,$(fix)),--fix,) api/...
+
+#.PHONY: lint-api
+#lint-api:
+#	@echo "> Analyzing API source code..."
+#	@cd ${API_PATH} && golint ${API_ALL_PACKAGES}
 
 # ============================================================
 # Testing recipes

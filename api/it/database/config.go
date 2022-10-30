@@ -1,4 +1,5 @@
-// +build integration_local
+//go:build integration || integration_local
+// +build integration integration_local
 
 package database
 

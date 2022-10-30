@@ -27,16 +27,16 @@ func TestProjectsService_CreateProject(t *testing.T) {
 		{
 			"success: auth enabled",
 			&models.Project{
-				Id:             1,
+				ID:             1,
 				Name:           "my-project",
 				Administrators: []string{"user@email.com"},
 				Readers:        nil,
 			},
 			true,
 			&models.Project{
-				Id:                1,
+				ID:                1,
 				Name:              "my-project",
-				MlflowTrackingUrl: MLFlowTrackingURL,
+				MLFlowTrackingURL: MLFlowTrackingURL,
 				Administrators:    []string{"user@email.com"},
 				Readers:           nil,
 			},
@@ -46,16 +46,16 @@ func TestProjectsService_CreateProject(t *testing.T) {
 		{
 			"success: auth disabled",
 			&models.Project{
-				Id:             1,
+				ID:             1,
 				Name:           "my-project",
 				Administrators: []string{"user@email.com"},
 				Readers:        nil,
 			},
 			false,
 			&models.Project{
-				Id:                1,
+				ID:                1,
 				Name:              "my-project",
-				MlflowTrackingUrl: MLFlowTrackingURL,
+				MLFlowTrackingURL: MLFlowTrackingURL,
 				Administrators:    []string{"user@email.com"},
 				Readers:           nil,
 			},
@@ -65,7 +65,7 @@ func TestProjectsService_CreateProject(t *testing.T) {
 		{
 			"failed: reserved name",
 			&models.Project{
-				Id:             1,
+				ID:             1,
 				Name:           "infrastructure",
 				Administrators: []string{"user@email.com"},
 				Readers:        nil,
@@ -81,36 +81,55 @@ func TestProjectsService_CreateProject(t *testing.T) {
 			storage := &mocks.ProjectStorage{}
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
 
-			projectResource := fmt.Sprintf(ProjectResources, tt.arg.Id)
-			projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.Id)
+			projectResource := fmt.Sprintf(ProjectResources, tt.arg.ID)
+			projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.ID)
 			projectNameResource := fmt.Sprintf(ProjectResources, tt.arg.Name)
 
 			authEnforcer := &enforcerMock.Enforcer{}
 			if tt.authEnabled {
-				authEnforcer.On("UpsertRole", fmt.Sprintf("%s-administrators", tt.arg.Name), []string(tt.arg.Administrators)).
-					Return(&types.Role{
-						ID:      "admin-role",
-						Members: tt.arg.Administrators,
-					}, nil)
-				authEnforcer.On("UpsertRole", fmt.Sprintf("%s-readers", tt.arg.Name), []string(tt.arg.Readers)).
-					Return(&types.Role{
-						ID:      "reader-role",
-						Members: tt.arg.Readers,
-					}, nil)
-				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-administrators-policy", tt.arg.Name), []string{"admin-role"}, []string{}, []string{projectResource, projectSubResource, projectNameResource}, []string{enforcer.ActionAll}).
-					Return(&types.Policy{
-						ID:        "admin-policy",
-						Subjects:  []string{"admin-role"},
-						Resources: []string{projectResource, projectSubResource, projectNameResource},
-						Actions:   []string{enforcer.ActionAll},
-					}, nil)
-				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-readers-policy", tt.arg.Name), []string{"reader-role"}, []string{}, []string{projectResource, projectSubResource, projectNameResource}, []string{enforcer.ActionRead}).
-					Return(&types.Policy{
-						ID:        "reader-policy",
-						Subjects:  []string{"readers-role"},
-						Resources: []string{projectResource, projectSubResource, projectNameResource},
-						Actions:   []string{enforcer.ActionRead},
-					}, nil)
+				authEnforcer.On(
+					"UpsertRole",
+					fmt.Sprintf("%s-administrators", tt.arg.Name),
+					[]string(tt.arg.Administrators),
+				).Return(&types.Role{
+					ID:      "admin-role",
+					Members: tt.arg.Administrators,
+				}, nil)
+
+				authEnforcer.On(
+					"UpsertRole",
+					fmt.Sprintf("%s-readers", tt.arg.Name),
+					[]string(tt.arg.Readers),
+				).Return(&types.Role{
+					ID:      "reader-role",
+					Members: tt.arg.Readers,
+				}, nil)
+				authEnforcer.On(
+					"UpsertPolicy",
+					fmt.Sprintf("%s-administrators-policy", tt.arg.Name),
+					[]string{"admin-role"},
+					[]string{},
+					[]string{projectResource, projectSubResource, projectNameResource},
+					[]string{enforcer.ActionAll},
+				).Return(&types.Policy{
+					ID:        "admin-policy",
+					Subjects:  []string{"admin-role"},
+					Resources: []string{projectResource, projectSubResource, projectNameResource},
+					Actions:   []string{enforcer.ActionAll},
+				}, nil)
+				authEnforcer.On(
+					"UpsertPolicy",
+					fmt.Sprintf("%s-readers-policy", tt.arg.Name),
+					[]string{"reader-role"},
+					[]string{},
+					[]string{projectResource, projectSubResource, projectNameResource},
+					[]string{enforcer.ActionRead},
+				).Return(&types.Policy{
+					ID:        "reader-policy",
+					Subjects:  []string{"readers-role"},
+					Resources: []string{projectResource, projectSubResource, projectNameResource},
+					Actions:   []string{enforcer.ActionRead},
+				}, nil)
 			}
 
 			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
@@ -149,7 +168,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 			true,
 			&models.Project{
 				Name:              "my-project",
-				MlflowTrackingUrl: MLFlowTrackingURL,
+				MLFlowTrackingURL: MLFlowTrackingURL,
 				Administrators:    []string{"user@email.com"},
 				Readers:           nil,
 			},
@@ -164,7 +183,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 			false,
 			&models.Project{
 				Name:              "my-project",
-				MlflowTrackingUrl: MLFlowTrackingURL,
+				MLFlowTrackingURL: MLFlowTrackingURL,
 				Administrators:    []string{"user@email.com"},
 				Readers:           nil,
 			},
@@ -178,34 +197,52 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 			authEnforcer := &enforcerMock.Enforcer{}
 			if tt.authEnabled {
 
-				projectResource := fmt.Sprintf(ProjectResources, tt.arg.Id)
-				projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.Id)
+				projectResource := fmt.Sprintf(ProjectResources, tt.arg.ID)
+				projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.ID)
 				projectNameResource := fmt.Sprintf(ProjectResources, tt.arg.Name)
 
-				authEnforcer.On("UpsertRole", fmt.Sprintf("%s-administrators", tt.arg.Name), []string(tt.arg.Administrators)).
-					Return(&types.Role{
-						ID:      "admin-role",
-						Members: tt.arg.Administrators,
-					}, nil)
-				authEnforcer.On("UpsertRole", fmt.Sprintf("%s-readers", tt.arg.Name), []string(tt.arg.Readers)).
-					Return(&types.Role{
-						ID:      "reader-role",
-						Members: tt.arg.Readers,
-					}, nil)
-				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-administrators-policy", tt.arg.Name), []string{"admin-role"}, []string{}, []string{projectResource, projectSubResource, projectNameResource}, []string{enforcer.ActionAll}).
-					Return(&types.Policy{
-						ID:        "admin-policy",
-						Subjects:  []string{"admin-role"},
-						Resources: []string{projectResource, projectSubResource, projectNameResource},
-						Actions:   []string{enforcer.ActionAll},
-					}, nil)
-				authEnforcer.On("UpsertPolicy", fmt.Sprintf("%s-readers-policy", tt.arg.Name), []string{"reader-role"}, []string{}, []string{projectResource, projectSubResource, projectNameResource}, []string{enforcer.ActionRead}).
-					Return(&types.Policy{
-						ID:        "reader-policy",
-						Subjects:  []string{"readers-role"},
-						Resources: []string{projectResource, projectSubResource, projectNameResource},
-						Actions:   []string{enforcer.ActionRead},
-					}, nil)
+				authEnforcer.On(
+					"UpsertRole",
+					fmt.Sprintf("%s-administrators", tt.arg.Name),
+					[]string(tt.arg.Administrators),
+				).Return(&types.Role{
+					ID:      "admin-role",
+					Members: tt.arg.Administrators,
+				}, nil)
+				authEnforcer.On(
+					"UpsertRole",
+					fmt.Sprintf("%s-readers", tt.arg.Name),
+					[]string(tt.arg.Readers),
+				).Return(&types.Role{
+					ID:      "reader-role",
+					Members: tt.arg.Readers,
+				}, nil)
+				authEnforcer.On(
+					"UpsertPolicy",
+					fmt.Sprintf("%s-administrators-policy", tt.arg.Name),
+					[]string{"admin-role"},
+					[]string{},
+					[]string{projectResource, projectSubResource, projectNameResource},
+					[]string{enforcer.ActionAll},
+				).Return(&types.Policy{
+					ID:        "admin-policy",
+					Subjects:  []string{"admin-role"},
+					Resources: []string{projectResource, projectSubResource, projectNameResource},
+					Actions:   []string{enforcer.ActionAll},
+				}, nil)
+				authEnforcer.On(
+					"UpsertPolicy",
+					fmt.Sprintf("%s-readers-policy", tt.arg.Name),
+					[]string{"reader-role"},
+					[]string{},
+					[]string{projectResource, projectSubResource, projectNameResource},
+					[]string{enforcer.ActionRead},
+				).Return(&types.Policy{
+					ID:        "reader-policy",
+					Subjects:  []string{"readers-role"},
+					Resources: []string{projectResource, projectSubResource, projectNameResource},
+					Actions:   []string{enforcer.ActionRead},
+				}, nil)
 			}
 
 			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
@@ -227,7 +264,7 @@ func TestProjectsService_ListProjects(t *testing.T) {
 	exp := []*models.Project{
 		{
 			Name:              "my-project",
-			MlflowTrackingUrl: MLFlowTrackingURL,
+			MLFlowTrackingURL: MLFlowTrackingURL,
 			Administrators:    []string{"user@email.com"},
 			Readers:           nil,
 		},
@@ -247,12 +284,12 @@ func TestProjectsService_ListProjects(t *testing.T) {
 }
 
 func TestProjectsService_FindById(t *testing.T) {
-	id := models.Id(1)
+	id := models.ID(1)
 
 	exp := &models.Project{
-		Id:                id,
+		ID:                id,
 		Name:              "my-project",
-		MlflowTrackingUrl: MLFlowTrackingURL,
+		MLFlowTrackingURL: MLFlowTrackingURL,
 		Administrators:    []string{"user@email.com"},
 		Readers:           nil,
 	}
@@ -263,7 +300,7 @@ func TestProjectsService_FindById(t *testing.T) {
 	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false)
 	assert.NoError(t, err)
 
-	res, err := projectsService.FindById(id)
+	res, err := projectsService.FindByID(id)
 	assert.NoError(t, err)
 	assert.Equal(t, exp, res)
 

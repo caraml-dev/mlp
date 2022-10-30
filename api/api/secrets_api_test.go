@@ -21,7 +21,7 @@ func TestCreateSecret(t *testing.T) {
 		body               interface{}
 		savedSecret        *models.Secret
 		errSaveSecret      error
-		expectedResponse   *ApiResponse
+		expectedResponse   *Response
 	}{
 		{
 			desc: "Should success",
@@ -32,22 +32,22 @@ func TestCreateSecret(t *testing.T) {
 				Name: "name",
 				Data: `{"id": 3}`,
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 201,
 				data: &models.Secret{
-					Id:        models.Id(1),
-					ProjectId: models.Id(1),
+					ID:        models.ID(1),
+					ProjectID: models.ID(1),
 					Name:      "name",
 					Data:      "encryptedData",
 				},
 			},
 			existingProject: &models.Project{
-				Id:   models.Id(1),
+				ID:   models.ID(1),
 				Name: "project",
 			},
 			savedSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "encryptedData",
 			},
@@ -61,7 +61,7 @@ func TestCreateSecret(t *testing.T) {
 				Name: "name",
 				Data: `{"id": 3}`,
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 404,
 				data: ErrorMessage{"Project with given `project_id: 1` not found"},
 			},
@@ -76,12 +76,12 @@ func TestCreateSecret(t *testing.T) {
 				Name: "name",
 			},
 
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{"Invalid request body"},
 			},
 			existingProject: &models.Project{
-				Id:   models.Id(1),
+				ID:   models.ID(1),
 				Name: "project",
 			},
 		},
@@ -94,12 +94,12 @@ func TestCreateSecret(t *testing.T) {
 				Name: "name",
 				Data: `{"id": 3}`,
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 500,
 				data: ErrorMessage{"db is down"},
 			},
 			existingProject: &models.Project{
-				Id:   models.Id(1),
+				ID:   models.ID(1),
 				Name: "project",
 			},
 			errSaveSecret: fmt.Errorf("db is down"),
@@ -108,7 +108,7 @@ func TestCreateSecret(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			projectService := &mocks.ProjectsService{}
-			projectService.On("FindById", models.Id(1)).Return(tC.existingProject, tC.errFetchingProject)
+			projectService.On("FindByID", models.ID(1)).Return(tC.existingProject, tC.errFetchingProject)
 
 			secretService := &mocks.SecretService{}
 			secretService.On("Save", mock.Anything).Return(tC.savedSecret, tC.errSaveSecret)
@@ -135,7 +135,7 @@ func TestUpdateSecret(t *testing.T) {
 		errFetchingSecret error
 		updatedSecret     *models.Secret
 		errUpdatingSecret error
-		expectedResponse  *ApiResponse
+		expectedResponse  *Response
 	}{
 		{
 			desc: "Should responded 204",
@@ -148,22 +148,22 @@ func TestUpdateSecret(t *testing.T) {
 				Data: `{"id": 3}`,
 			},
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "no-name",
 				Data:      `{"id": 2}`,
 			},
 			updatedSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      `{"id": 3}`,
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 200,
 				data: &models.Secret{
-					Id:        models.Id(1),
-					ProjectId: models.Id(1),
+					ID:        models.ID(1),
+					ProjectID: models.ID(1),
 					Name:      "name",
 					Data:      `{"id": 3}`,
 				},
@@ -179,22 +179,22 @@ func TestUpdateSecret(t *testing.T) {
 				Name: "name",
 			},
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "no-name",
 				Data:      `{"id": 2}`,
 			},
 			updatedSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      `{"id": 3}`,
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 200,
 				data: &models.Secret{
-					Id:        models.Id(1),
-					ProjectId: models.Id(1),
+					ID:        models.ID(1),
+					ProjectID: models.ID(1),
 					Name:      "name",
 					Data:      `{"id": 3}`,
 				},
@@ -210,18 +210,18 @@ func TestUpdateSecret(t *testing.T) {
 				Name: "name",
 			},
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "no-name",
 				Data:      `{"id": 2}`,
 			},
 			updatedSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      `{"id": 3}`,
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{"project_id and secret_id is not valid"},
 			},
@@ -234,18 +234,18 @@ func TestUpdateSecret(t *testing.T) {
 			},
 			body: "body",
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "no-name",
 				Data:      `{"id": 2}`,
 			},
 			updatedSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      `{"id": 3}`,
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{"Invalid request body"},
 			},
@@ -261,7 +261,7 @@ func TestUpdateSecret(t *testing.T) {
 			},
 			existingSecret:    nil,
 			errFetchingSecret: nil,
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 404,
 				data: ErrorMessage{"Secret with given `secret_id: 1` and `project_id: 1` not found"},
 			},
@@ -276,7 +276,7 @@ func TestUpdateSecret(t *testing.T) {
 				Name: "name",
 			},
 			errFetchingSecret: fmt.Errorf("db is down"),
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 500,
 				data: ErrorMessage{"db is down"},
 			},
@@ -291,13 +291,13 @@ func TestUpdateSecret(t *testing.T) {
 				Name: "name",
 			},
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "no-name",
 				Data:      `{"id": 2}`,
 			},
 			errUpdatingSecret: fmt.Errorf("db is down"),
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 500,
 				data: ErrorMessage{"db is down"},
 			},
@@ -306,7 +306,7 @@ func TestUpdateSecret(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			secretService := &mocks.SecretService{}
-			secretService.On("FindByIdAndProjectId", models.Id(1), models.Id(1)).Return(tC.existingSecret, tC.errFetchingSecret)
+			secretService.On("FindByIDAndProjectID", models.ID(1), models.ID(1)).Return(tC.existingSecret, tC.errFetchingSecret)
 			secretService.On("Save", mock.Anything).Return(tC.updatedSecret, tC.errUpdatingSecret)
 
 			controller := &SecretsController{
@@ -326,7 +326,7 @@ func TestDeleteSecret(t *testing.T) {
 		desc              string
 		vars              map[string]string
 		errDeletingSecret error
-		expectedResponse  *ApiResponse
+		expectedResponse  *Response
 	}{
 		{
 			desc: "Should responsed 204",
@@ -334,7 +334,7 @@ func TestDeleteSecret(t *testing.T) {
 				"project_id": "1",
 				"secret_id":  "1",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 204,
 				data: nil,
 			},
@@ -345,7 +345,7 @@ func TestDeleteSecret(t *testing.T) {
 				"project_id": "def",
 				"secret_id":  "ghi",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{"project_id and secret_id is not valid"},
 			},
@@ -357,7 +357,7 @@ func TestDeleteSecret(t *testing.T) {
 				"secret_id":  "1",
 			},
 			errDeletingSecret: fmt.Errorf("db is down"),
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 500,
 				data: ErrorMessage{"db is down"},
 			},
@@ -366,7 +366,7 @@ func TestDeleteSecret(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			secretService := &mocks.SecretService{}
-			secretService.On("Delete", models.Id(1), models.Id(1)).Return(tC.errDeletingSecret)
+			secretService.On("Delete", models.ID(1), models.ID(1)).Return(tC.errDeletingSecret)
 
 			controller := &SecretsController{
 				AppContext: &AppContext{
@@ -387,44 +387,44 @@ func TestListSecret(t *testing.T) {
 		errFetchingProject error
 		secrets            []*models.Secret
 		errSaveSecret      error
-		expectedResponse   *ApiResponse
+		expectedResponse   *Response
 	}{
 		{
 			desc: "Should success",
 			vars: map[string]string{
 				"project_id": "1",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 200,
 				data: []*models.Secret{
 					{
-						Id:        models.Id(1),
-						ProjectId: models.Id(1),
+						ID:        models.ID(1),
+						ProjectID: models.ID(1),
 						Name:      "name-1",
 						Data:      "encryptedData",
 					},
 					{
-						Id:        models.Id(2),
-						ProjectId: models.Id(1),
+						ID:        models.ID(2),
+						ProjectID: models.ID(1),
 						Name:      "name-2",
 						Data:      "encryptedData",
 					},
 				},
 			},
 			existingProject: &models.Project{
-				Id:   models.Id(1),
+				ID:   models.ID(1),
 				Name: "project",
 			},
 			secrets: []*models.Secret{
 				{
-					Id:        models.Id(1),
-					ProjectId: models.Id(1),
+					ID:        models.ID(1),
+					ProjectID: models.ID(1),
 					Name:      "name-1",
 					Data:      "encryptedData",
 				},
 				{
-					Id:        models.Id(2),
-					ProjectId: models.Id(1),
+					ID:        models.ID(2),
+					ProjectID: models.ID(1),
 					Name:      "name-2",
 					Data:      "encryptedData",
 				},
@@ -435,7 +435,7 @@ func TestListSecret(t *testing.T) {
 			vars: map[string]string{
 				"project_id": "1",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 404,
 				data: ErrorMessage{"Project with given `project_id: 1` not found"},
 			},
@@ -446,12 +446,12 @@ func TestListSecret(t *testing.T) {
 			vars: map[string]string{
 				"project_id": "1",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 500,
 				data: ErrorMessage{"db is down"},
 			},
 			existingProject: &models.Project{
-				Id:   models.Id(1),
+				ID:   models.ID(1),
 				Name: "project",
 			},
 			errSaveSecret: fmt.Errorf("db is down"),
@@ -460,7 +460,7 @@ func TestListSecret(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			projectService := &mocks.ProjectsService{}
-			projectService.On("FindById", models.Id(1)).Return(tC.existingProject, tC.errFetchingProject)
+			projectService.On("FindByID", models.ID(1)).Return(tC.existingProject, tC.errFetchingProject)
 
 			secretService := &mocks.SecretService{}
 			secretService.On("ListSecret", mock.Anything).Return(tC.secrets, tC.errSaveSecret)

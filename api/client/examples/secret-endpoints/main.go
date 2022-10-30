@@ -49,7 +49,7 @@ func main() {
 
 		log.Println("Project:", project.Name)
 
-		_, _, err := apiClient.SecretApi.ProjectsProjectIdSecretsPost(ctx, project.Id, client.Secret{
+		_, _, err := apiClient.SecretApi.ProjectsProjectIdSecretsPost(ctx, project.ID, client.Secret{
 			Name: project.Name,
 			Data: `{"data": "encrypted"}`,
 		})
@@ -58,14 +58,14 @@ func main() {
 		}
 
 		// Get all secrets for projects
-		secrets, _, err := apiClient.SecretApi.ProjectsProjectIdSecretsGet(ctx, project.Id)
+		secrets, _, err := apiClient.SecretApi.ProjectsProjectIdSecretsGet(ctx, project.ID)
 		if err != nil {
 			panic(err)
 		}
 
 		for _, secret := range secrets {
 			log.Println("Secret name:", secret.Name)
-			_, err := apiClient.SecretApi.ProjectsProjectIdSecretsSecretIdDelete(ctx, project.Id, secret.Id)
+			_, err := apiClient.SecretApi.ProjectsProjectIdSecretsSecretIdDelete(ctx, project.ID, secret.ID)
 			if err != nil {
 				panic(err)
 			}

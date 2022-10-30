@@ -1,3 +1,4 @@
+//go:build integration || integration_local
 // +build integration integration_local
 
 package storage
@@ -31,12 +32,12 @@ func TestSave(t *testing.T) {
 		{
 			desc: "Should success if all validation is met",
 			secret: &models.Secret{
-				ProjectId: models.Id(1),
+				ProjectID: models.ID(1),
 				Name:      "secret_name",
 				Data:      "data",
 			},
 			expectedSecret: &models.Secret{
-				ProjectId: models.Id(1),
+				ProjectID: models.ID(1),
 				Name:      "secret_name",
 				Data:      "data",
 			},
@@ -44,7 +45,7 @@ func TestSave(t *testing.T) {
 		{
 			desc: "Should failed if project_id is not exist in db",
 			secret: &models.Secret{
-				ProjectId: models.Id(2),
+				ProjectID: models.ID(2),
 				Name:      "name",
 				Data:      "data",
 			},
@@ -53,12 +54,12 @@ func TestSave(t *testing.T) {
 		{
 			desc: "Should failed if existing secret name used in the same project_id",
 			secret: &models.Secret{
-				ProjectId: models.Id(1),
+				ProjectID: models.ID(1),
 				Name:      "secret_name",
 				Data:      "data",
 			},
 			existingSecret: &models.Secret{
-				ProjectId: models.Id(1),
+				ProjectID: models.ID(1),
 				Name:      "secret_name",
 				Data:      "old_data",
 			},
@@ -67,8 +68,8 @@ func TestSave(t *testing.T) {
 		{
 			desc: "Should success edit secret data",
 			secret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "secret_name",
 				Data:      "data",
 				CreatedUpdated: models.CreatedUpdated{
@@ -76,13 +77,13 @@ func TestSave(t *testing.T) {
 				},
 			},
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "secret_name",
 				Data:      "old_data",
 			},
 			expectedSecret: &models.Secret{
-				ProjectId: models.Id(1),
+				ProjectID: models.ID(1),
 				Name:      "secret_name",
 				Data:      "data",
 			},
@@ -92,8 +93,8 @@ func TestSave(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
 				projectStorage := NewProjectStorage(db)
-				projectStorage.Save(&models.Project{
-					Id:   models.Id(1),
+				_, _ = projectStorage.Save(&models.Project{
+					ID:   models.ID(1),
 					Name: "project_name",
 				})
 				secretStorage := NewSecretStorage(db, passphrase)
@@ -107,10 +108,10 @@ func TestSave(t *testing.T) {
 				} else {
 					fmt.Printf("result %+v", *result)
 					require.NoError(t, err)
-					assert.NotZero(t, result.Id)
+					assert.NotZero(t, result.ID)
 					assert.NotEmpty(t, result.CreatedAt)
 					assert.NotEmpty(t, result.UpdatedAt)
-					assert.Equal(t, tC.expectedSecret.ProjectId, result.ProjectId)
+					assert.Equal(t, tC.expectedSecret.ProjectID, result.ProjectID)
 					assert.Equal(t, tC.expectedSecret.Name, result.Name)
 
 					plain, err := result.DecryptData(util.CreateHash(passphrase))
@@ -132,30 +133,30 @@ func TestDelete(t *testing.T) {
 		{
 			desc: "Should success deleted secret",
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
+				ID:        models.ID(1),
 				Name:      "name",
-				ProjectId: models.Id(1),
+				ProjectID: models.ID(1),
 				Data:      "data",
 			},
 			secretToDelete: &models.Secret{
-				Id:        models.Id(1),
+				ID:        models.ID(1),
 				Name:      "name",
-				ProjectId: models.Id(1),
+				ProjectID: models.ID(1),
 				Data:      "data",
 			},
 		},
 		{
 			desc: "Should success even when secret not exist",
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
+				ID:        models.ID(1),
 				Name:      "name",
-				ProjectId: models.Id(1),
+				ProjectID: models.ID(1),
 				Data:      "data",
 			},
 			secretToDelete: &models.Secret{
-				Id:        models.Id(2),
+				ID:        models.ID(2),
 				Name:      "name_2",
-				ProjectId: models.Id(1),
+				ProjectID: models.ID(1),
 				Data:      "data",
 			},
 		},
@@ -164,8 +165,8 @@ func TestDelete(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
 				projectStorage := NewProjectStorage(db)
-				projectStorage.Save(&models.Project{
-					Id:   models.Id(1),
+				_, _ = projectStorage.Save(&models.Project{
+					ID:   models.ID(1),
 					Name: "project_name",
 				})
 				secretStorage := NewSecretStorage(db, "password")
@@ -173,7 +174,7 @@ func TestDelete(t *testing.T) {
 					_, err := secretStorage.Save(tC.existingSecret)
 					require.NoError(t, err)
 				}
-				err := secretStorage.Delete(tC.secretToDelete.Id, tC.secretToDelete.ProjectId)
+				err := secretStorage.Delete(tC.secretToDelete.ID, tC.secretToDelete.ProjectID)
 				if tC.expectedError != "" {
 					assert.EqualError(t, err, tC.expectedError)
 				} else {
@@ -188,16 +189,16 @@ func TestGetAsPlainText(t *testing.T) {
 	testCases := []struct {
 		desc           string
 		existingSecret *models.Secret
-		secretId       models.Id
-		projectId      models.Id
+		secretID       models.ID
+		projectID      models.ID
 		expectedSecret *models.Secret
 		expectedError  string
 	}{
 		{
 			desc: "Should success get secret",
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "data",
 				CreatedUpdated: models.CreatedUpdated{
@@ -205,11 +206,11 @@ func TestGetAsPlainText(t *testing.T) {
 					UpdatedAt: time.Now(),
 				},
 			},
-			secretId:  models.Id(1),
-			projectId: models.Id(1),
+			secretID:  models.ID(1),
+			projectID: models.ID(1),
 			expectedSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "data",
 			},
@@ -217,8 +218,8 @@ func TestGetAsPlainText(t *testing.T) {
 		{
 			desc: "Should failed when secret not found",
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "data",
 				CreatedUpdated: models.CreatedUpdated{
@@ -226,8 +227,8 @@ func TestGetAsPlainText(t *testing.T) {
 					UpdatedAt: time.Now(),
 				},
 			},
-			secretId:      models.Id(1),
-			projectId:     models.Id(2),
+			secretID:      models.ID(1),
+			projectID:     models.ID(2),
 			expectedError: "record not found",
 		},
 	}
@@ -235,8 +236,8 @@ func TestGetAsPlainText(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
 				projectStorage := NewProjectStorage(db)
-				projectStorage.Save(&models.Project{
-					Id:   models.Id(1),
+				_, _ = projectStorage.Save(&models.Project{
+					ID:   models.ID(1),
 					Name: "project_name",
 				})
 				secretStorage := NewSecretStorage(db, "password")
@@ -244,15 +245,15 @@ func TestGetAsPlainText(t *testing.T) {
 					_, err := secretStorage.Save(tC.existingSecret)
 					require.NoError(t, err)
 				}
-				secret, err := secretStorage.GetAsPlainText(tC.secretId, tC.projectId)
+				secret, err := secretStorage.GetAsPlainText(tC.secretID, tC.projectID)
 				if tC.expectedError != "" {
 					assert.EqualError(t, err, tC.expectedError)
 				} else {
 					require.NoError(t, err)
-					assert.Equal(t, tC.expectedSecret.Id, secret.Id)
+					assert.Equal(t, tC.expectedSecret.ID, secret.ID)
 					assert.Equal(t, tC.expectedSecret.Name, secret.Name)
 					assert.Equal(t, tC.expectedSecret.Data, secret.Data)
-					assert.Equal(t, tC.expectedSecret.ProjectId, secret.ProjectId)
+					assert.Equal(t, tC.expectedSecret.ProjectID, secret.ProjectID)
 				}
 			})
 		})
@@ -264,15 +265,15 @@ func TestGetByNameAsPlainText(t *testing.T) {
 		desc           string
 		existingSecret *models.Secret
 		name           string
-		projectId      models.Id
+		projectID      models.ID
 		expectedSecret *models.Secret
 		expectedError  string
 	}{
 		{
 			desc: "Should success get secret",
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "data",
 				CreatedUpdated: models.CreatedUpdated{
@@ -281,10 +282,10 @@ func TestGetByNameAsPlainText(t *testing.T) {
 				},
 			},
 			name:      "name",
-			projectId: models.Id(1),
+			projectID: models.ID(1),
 			expectedSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "data",
 			},
@@ -292,8 +293,8 @@ func TestGetByNameAsPlainText(t *testing.T) {
 		{
 			desc: "Should failed when secret not found",
 			existingSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "data",
 				CreatedUpdated: models.CreatedUpdated{
@@ -302,7 +303,7 @@ func TestGetByNameAsPlainText(t *testing.T) {
 				},
 			},
 			name:          "other-name",
-			projectId:     models.Id(1),
+			projectID:     models.ID(1),
 			expectedError: "record not found",
 		},
 	}
@@ -310,8 +311,8 @@ func TestGetByNameAsPlainText(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
 				projectStorage := NewProjectStorage(db)
-				projectStorage.Save(&models.Project{
-					Id:   models.Id(1),
+				_, _ = projectStorage.Save(&models.Project{
+					ID:   models.ID(1),
 					Name: "project_name",
 				})
 				secretStorage := NewSecretStorage(db, "password")
@@ -319,15 +320,15 @@ func TestGetByNameAsPlainText(t *testing.T) {
 					_, err := secretStorage.Save(tC.existingSecret)
 					require.NoError(t, err)
 				}
-				secret, err := secretStorage.GetByNameAsPlainText(tC.name, tC.projectId)
+				secret, err := secretStorage.GetByNameAsPlainText(tC.name, tC.projectID)
 				if tC.expectedError != "" {
 					assert.EqualError(t, err, tC.expectedError)
 				} else {
 					require.NoError(t, err)
-					assert.Equal(t, tC.expectedSecret.Id, secret.Id)
+					assert.Equal(t, tC.expectedSecret.ID, secret.ID)
 					assert.Equal(t, tC.expectedSecret.Name, secret.Name)
 					assert.Equal(t, tC.expectedSecret.Data, secret.Data)
-					assert.Equal(t, tC.expectedSecret.ProjectId, secret.ProjectId)
+					assert.Equal(t, tC.expectedSecret.ProjectID, secret.ProjectID)
 				}
 			})
 		})
@@ -337,13 +338,13 @@ func TestGetByNameAsPlainText(t *testing.T) {
 func TestList(t *testing.T) {
 	database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
 		projectStorage := NewProjectStorage(db)
-		projectStorage.Save(&models.Project{
-			Id:   models.Id(1),
+		_, _ = projectStorage.Save(&models.Project{
+			ID:   models.ID(1),
 			Name: "project_name",
 		})
 		secretStorage := NewSecretStorage(db, passphrase)
 		secret1 := &models.Secret{
-			ProjectId: 1,
+			ProjectID: 1,
 			Name:      "secret-1",
 			Data:      "data-1",
 		}
@@ -351,7 +352,7 @@ func TestList(t *testing.T) {
 		assert.NoError(t, err)
 
 		secret2 := &models.Secret{
-			ProjectId: 1,
+			ProjectID: 1,
 			Name:      "secret-2",
 			Data:      "data-2",
 		}
@@ -363,11 +364,11 @@ func TestList(t *testing.T) {
 		assert.Len(t, secrets, 2)
 
 		// assert both secret is encrypted
-		plainSecret1, err := secrets[0].DecryptData(util.CreateHash(passphrase))
+		plainSecret1, _ := secrets[0].DecryptData(util.CreateHash(passphrase))
 		assert.Equal(t, secret1.Data, plainSecret1.Data)
 
 		// assert both secret is encrypted
-		plainSecret2, err := secrets[1].DecryptData(util.CreateHash(passphrase))
+		plainSecret2, _ := secrets[1].DecryptData(util.CreateHash(passphrase))
 		assert.Equal(t, secret2.Data, plainSecret2.Data)
 	})
 }

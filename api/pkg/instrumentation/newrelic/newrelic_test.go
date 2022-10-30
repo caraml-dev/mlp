@@ -85,7 +85,7 @@ func TestInitNewRelic(t *testing.T) {
 
 func TestWrapHandleFunc(t *testing.T) {
 	pattern, handler := WrapHandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong"))
+		_, _ = w.Write([]byte("pong"))
 	})
 
 	assert.Equal(t, "/ping", pattern)
@@ -99,7 +99,7 @@ func (h *pingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	w.Write([]byte("pong"))
+	_, _ = w.Write([]byte("pong"))
 }
 
 func TestWrapHandle(t *testing.T) {

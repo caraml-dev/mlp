@@ -23,14 +23,14 @@ func TestFindByIdAndProjectId(t *testing.T) {
 		{
 			desc: "Should success",
 			secretFromDB: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "qzSQ+pZ9Qu7+SpTQCuZB2AgdtH3cuMR0eWbH/yvlqrI=",
 			},
 			expectedSecret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "qzSQ+pZ9Qu7+SpTQCuZB2AgdtH3cuMR0eWbH/yvlqrI=",
 			},
@@ -38,8 +38,8 @@ func TestFindByIdAndProjectId(t *testing.T) {
 		{
 			desc: "Should return nil and no error if record not found",
 			secretFromDB: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "qzSQ+pZ9Qu7+SpTQCuZB2AgdtH3cuMR0eWbH/yvlqrI=",
 			},
@@ -49,8 +49,8 @@ func TestFindByIdAndProjectId(t *testing.T) {
 		{
 			desc: "Should return error if something going wrong when fetching db",
 			secretFromDB: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "qzSQ+pZ9Qu7+SpTQCuZB2AgdtH3cuMR0eWbH/yvlqrI=",
 			},
@@ -61,9 +61,9 @@ func TestFindByIdAndProjectId(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			secretStorage := &mocks.SecretStorage{}
-			secretStorage.On("GetAsPlainText", models.Id(1), models.Id(1)).Return(tC.secretFromDB, tC.errorFetchFromDb)
+			secretStorage.On("GetAsPlainText", models.ID(1), models.ID(1)).Return(tC.secretFromDB, tC.errorFetchFromDb)
 			secretService := NewSecretService(secretStorage)
-			result, err := secretService.FindByIdAndProjectId(1, 1)
+			result, err := secretService.FindByIDAndProjectID(1, 1)
 			if tC.expectedError == "" {
 				require.NoError(t, err)
 				assert.Equal(t, tC.expectedSecret, result)
@@ -84,8 +84,8 @@ func TestSave(t *testing.T) {
 		{
 			desc: "Should success",
 			secret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "plainData",
 			},
@@ -93,8 +93,8 @@ func TestSave(t *testing.T) {
 		{
 			desc: "Should raise error when failed save to db",
 			secret: &models.Secret{
-				Id:        models.Id(1),
-				ProjectId: models.Id(1),
+				ID:        models.ID(1),
+				ProjectID: models.ID(1),
 				Name:      "name",
 				Data:      "plainData",
 			},
@@ -110,9 +110,9 @@ func TestSave(t *testing.T) {
 			result, err := secretService.Save(tC.secret)
 			if tC.expectedError == "" {
 				require.NoError(t, err)
-				assert.Equal(t, tC.secret.Id, result.Id)
+				assert.Equal(t, tC.secret.ID, result.ID)
 				assert.Equal(t, tC.secret.Name, result.Name)
-				assert.Equal(t, tC.secret.ProjectId, result.ProjectId)
+				assert.Equal(t, tC.secret.ProjectID, result.ProjectID)
 				require.NoError(t, err)
 			} else {
 				assert.EqualError(t, err, tC.expectedError)
@@ -124,20 +124,20 @@ func TestSave(t *testing.T) {
 func TestDelete(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		secretId      models.Id
-		projectId     models.Id
+		secretID      models.ID
+		projectID     models.ID
 		errorFromDB   error
 		expectedError string
 	}{
 		{
 			desc:      "Should success",
-			secretId:  models.Id(1),
-			projectId: models.Id(1),
+			secretID:  models.ID(1),
+			projectID: models.ID(1),
 		},
 		{
 			desc:          "Should success",
-			secretId:      models.Id(1),
-			projectId:     models.Id(1),
+			secretID:      models.ID(1),
+			projectID:     models.ID(1),
 			errorFromDB:   fmt.Errorf("db is down"),
 			expectedError: "error when deleting secret with id: 1, project_id: 1 and error: db is down",
 		},
@@ -145,11 +145,11 @@ func TestDelete(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			secretStorage := &mocks.SecretStorage{}
-			secretStorage.On("Delete", tC.secretId, tC.projectId).Return(tC.errorFromDB)
+			secretStorage.On("Delete", tC.secretID, tC.projectID).Return(tC.errorFromDB)
 			secretService := &secretService{
 				secretStorage: secretStorage,
 			}
-			err := secretService.Delete(tC.secretId, tC.projectId)
+			err := secretService.Delete(tC.secretID, tC.projectID)
 			if tC.expectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -160,28 +160,28 @@ func TestDelete(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
-	projectId := models.Id(1)
+	projectID := models.ID(1)
 	secrets := []*models.Secret{
 		{
-			Id:        models.Id(1),
-			ProjectId: projectId,
+			ID:        models.ID(1),
+			ProjectID: projectID,
 			Name:      "name1",
 			Data:      "plainData",
 		},
 		{
-			Id:        models.Id(2),
-			ProjectId: projectId,
+			ID:        models.ID(2),
+			ProjectID: projectID,
 			Name:      "name2",
 			Data:      "plainData",
 		},
 	}
 
 	secretStorage := &mocks.SecretStorage{}
-	secretStorage.On("List", projectId).Return(secrets, nil)
+	secretStorage.On("List", projectID).Return(secrets, nil)
 	secretService := &secretService{
 		secretStorage: secretStorage,
 	}
-	actual, err := secretService.ListSecret(projectId)
+	actual, err := secretService.ListSecret(projectID)
 	assert.NoError(t, err)
 	assert.Equal(t, secrets, actual)
 }

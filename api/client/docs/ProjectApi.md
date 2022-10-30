@@ -72,7 +72,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ProjectsProjectIdGet**
-> Project ProjectsProjectIdGet(ctx, projectId)
+> Project ProjectsProjectIdGet(ctx, projectID)
 Get project
 
 ### Required Parameters
@@ -80,7 +80,7 @@ Get project
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **projectId** | **int32**| project id of the project to be retrieved | 
+  **projectID** | **int32**| project id of the project to be retrieved | 
 
 ### Return type
 
@@ -98,7 +98,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ProjectsProjectIdPut**
-> Project ProjectsProjectIdPut(ctx, projectId, body)
+> Project ProjectsProjectIdPut(ctx, projectID, body)
 Update project
 
 ### Required Parameters
@@ -106,7 +106,7 @@ Update project
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **projectId** | **int32**| project id of the project to be updated | 
+  **projectID** | **int32**| project id of the project to be updated | 
   **body** | [**Project**](Project.md)| Project object that has to be updated | 
 
 ### Return type

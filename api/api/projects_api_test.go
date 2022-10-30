@@ -1,3 +1,4 @@
+//go:build integration || integration_local
 // +build integration integration_local
 
 package api
@@ -23,7 +24,7 @@ import (
 )
 
 const (
-	mlflowTrackingUrl = "http://localhost.com"
+	mlflowTrackingURL = "http://localhost.com"
 	adminUser         = "admin"
 	basePath          = "/v1"
 )
@@ -39,7 +40,7 @@ func TestCreateProject(t *testing.T) {
 		existingProject  *models.Project
 		body             interface{}
 		errSaveSecret    error
-		expectedResponse *ApiResponse
+		expectedResponse *Response
 	}{
 		{
 			desc:      "Should success for project without labels",
@@ -49,12 +50,12 @@ func TestCreateProject(t *testing.T) {
 				Team:   "dsp",
 				Stream: "dsp",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 201,
 				data: &models.Project{
-					Id:                models.Id(1),
+					ID:                models.ID(1),
 					Name:              "my-project",
-					MlflowTrackingUrl: mlflowTrackingUrl,
+					MLFlowTrackingURL: mlflowTrackingURL,
 					Administrators:    []string{adminUser},
 					Team:              "dsp",
 					Stream:            "dsp",
@@ -80,12 +81,12 @@ func TestCreateProject(t *testing.T) {
 					},
 				},
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 201,
 				data: &models.Project{
-					Id:                models.Id(1),
+					ID:                models.ID(1),
 					Name:              "my-project",
-					MlflowTrackingUrl: mlflowTrackingUrl,
+					MLFlowTrackingURL: mlflowTrackingURL,
 					Administrators:    []string{adminUser},
 					Team:              "dsp",
 					Stream:            "dsp",
@@ -111,7 +112,7 @@ func TestCreateProject(t *testing.T) {
 				Team:   "dsp",
 				Stream: "dsp",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{"Project my-project already exists"},
 			},
@@ -128,7 +129,7 @@ func TestCreateProject(t *testing.T) {
 				Name:   "my-project",
 				Stream: "dsp",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{"Team is required"},
 			},
@@ -141,7 +142,7 @@ func TestCreateProject(t *testing.T) {
 				Name: "my-project",
 				Team: "dsp",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{"Stream is required"},
 			},
@@ -154,7 +155,7 @@ func TestCreateProject(t *testing.T) {
 				Name: "a",
 				Team: "dsp",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{"Name should be more than 3 characters"},
 			},
@@ -167,7 +168,7 @@ func TestCreateProject(t *testing.T) {
 				Name: "lorem-ipsum-dolor-sing-amet-hahaha-hihihi-huhuhu-hehe-hoho",
 				Team: "dsp",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{"Name should be less than 50 characters"},
 			},
@@ -180,7 +181,7 @@ func TestCreateProject(t *testing.T) {
 				Name: "-invalid-project",
 				Team: "dsp",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{"Name should be a valid RFC1123 sub-domain"},
 			},
@@ -192,7 +193,7 @@ func TestCreateProject(t *testing.T) {
 			body: &models.Project{
 				Name: "swag-project",
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 403,
 				data: ErrorMessage{"Project creation from SDK is disabled. Use the MLP console to create a project."},
 			},
@@ -207,7 +208,7 @@ func TestCreateProject(t *testing.T) {
 					_, err := prjStorage.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingUrl, prjStorage, &enforcerMock.Enforcer{}, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, &enforcerMock.Enforcer{}, false)
 				assert.NoError(t, err)
 
 				r := NewRouter(AppContext{
@@ -260,15 +261,15 @@ func TestListProjects(t *testing.T) {
 	testCases := []struct {
 		desc             string
 		existingProjects []models.Project
-		expectedResponse *ApiResponse
+		expectedResponse *Response
 	}{
 		{
 			desc: "Should return all",
 			existingProjects: []models.Project{
 				{
-					Id:                models.Id(1),
+					ID:                models.ID(1),
 					Name:              "Project1",
-					MlflowTrackingUrl: "http://mlflow.com",
+					MLFlowTrackingURL: "http://mlflow.com",
 					Administrators:    []string{adminUser},
 					Team:              "dsp",
 					Stream:            "dsp",
@@ -278,13 +279,13 @@ func TestListProjects(t *testing.T) {
 					},
 				},
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 200,
 				data: []*models.Project{
 					{
-						Id:                models.Id(1),
+						ID:                models.ID(1),
 						Name:              "Project1",
-						MlflowTrackingUrl: "http://mlflow.com",
+						MLFlowTrackingURL: "http://mlflow.com",
 						Administrators:    []string{adminUser},
 						Team:              "dsp",
 						Stream:            "dsp",
@@ -299,7 +300,7 @@ func TestListProjects(t *testing.T) {
 		{
 			desc:             "Should return empty project",
 			existingProjects: []models.Project{},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 200,
 				data: []*models.Project{},
 			},
@@ -315,7 +316,7 @@ func TestListProjects(t *testing.T) {
 						assert.NoError(t, err)
 					}
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingUrl, prjStorage, &enforcerMock.Enforcer{}, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, &enforcerMock.Enforcer{}, false)
 				assert.NoError(t, err)
 
 				r := NewRouter(AppContext{
@@ -367,18 +368,18 @@ func TestListProjects(t *testing.T) {
 func TestUpdateProject(t *testing.T) {
 	testCases := []struct {
 		desc             string
-		projectId        models.Id
+		projectID        models.ID
 		existingProject  *models.Project
-		expectedResponse *ApiResponse
+		expectedResponse *Response
 		body             interface{}
 	}{
 		{
 			desc:      "Should success",
-			projectId: models.Id(1),
+			projectID: models.ID(1),
 			existingProject: &models.Project{
-				Id:                models.Id(1),
+				ID:                models.ID(1),
 				Name:              "Project1",
-				MlflowTrackingUrl: "http://mlflow.com",
+				MLFlowTrackingURL: "http://mlflow.com",
 				Administrators:    []string{adminUser},
 				Team:              "dsp",
 				Stream:            "dsp",
@@ -393,12 +394,12 @@ func TestUpdateProject(t *testing.T) {
 				Stream:         "dsp",
 				Administrators: []string{adminUser},
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 200,
 				data: &models.Project{
-					Id:                models.Id(1),
+					ID:                models.ID(1),
 					Name:              "Project1",
-					MlflowTrackingUrl: "http://mlflow.com",
+					MLFlowTrackingURL: "http://mlflow.com",
 					Administrators:    []string{adminUser},
 					Team:              "merlin",
 					Stream:            "dsp",
@@ -411,11 +412,11 @@ func TestUpdateProject(t *testing.T) {
 		},
 		{
 			desc:      "Should failed when name is not specified",
-			projectId: models.Id(1),
+			projectID: models.ID(1),
 			existingProject: &models.Project{
-				Id:                models.Id(1),
+				ID:                models.ID(1),
 				Name:              "Project1",
-				MlflowTrackingUrl: "http://mlflow.com",
+				MLFlowTrackingURL: "http://mlflow.com",
 				Administrators:    []string{adminUser},
 				Team:              "dsp",
 				Stream:            "dsp",
@@ -429,7 +430,7 @@ func TestUpdateProject(t *testing.T) {
 				Stream:         "dsp",
 				Administrators: []string{adminUser},
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 400,
 				data: ErrorMessage{
 					Message: "Name is required",
@@ -438,11 +439,11 @@ func TestUpdateProject(t *testing.T) {
 		},
 		{
 			desc:      "Should failed when name project id is not found",
-			projectId: models.Id(2),
+			projectID: models.ID(2),
 			existingProject: &models.Project{
-				Id:                models.Id(1),
+				ID:                models.ID(1),
 				Name:              "Project1",
-				MlflowTrackingUrl: "http://mlflow.com",
+				MLFlowTrackingURL: "http://mlflow.com",
 				Administrators:    []string{adminUser},
 				Team:              "dsp",
 				Stream:            "dsp",
@@ -457,7 +458,7 @@ func TestUpdateProject(t *testing.T) {
 				Stream:         "dsp",
 				Administrators: []string{adminUser},
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 404,
 				data: ErrorMessage{
 					Message: "Project id 2 not found",
@@ -473,7 +474,7 @@ func TestUpdateProject(t *testing.T) {
 					_, err := prjStorage.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingUrl, prjStorage, &enforcerMock.Enforcer{}, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, &enforcerMock.Enforcer{}, false)
 				assert.NoError(t, err)
 
 				r := NewRouter(AppContext{
@@ -482,7 +483,7 @@ func TestUpdateProject(t *testing.T) {
 				})
 
 				requestByte, _ := json.Marshal(tC.body)
-				req, err := http.NewRequest(http.MethodPut, "/v1/projects/"+tC.projectId.String(), bytes.NewReader(requestByte))
+				req, err := http.NewRequest(http.MethodPut, "/v1/projects/"+tC.projectID.String(), bytes.NewReader(requestByte))
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -524,17 +525,17 @@ func TestUpdateProject(t *testing.T) {
 func TestGetProject(t *testing.T) {
 	testCases := []struct {
 		desc             string
-		projectId        models.Id
+		projectID        models.ID
 		existingProject  *models.Project
-		expectedResponse *ApiResponse
+		expectedResponse *Response
 	}{
 		{
 			desc:      "Should success",
-			projectId: models.Id(1),
+			projectID: models.ID(1),
 			existingProject: &models.Project{
-				Id:                models.Id(1),
+				ID:                models.ID(1),
 				Name:              "Project1",
-				MlflowTrackingUrl: "http://mlflow.com",
+				MLFlowTrackingURL: "http://mlflow.com",
 				Administrators:    []string{adminUser},
 				Team:              "dsp",
 				Stream:            "dsp",
@@ -543,12 +544,12 @@ func TestGetProject(t *testing.T) {
 					UpdatedAt: now,
 				},
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 200,
 				data: &models.Project{
-					Id:                models.Id(1),
+					ID:                models.ID(1),
 					Name:              "Project1",
-					MlflowTrackingUrl: "http://mlflow.com",
+					MLFlowTrackingURL: "http://mlflow.com",
 					Administrators:    []string{adminUser},
 					Team:              "dsp",
 					Stream:            "dsp",
@@ -561,11 +562,11 @@ func TestGetProject(t *testing.T) {
 		},
 		{
 			desc:      "Should return nothing if project is not exist",
-			projectId: models.Id(2),
+			projectID: models.ID(2),
 			existingProject: &models.Project{
-				Id:                models.Id(1),
+				ID:                models.ID(1),
 				Name:              "Project1",
-				MlflowTrackingUrl: "http://mlflow.com",
+				MLFlowTrackingURL: "http://mlflow.com",
 				Administrators:    []string{adminUser},
 				Team:              "dsp",
 				Stream:            "dsp",
@@ -574,7 +575,7 @@ func TestGetProject(t *testing.T) {
 					UpdatedAt: now,
 				},
 			},
-			expectedResponse: &ApiResponse{
+			expectedResponse: &Response{
 				code: 404,
 				data: ErrorMessage{
 					Message: "Project id 2 not found",
@@ -590,7 +591,7 @@ func TestGetProject(t *testing.T) {
 					_, err := prjStorage.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingUrl, prjStorage, &enforcerMock.Enforcer{}, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, &enforcerMock.Enforcer{}, false)
 				assert.NoError(t, err)
 
 				r := NewRouter(AppContext{
@@ -598,7 +599,7 @@ func TestGetProject(t *testing.T) {
 					AuthorizationEnabled: false,
 				})
 
-				req, err := http.NewRequest(http.MethodGet, "/v1/projects/"+tC.projectId.String(), nil)
+				req, err := http.NewRequest(http.MethodGet, "/v1/projects/"+tC.projectID.String(), nil)
 				if err != nil {
 					t.Fatal(err)
 				}

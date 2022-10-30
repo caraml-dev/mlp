@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type ApiResponse struct {
+type Response struct {
 	code int
 	data interface{}
 }
@@ -14,55 +14,55 @@ type ErrorMessage struct {
 	Message string `json:"error"`
 }
 
-func (r *ApiResponse) WriteTo(w http.ResponseWriter) {
+func (r *Response) WriteTo(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(r.code)
 
 	if r.data != nil {
 		encoder := json.NewEncoder(w)
-		encoder.Encode(r.data)
+		_ = encoder.Encode(r.data)
 	}
 }
 
-func Ok(data interface{}) *ApiResponse {
-	return &ApiResponse{
+func Ok(data interface{}) *Response {
+	return &Response{
 		code: http.StatusOK,
 		data: data,
 	}
 }
 
-func Created(data interface{}) *ApiResponse {
-	return &ApiResponse{
+func Created(data interface{}) *Response {
+	return &Response{
 		code: http.StatusCreated,
 		data: data,
 	}
 }
 
-func NoContent() *ApiResponse {
-	return &ApiResponse{
+func NoContent() *Response {
+	return &Response{
 		code: http.StatusNoContent,
 	}
 }
 
-func Error(code int, msg string) *ApiResponse {
-	return &ApiResponse{
+func Error(code int, msg string) *Response {
+	return &Response{
 		code: code,
 		data: ErrorMessage{msg},
 	}
 }
 
-func NotFound(msg string) *ApiResponse {
+func NotFound(msg string) *Response {
 	return Error(http.StatusNotFound, msg)
 }
 
-func BadRequest(msg string) *ApiResponse {
+func BadRequest(msg string) *Response {
 	return Error(http.StatusBadRequest, msg)
 }
 
-func InternalServerError(msg string) *ApiResponse {
+func InternalServerError(msg string) *Response {
 	return Error(http.StatusInternalServerError, msg)
 }
 
-func Forbidden(msg string) *ApiResponse {
+func Forbidden(msg string) *Response {
 	return Error(http.StatusForbidden, msg)
 }

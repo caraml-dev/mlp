@@ -45,7 +45,7 @@ func TestReadClusterSecret(t *testing.T) {
 		secret      *api.Secret
 	}{
 		{
-			"sucessful get cluster secret",
+			"successful get cluster secret",
 			false,
 			"my-cluster",
 			&api.Secret{
@@ -112,7 +112,7 @@ func TestReadClusterSecret(t *testing.T) {
 			m := &mockSecretReader{}
 			m.On("Read", fmt.Sprintf("secret/%s", tt.clusterName)).Return(tt.secret, nil)
 
-			v, _ := newVaultClient(m)
+			v, _ := newClient(m)
 			clusterSecret, err := v.GetClusterSecret(tt.clusterName)
 			defer m.AssertExpectations(t)
 			if tt.wantError {

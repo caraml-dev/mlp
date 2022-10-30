@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"reflect"
 
+	"github.com/gojek/mlp/api/pkg/instrumentation/newrelic"
+
 	"github.com/go-playground/validator"
 	"github.com/gojek/mlp/api/pkg/authz/enforcer"
 	"github.com/gorilla/mux"
 
 	"github.com/gojek/mlp/api/middleware"
 	"github.com/gojek/mlp/api/models"
-	"github.com/gojek/mlp/api/pkg/instrumentation/newrelic"
 	"github.com/gojek/mlp/api/service"
 	"github.com/gojek/mlp/api/validation"
 )
@@ -26,14 +27,14 @@ type AppContext struct {
 	Enforcer             enforcer.Enforcer
 }
 
-// type ApiHandler func(r *http.Request, vars map[string]string, body interface{}) *ApiResponse
-type ApiHandler func(r *http.Request, vars map[string]string, body interface{}) *ApiResponse
+// type Handler func(r *http.Request, vars map[string]string, body interface{}) *Response
+type Handler func(r *http.Request, vars map[string]string, body interface{}) *Response
 
 type Route struct {
 	method  string
 	path    string
 	body    interface{}
-	handler ApiHandler
+	handler Handler
 	name    string
 }
 
@@ -52,7 +53,7 @@ func (route Route) HandlerFunc(validate *validator.Validate) http.HandlerFunc {
 			}
 		}
 
-		response := func() *ApiResponse {
+		response := func() *Response {
 			vars["user"] = r.Header.Get("User-Email")
 			var body interface{} = nil
 
@@ -80,19 +81,73 @@ func NewRouter(appCtx AppContext) *mux.Router {
 
 	routes := []Route{
 		//Applications API
-		{http.MethodGet, "/applications", nil, applicationsController.ListApplications, "ListApplications"},
+		{
+			http.MethodGet,
+			"/applications",
+			nil,
+			applicationsController.ListApplications,
+			"ListApplications",
+		},
 
 		//Projects API
-		{http.MethodGet, "/projects/{project_id:[0-9]+}", nil, projectsController.GetProject, "GetProject"},
-		{http.MethodGet, "/projects", nil, projectsController.ListProjects, "ListProjects"},
-		{http.MethodPost, "/projects", models.Project{}, projectsController.CreateProject, "CreateProject"},
-		{http.MethodPut, "/projects/{project_id:[0-9]+}", models.Project{}, projectsController.UpdateProject, "UpdateProject"},
+		{
+			http.MethodGet,
+			"/projects/{project_id:[0-9]+}",
+			nil,
+			projectsController.GetProject,
+			"GetProject",
+		},
+		{
+			http.MethodGet,
+			"/projects",
+			nil,
+			projectsController.ListProjects,
+			"ListProjects",
+		},
+		{
+			http.MethodPost,
+			"/projects",
+			models.Project{},
+			projectsController.CreateProject,
+			"CreateProject",
+		},
+		{
+			http.MethodPut,
+			"/projects/{project_id:[0-9]+}",
+			models.Project{},
+			projectsController.UpdateProject,
+			"UpdateProject",
+		},
 
 		// Secret Management API
-		{http.MethodGet, "/projects/{project_id:[0-9]+}/secrets", nil, secretController.ListSecret, "ListSecret"},
-		{http.MethodPost, "/projects/{project_id:[0-9]+}/secrets", models.Secret{}, secretController.CreateSecret, "CreateSecret"},
-		{http.MethodPatch, "/projects/{project_id:[0-9]+}/secrets/{secret_id}", models.Secret{}, secretController.UpdateSecret, "UpdateSecret"},
-		{http.MethodDelete, "/projects/{project_id:[0-9]+}/secrets/{secret_id}", nil, secretController.DeleteSecret, "DeleteSecret"},
+		{
+			http.MethodGet,
+			"/projects/{project_id:[0-9]+}/secrets",
+			nil,
+			secretController.ListSecret,
+			"ListSecret",
+		},
+		{
+			http.MethodPost,
+			"/projects/{project_id:[0-9]+}/secrets",
+			models.Secret{},
+			secretController.CreateSecret,
+			"CreateSecret",
+		},
+		{
+			http.MethodPatch,
+			"/projects/{project_id:[0-9]+}/secrets/{secret_id}",
+			models.Secret{},
+			secretController.UpdateSecret,
+			"UpdateSecret",
+		},
+		{
+			http.MethodDelete,
+			"/projects/{project_id:[0-9]+}/secrets/{secret_id}",
+			nil,
+			secretController.DeleteSecret,
+			"DeleteSecret",
+		},
 	}
 
 	var authzMiddleware *middleware.Authorizer

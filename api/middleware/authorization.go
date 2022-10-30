@@ -34,7 +34,10 @@ func (a *Authorizer) AuthorizationMiddleware(next http.Handler) http.Handler {
 
 		resource, err := a.getResource(r)
 		if err != nil {
-			jsonError(w, fmt.Sprintf("Error while checking authorization: %s", err), http.StatusInternalServerError)
+			jsonError(
+				w,
+				fmt.Sprintf("Error while checking authorization: %s", err),
+				http.StatusInternalServerError)
 			return
 		}
 
@@ -43,11 +46,17 @@ func (a *Authorizer) AuthorizationMiddleware(next http.Handler) http.Handler {
 
 		allowed, err := a.authEnforcer.Enforce(user, resource, action)
 		if err != nil {
-			jsonError(w, fmt.Sprintf("Error while checking authorization: %s", err), http.StatusInternalServerError)
+			jsonError(
+				w,
+				fmt.Sprintf("Error while checking authorization: %s", err),
+				http.StatusInternalServerError)
 			return
 		}
 		if !*allowed {
-			jsonError(w, fmt.Sprintf("%s is not authorized to execute %s on %s", user, action, resource), http.StatusUnauthorized)
+			jsonError(
+				w,
+				fmt.Sprintf("%s is not authorized to execute %s on %s", user, action, resource),
+				http.StatusUnauthorized)
 			return
 		}
 
@@ -69,10 +78,10 @@ func jsonError(w http.ResponseWriter, msg string, status int) {
 	w.WriteHeader(status)
 
 	if len(msg) > 0 {
-		errJson, _ := json.Marshal(struct {
+		errJSON, _ := json.Marshal(struct {
 			Error string `json:"error"`
 		}{msg})
 
-		w.Write(errJson)
+		_, _ = w.Write(errJSON)
 	}
 }

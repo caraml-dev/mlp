@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 )
@@ -13,7 +12,10 @@ func (a *ProjectCreation) ProjectCreationMiddleware(next http.Handler) http.Hand
 
 		userAgent := strings.ToLower(r.Header.Get("User-Agent"))
 		if strings.Contains(userAgent, "swagger") {
-			jsonError(w, fmt.Sprintf("Project creation from SDK is disabled. Use the MLP console to create a project."), http.StatusForbidden)
+			jsonError(
+				w,
+				"Project creation from SDK is disabled. Use the MLP console to create a project.",
+				http.StatusForbidden)
 			return
 		}
 
