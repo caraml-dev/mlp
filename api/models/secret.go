@@ -3,8 +3,8 @@ package models
 import "github.com/gojek/mlp/api/util"
 
 type Secret struct {
-	Id        Id     `json:"id"`
-	ProjectId Id     `json:"project_id"`
+	ID        ID     `json:"id"`
+	ProjectID ID     `json:"project_id"`
 	Name      string `json:"name"`
 	Data      string `json:"data"`
 	CreatedUpdated
@@ -18,8 +18,8 @@ func (s *Secret) IsValidForMutation() bool {
 	return s.isValid(true)
 }
 
-func (s *Secret) isValid(checkingId bool) bool {
-	if checkingId && s.Id <= 0 {
+func (s *Secret) isValid(checkingID bool) bool {
+	if checkingID && s.ID <= 0 {
 		return false
 	}
 	maxNameChar := 100
@@ -29,7 +29,7 @@ func (s *Secret) isValid(checkingId bool) bool {
 	if s.Data == "" {
 		return false
 	}
-	if s.ProjectId == 0 {
+	if s.ProjectID == 0 {
 		return false
 	}
 	return true
@@ -52,8 +52,8 @@ func (s *Secret) DecryptData(passphrase string) (*Secret, error) {
 	}
 
 	return &Secret{
-		Id:             s.Id,
-		ProjectId:      s.ProjectId,
+		ID:             s.ID,
+		ProjectID:      s.ProjectID,
 		Name:           s.Name,
 		Data:           decryptedData,
 		CreatedUpdated: s.CreatedUpdated,
@@ -67,8 +67,8 @@ func (s *Secret) EncryptData(passphrase string) (*Secret, error) {
 		return nil, err
 	}
 	return &Secret{
-		Id:             s.Id,
-		ProjectId:      s.ProjectId,
+		ID:             s.ID,
+		ProjectID:      s.ProjectID,
 		Name:           s.Name,
 		Data:           encryptedData,
 		CreatedUpdated: s.CreatedUpdated,

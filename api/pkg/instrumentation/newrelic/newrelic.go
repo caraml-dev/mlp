@@ -69,7 +69,10 @@ func Shutdown(timeout time.Duration) {
 }
 
 // WrapHandleFunc wraps newrelic.WrapHandleFunc.
-func WrapHandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) (string, func(http.ResponseWriter, *http.Request)) {
+func WrapHandleFunc(
+	pattern string,
+	handler func(http.ResponseWriter, *http.Request),
+) (string, func(http.ResponseWriter, *http.Request)) {
 	return newrelic.WrapHandleFunc(newRelicApp, pattern, handler)
 }
 

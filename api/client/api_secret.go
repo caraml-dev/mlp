@@ -30,11 +30,11 @@ type SecretApiService service
 /*
 SecretApiService List secret
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId
+ * @param projectID
 
 @return []Secret
 */
-func (a *SecretApiService) ProjectsProjectIdSecretsGet(ctx context.Context, projectId int32) ([]Secret, *http.Response, error) {
+func (a *SecretApiService) ProjectsProjectIdSecretsGet(ctx context.Context, projectID int32) ([]Secret, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -45,7 +45,7 @@ func (a *SecretApiService) ProjectsProjectIdSecretsGet(ctx context.Context, proj
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}/secrets"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -131,12 +131,12 @@ func (a *SecretApiService) ProjectsProjectIdSecretsGet(ctx context.Context, proj
 /*
 SecretApiService Create secret
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId
+ * @param projectID
  * @param body
 
 @return Secret
 */
-func (a *SecretApiService) ProjectsProjectIdSecretsPost(ctx context.Context, projectId int32, body Secret) (Secret, *http.Response, error) {
+func (a *SecretApiService) ProjectsProjectIdSecretsPost(ctx context.Context, projectID int32, body Secret) (Secret, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
@@ -147,7 +147,7 @@ func (a *SecretApiService) ProjectsProjectIdSecretsPost(ctx context.Context, pro
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}/secrets"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -235,12 +235,12 @@ func (a *SecretApiService) ProjectsProjectIdSecretsPost(ctx context.Context, pro
 /*
 SecretApiService Delete secret
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId
- * @param secretId
+ * @param projectID
+ * @param secretID
 
 
 */
-func (a *SecretApiService) ProjectsProjectIdSecretsSecretIdDelete(ctx context.Context, projectId int32, secretId int32) (*http.Response, error) {
+func (a *SecretApiService) ProjectsProjectIdSecretsSecretIdDelete(ctx context.Context, projectID int32, secretID int32) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Delete")
 		localVarPostBody   interface{}
@@ -250,8 +250,8 @@ func (a *SecretApiService) ProjectsProjectIdSecretsSecretIdDelete(ctx context.Co
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}/secrets/{secret_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"secret_id"+"}", fmt.Sprintf("%v", secretId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"secret_id"+"}", fmt.Sprintf("%v", secretID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -318,8 +318,8 @@ func (a *SecretApiService) ProjectsProjectIdSecretsSecretIdDelete(ctx context.Co
 /*
 SecretApiService Update secret
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId
- * @param secretId
+ * @param projectID
+ * @param secretID
  * @param optional nil or *SecretApiProjectsProjectIdSecretsSecretIdPatchOpts - Optional Parameters:
      * @param "Body" (optional.Interface of Secret) -
 
@@ -330,7 +330,7 @@ type SecretApiProjectsProjectIdSecretsSecretIdPatchOpts struct {
 	Body optional.Interface
 }
 
-func (a *SecretApiService) ProjectsProjectIdSecretsSecretIdPatch(ctx context.Context, projectId int32, secretId int32, localVarOptionals *SecretApiProjectsProjectIdSecretsSecretIdPatchOpts) (Secret, *http.Response, error) {
+func (a *SecretApiService) ProjectsProjectIdSecretsSecretIdPatch(ctx context.Context, projectID int32, secretID int32, localVarOptionals *SecretApiProjectsProjectIdSecretsSecretIdPatchOpts) (Secret, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Patch")
 		localVarPostBody    interface{}
@@ -341,8 +341,8 @@ func (a *SecretApiService) ProjectsProjectIdSecretsSecretIdPatch(ctx context.Con
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}/secrets/{secret_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"secret_id"+"}", fmt.Sprintf("%v", secretId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"secret_id"+"}", fmt.Sprintf("%v", secretID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}

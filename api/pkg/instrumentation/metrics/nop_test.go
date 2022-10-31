@@ -11,6 +11,6 @@ func TestNopMethods(_ *testing.T) {
 	testMetric := MetricName("TEST_METRIC")
 	c := &NopMetricsCollector{}
 	c.MeasureDurationMs(testMetric, map[string]func() string{})
-	c.MeasureDurationMsSince(testMetric, time.Now(), map[string]string{})
-	c.RecordGauge(testMetric, 0, map[string]string{})
+	_ = c.MeasureDurationMsSince(testMetric, time.Now(), map[string]string{})
+	_ = c.RecordGauge(testMetric, 0, map[string]string{})
 }

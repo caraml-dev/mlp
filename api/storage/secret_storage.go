@@ -12,20 +12,20 @@ import (
 type SecretStorage interface {
 	// List list all secret within the given project ID.
 	// The secrets returned is in encrypted form
-	List(projectId models.Id) ([]*models.Secret, error)
+	List(projectID models.ID) ([]*models.Secret, error)
 
 	// Save encrypt and save a plain text secret.
 	// The secrets returned is in encrypted form
 	Save(secret *models.Secret) (*models.Secret, error)
 
 	// GetAsPlainText return a secret in plain text
-	GetAsPlainText(id models.Id, projectId models.Id) (*models.Secret, error)
+	GetAsPlainText(id models.ID, projectID models.ID) (*models.Secret, error)
 
 	// GetByNameAsPlainText return a secret in plain text
-	GetByNameAsPlainText(name string, projectId models.Id) (*models.Secret, error)
+	GetByNameAsPlainText(name string, projectID models.ID) (*models.Secret, error)
 
 	// Delete delete secret
-	Delete(id models.Id, projectId models.Id) error
+	Delete(id models.ID, projectID models.ID) error
 }
 
 type secretStorage struct {
@@ -39,8 +39,8 @@ func NewSecretStorage(db *gorm.DB, passphrase string) SecretStorage {
 	}
 }
 
-func (ss *secretStorage) List(projectId models.Id) (secrets []*models.Secret, err error) {
-	err = ss.db.Where("project_id = ?", projectId).Find(&secrets).Error
+func (ss *secretStorage) List(projectID models.ID) (secrets []*models.Secret, err error) {
+	err = ss.db.Where("project_id = ?", projectID).Find(&secrets).Error
 	return
 }
 
@@ -48,7 +48,9 @@ func (ss *secretStorage) Save(secret *models.Secret) (*models.Secret, error) {
 	encSecret, err := secret.EncryptData(ss.encryptionKey)
 
 	if err != nil {
-		return nil, fmt.Errorf("error when decrypt secret data with project_id: %d, name: %s and error: %v", secret.ProjectId, secret.Name, err)
+		return nil, fmt.Errorf(
+			"error when decrypt secret data with project_id: %d, name: %s and error: %v",
+			secret.ProjectID, secret.Name, err)
 	}
 
 	if err := ss.db.Save(encSecret).Error; err != nil {
@@ -57,13 +59,13 @@ func (ss *secretStorage) Save(secret *models.Secret) (*models.Secret, error) {
 	return encSecret, nil
 }
 
-func (ss *secretStorage) Delete(id models.Id, projectId models.Id) error {
-	return ss.db.Where("id = ? AND project_id = ?", id, projectId).Delete(models.Secret{}).Error
+func (ss *secretStorage) Delete(id models.ID, projectID models.ID) error {
+	return ss.db.Where("id = ? AND project_id = ?", id, projectID).Delete(models.Secret{}).Error
 }
 
-func (ss *secretStorage) GetAsPlainText(id models.Id, projectId models.Id) (*models.Secret, error) {
+func (ss *secretStorage) GetAsPlainText(id models.ID, projectID models.ID) (*models.Secret, error) {
 	var secret models.Secret
-	if err := ss.db.Where("id = ? AND project_id = ?", id, projectId).First(&secret).Error; err != nil {
+	if err := ss.db.Where("id = ? AND project_id = ?", id, projectID).First(&secret).Error; err != nil {
 		return nil, err
 	}
 	decSecret, err := secret.DecryptData(ss.encryptionKey)
@@ -74,9 +76,9 @@ func (ss *secretStorage) GetAsPlainText(id models.Id, projectId models.Id) (*mod
 	return decSecret, nil
 }
 
-func (ss *secretStorage) GetByNameAsPlainText(name string, projectId models.Id) (*models.Secret, error) {
+func (ss *secretStorage) GetByNameAsPlainText(name string, projectID models.ID) (*models.Secret, error) {
 	var secret models.Secret
-	if err := ss.db.Where("project_id = ? AND name = ?", projectId, name).First(&secret).Error; err != nil {
+	if err := ss.db.Where("project_id = ? AND name = ?", projectID, name).First(&secret).Error; err != nil {
 		return nil, err
 	}
 

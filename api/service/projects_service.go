@@ -15,7 +15,7 @@ type ProjectsService interface {
 	ListProjects(name string) ([]*models.Project, error)
 	CreateProject(project *models.Project) (*models.Project, error)
 	UpdateProject(project *models.Project) (*models.Project, error)
-	FindById(projectId models.Id) (*models.Project, error)
+	FindByID(projectID models.ID) (*models.Project, error)
 	FindByName(projectName string) (*models.Project, error)
 }
 
@@ -32,14 +32,18 @@ const (
 	ProjectResources    = "projects:%s"
 )
 
-func NewProjectsService(mlflowUrl string, projectStorage storage.ProjectStorage, authEnforcer enforcer.Enforcer, authEnabled bool) (ProjectsService, error) {
-	if strings.TrimSpace(mlflowUrl) == "" {
+func NewProjectsService(
+	mlflowURL string,
+	projectStorage storage.ProjectStorage,
+	authEnforcer enforcer.Enforcer,
+	authEnabled bool) (ProjectsService, error) {
+	if strings.TrimSpace(mlflowURL) == "" {
 		return nil, errors.New("default mlflow tracking url should be provided")
 	}
 
 	return &projectsService{
 		projectStorage:              projectStorage,
-		defaultMlflowTrackingServer: mlflowUrl,
+		defaultMlflowTrackingServer: mlflowURL,
 		authEnforcer:                authEnforcer,
 		authEnabled:                 authEnabled,
 	}, nil
@@ -57,8 +61,8 @@ func (service *projectsService) CreateProject(project *models.Project) (*models.
 		return nil, fmt.Errorf("unable to use reserved project name: %s", project.Name)
 	}
 
-	if strings.TrimSpace(project.MlflowTrackingUrl) == "" {
-		project.MlflowTrackingUrl = service.defaultMlflowTrackingServer
+	if strings.TrimSpace(project.MLFlowTrackingURL) == "" {
+		project.MLFlowTrackingURL = service.defaultMlflowTrackingServer
 	}
 
 	project, err := service.save(project)
@@ -91,8 +95,8 @@ func (service *projectsService) UpdateProject(project *models.Project) (*models.
 	return service.save(project)
 }
 
-func (service *projectsService) FindById(projectId models.Id) (*models.Project, error) {
-	return service.projectStorage.Get(projectId)
+func (service *projectsService) FindByID(projectID models.ID) (*models.Project, error) {
+	return service.projectStorage.Get(projectID)
 }
 
 func (service *projectsService) FindByName(projectName string) (*models.Project, error) {
@@ -100,8 +104,8 @@ func (service *projectsService) FindByName(projectName string) (*models.Project,
 }
 
 func (service *projectsService) save(project *models.Project) (*models.Project, error) {
-	if strings.TrimSpace(project.MlflowTrackingUrl) == "" {
-		project.MlflowTrackingUrl = service.defaultMlflowTrackingServer
+	if strings.TrimSpace(project.MLFlowTrackingURL) == "" {
+		project.MLFlowTrackingURL = service.defaultMlflowTrackingServer
 	}
 
 	return service.projectStorage.Save(project)
@@ -150,19 +154,29 @@ func (service *projectsService) upsertAdministratorsRole(project *models.Project
 }
 
 func (service *projectsService) upsertAdministratorsPolicy(role string, project *models.Project) error {
-	subResources := fmt.Sprintf(ProjectSubResources, project.Id)
-	resource := fmt.Sprintf(ProjectResources, project.Id)
+	subResources := fmt.Sprintf(ProjectSubResources, project.ID)
+	resource := fmt.Sprintf(ProjectResources, project.ID)
 	nameResource := fmt.Sprintf(ProjectResources, project.Name)
 	policyName := fmt.Sprintf("%s-administrators-policy", project.Name)
-	_, err := service.authEnforcer.UpsertPolicy(policyName, []string{role}, []string{}, []string{resource, subResources, nameResource}, []string{enforcer.ActionAll})
+	_, err := service.authEnforcer.UpsertPolicy(
+		policyName,
+		[]string{role},
+		[]string{},
+		[]string{resource, subResources, nameResource},
+		[]string{enforcer.ActionAll})
 	return err
 }
 
 func (service *projectsService) upsertReadersPolicy(role string, project *models.Project) error {
-	subResources := fmt.Sprintf(ProjectSubResources, project.Id)
-	resource := fmt.Sprintf(ProjectResources, project.Id)
+	subResources := fmt.Sprintf(ProjectSubResources, project.ID)
+	resource := fmt.Sprintf(ProjectResources, project.ID)
 	nameResource := fmt.Sprintf(ProjectResources, project.Name)
 	policyName := fmt.Sprintf("%s-readers-policy", project.Name)
-	_, err := service.authEnforcer.UpsertPolicy(policyName, []string{role}, []string{}, []string{resource, subResources, nameResource}, []string{enforcer.ActionRead})
+	_, err := service.authEnforcer.UpsertPolicy(
+		policyName,
+		[]string{role},
+		[]string{},
+		[]string{resource, subResources, nameResource},
+		[]string{enforcer.ActionRead})
 	return err
 }

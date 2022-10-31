@@ -40,7 +40,10 @@ type PrometheusCounterVec interface {
 
 // getHistogramVec is a getter for the prometheus.HistogramVec defined for the input key.
 // It returns a value satisfying the PrometheusHistogramVec interface
-func getHistogramVec(key MetricName, histogramMap map[MetricName]PrometheusHistogramVec) (PrometheusHistogramVec, error) {
+func getHistogramVec(
+	key MetricName,
+	histogramMap map[MetricName]PrometheusHistogramVec,
+) (PrometheusHistogramVec, error) {
 	histVec, ok := histogramMap[key]
 	if !ok {
 		return nil, errors.Newf("Could not find the metric for %s", key)
@@ -50,7 +53,10 @@ func getHistogramVec(key MetricName, histogramMap map[MetricName]PrometheusHisto
 
 // getCounterVec is a getter for the prometheus.CounterVec defined for the input key.
 // It returns a value satisfying the PrometheusCounterVec interface
-func getCounterVec(key MetricName, counterMap map[MetricName]PrometheusCounterVec) (PrometheusCounterVec, error) {
+func getCounterVec(
+	key MetricName,
+	counterMap map[MetricName]PrometheusCounterVec,
+) (PrometheusCounterVec, error) {
 	counterVec, ok := counterMap[key]
 	if !ok {
 		return nil, errors.Newf("Could not find the metric for %s", key)
@@ -146,7 +152,7 @@ func (p PrometheusClient) MeasureDurationMs(
 			labels[key] = f()
 		}
 		// Log measurement
-		p.MeasureDurationMsSince(key, starttime, labels)
+		_ = p.MeasureDurationMsSince(key, starttime, labels)
 	}
 }
 

@@ -55,7 +55,13 @@ type Enforcer interface {
 	// UpsertRole create or update a role containing member as specified by users argument
 	UpsertRole(roleName string, users []string) (*types.Role, error)
 	// UpsertPolicy create or update a policy to allow subjects do actions against the specified resources
-	UpsertPolicy(policyName string, roles []string, users []string, resources []string, actions []string) (*types.Policy, error)
+	UpsertPolicy(
+		policyName string,
+		roles []string,
+		users []string,
+		resources []string,
+		actions []string,
+	) (*types.Policy, error)
 }
 
 type enforcer struct {
@@ -159,7 +165,7 @@ func (e *enforcer) FilterAuthorizedResource(user string, resources []string, act
 		return nil, errors[0].(error)
 	}
 
-	allowedResources := make([]string, 0, 0)
+	allowedResources := make([]string, 0)
 	for _, item := range allowedResourcesConcurrent.GetItems() {
 		allowedResources = append(allowedResources, item.(string))
 	}
@@ -170,7 +176,7 @@ func (e *enforcer) FilterAuthorizedResource(user string, resources []string, act
 // UpsertRole create or update a role containing member as specified by users argument
 func (e *enforcer) UpsertRole(roleName string, users []string) (*types.Role, error) {
 	fmtRoleName := e.formatRole(roleName)
-	fmtUser := make([]string, 0, 0)
+	fmtUser := make([]string, 0)
 	for _, user := range users {
 		fmtUser = append(fmtUser, e.formatUser(user))
 	}
@@ -194,20 +200,26 @@ func (e *enforcer) UpsertRole(roleName string, users []string) (*types.Role, err
 }
 
 // CreatePolicy create a policy to allow subject do an operation against the specified resource
-func (e *enforcer) UpsertPolicy(policyName string, roles []string, users []string, resources []string, actions []string) (*types.Policy, error) {
+func (e *enforcer) UpsertPolicy(
+	policyName string,
+	roles []string,
+	users []string,
+	resources []string,
+	actions []string,
+) (*types.Policy, error) {
 	fmtPolicy := e.formatPolicy(policyName)
 
-	fmtResources := make([]string, 0, 0)
+	fmtResources := make([]string, 0)
 	for _, res := range resources {
 		fmtResources = append(fmtResources, e.formatResource(res))
 	}
 
-	fmtRoles := make([]string, 0, 0)
+	fmtRoles := make([]string, 0)
 	for _, role := range roles {
 		fmtRoles = append(fmtRoles, e.formatRole(role))
 	}
 
-	fmtUsers := make([]string, 0, 0)
+	fmtUsers := make([]string, 0)
 	for _, user := range users {
 		fmtUsers = append(fmtUsers, e.formatUser(user))
 	}

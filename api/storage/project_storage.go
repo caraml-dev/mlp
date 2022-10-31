@@ -8,7 +8,7 @@ import (
 
 type ProjectStorage interface {
 	ListProjects(name string) ([]*models.Project, error)
-	Get(projectId models.Id) (*models.Project, error)
+	Get(projectID models.ID) (*models.Project, error)
 	GetByName(projectName string) (*models.Project, error)
 	Save(project *models.Project) (*models.Project, error)
 }
@@ -26,9 +26,9 @@ func (storage *projectStorage) ListProjects(name string) (projects []*models.Pro
 	return
 }
 
-func (storage *projectStorage) Get(projectId models.Id) (*models.Project, error) {
+func (storage *projectStorage) Get(projectID models.ID) (*models.Project, error) {
 	var project models.Project
-	if err := storage.db.Where("id = ?", projectId).First(&project).Error; err != nil {
+	if err := storage.db.Where("id = ?", projectID).First(&project).Error; err != nil {
 		return nil, err
 	}
 	return &project, nil

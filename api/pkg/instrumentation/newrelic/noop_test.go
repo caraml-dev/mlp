@@ -10,10 +10,10 @@ import (
 
 func TestNoopApp(t *testing.T) {
 	na := NoopApp{}
-	na.StartTransaction("test", httptest.NewRecorder(), &http.Request{})
-	na.RecordCustomEvent("test", nil)
-	na.RecordCustomMetric("test", 0)
-	na.WaitForConnection(0)
+	_ = na.StartTransaction("test", httptest.NewRecorder(), &http.Request{})
+	_ = na.RecordCustomEvent("test", nil)
+	_ = na.RecordCustomMetric("test", 0)
+	_ = na.WaitForConnection(0)
 	na.Shutdown(0)
 }
 
@@ -21,23 +21,23 @@ func TestNoopTx(t *testing.T) {
 	nt := NoopTx{
 		w: httptest.NewRecorder(),
 	}
-	nt.End()
-	nt.Ignore()
-	nt.SetName("test")
-	nt.NoticeError(nil)
-	nt.AddAttribute("key", "val")
-	nt.SetWebRequest(nil)
-	nt.SetWebResponse(nil)
-	nt.StartSegmentNow()
-	nt.CreateDistributedTracePayload()
-	nt.AcceptDistributedTracePayload(newrelic.TransportUnknown, nil)
-	nt.Application()
-	nt.BrowserTimingHeader()
-	nt.NewGoroutine()
-	nt.Header()
-	nt.Write(nil)
+	_ = nt.End()
+	_ = nt.Ignore()
+	_ = nt.SetName("test")
+	_ = nt.NoticeError(nil)
+	_ = nt.AddAttribute("key", "val")
+	_ = nt.SetWebRequest(nil)
+	_ = nt.SetWebResponse(nil)
+	_ = nt.StartSegmentNow()
+	_ = nt.CreateDistributedTracePayload()
+	_ = nt.AcceptDistributedTracePayload(newrelic.TransportUnknown, nil)
+	_ = nt.Application()
+	_, _ = nt.BrowserTimingHeader()
+	_ = nt.NewGoroutine()
+	_ = nt.Header()
+	_, _ = nt.Write(nil)
 	nt.WriteHeader(0)
-	nt.GetTraceMetadata()
-	nt.GetLinkingMetadata()
-	nt.IsSampled()
+	_ = nt.GetTraceMetadata()
+	_ = nt.GetLinkingMetadata()
+	_ = nt.IsSampled()
 }

@@ -70,9 +70,19 @@ func Recoverer(handler http.Handler) http.Handler {
 				rvalStr := fmt.Sprint(rval)
 				var packet *raven.Packet
 				if err, ok := rval.(error); ok {
-					packet = raven.NewPacket(rvalStr, raven.NewException(errors.New(rvalStr), raven.GetOrNewStacktrace(err, 2, 3, nil)), raven.NewHttp(r))
+					packet = raven.NewPacket(
+						rvalStr,
+						raven.NewException(
+							errors.New(rvalStr),
+							raven.GetOrNewStacktrace(err, 2, 3, nil)),
+						raven.NewHttp(r))
 				} else {
-					packet = raven.NewPacket(rvalStr, raven.NewException(errors.New(rvalStr), raven.NewStacktrace(2, 3, nil)), raven.NewHttp(r))
+					packet = raven.NewPacket(
+						rvalStr,
+						raven.NewException(
+							errors.New(rvalStr),
+							raven.NewStacktrace(2, 3, nil)),
+						raven.NewHttp(r))
 				}
 				sentry.Capture(packet, nil)
 				w.WriteHeader(http.StatusInternalServerError)

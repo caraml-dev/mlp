@@ -70,11 +70,11 @@ type DatabaseConfig struct {
 
 type AuthorizationConfig struct {
 	AuthorizationEnabled   bool   `envconfig:"AUTHORIZATION_ENABLED" default:"false"`
-	AuthorizationServerUrl string `envconfig:"AUTHORIZATION_SERVER_URL" default:"http://localhost:4466"`
+	AuthorizationServerURL string `envconfig:"AUTHORIZATION_SERVER_URL" default:"http://localhost:4466"`
 }
 
 type MlflowConfig struct {
-	TrackingUrl string `envconfig:"MLFLOW_TRACKING_URL" required:"true"`
+	TrackingURL string `envconfig:"MLFLOW_TRACKING_URL" required:"true"`
 }
 
 func InitConfigEnv() (*Config, error) {

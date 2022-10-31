@@ -242,11 +242,11 @@ func (a *ProjectApiService) ProjectsPost(ctx context.Context, body Project) (Pro
 /*
 ProjectApiService Get project
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId project id of the project to be retrieved
+ * @param projectID project id of the project to be retrieved
 
 @return Project
 */
-func (a *ProjectApiService) ProjectsProjectIdGet(ctx context.Context, projectId int32) (Project, *http.Response, error) {
+func (a *ProjectApiService) ProjectsProjectIdGet(ctx context.Context, projectID int32) (Project, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -257,7 +257,7 @@ func (a *ProjectApiService) ProjectsProjectIdGet(ctx context.Context, projectId 
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -343,12 +343,12 @@ func (a *ProjectApiService) ProjectsProjectIdGet(ctx context.Context, projectId 
 /*
 ProjectApiService Update project
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId project id of the project to be updated
+ * @param projectID project id of the project to be updated
  * @param body Project object that has to be updated
 
 @return Project
 */
-func (a *ProjectApiService) ProjectsProjectIdPut(ctx context.Context, projectId int32, body Project) (Project, *http.Response, error) {
+func (a *ProjectApiService) ProjectsProjectIdPut(ctx context.Context, projectID int32, body Project) (Project, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
@@ -359,7 +359,7 @@ func (a *ProjectApiService) ProjectsProjectIdPut(ctx context.Context, projectId 
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}

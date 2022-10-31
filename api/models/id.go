@@ -5,18 +5,18 @@ import (
 	"time"
 )
 
-type Id int
+type ID int
 
-func (id Id) String() string {
+func (id ID) String() string {
 	return strconv.Itoa(int(id))
 }
 
-func ParseId(id string) (Id, error) {
-	if parsed, err := strconv.Atoi(id); err != nil {
+func ParseID(id string) (ID, error) {
+	parsed, err := strconv.Atoi(id)
+	if err != nil {
 		return -1, err
-	} else {
-		return Id(parsed), nil
 	}
+	return ID(parsed), nil
 }
 
 type CreatedUpdated struct {

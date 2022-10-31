@@ -21,9 +21,9 @@ var (
 
 func NewValidator() *validator.Validate {
 	instance := validator.New()
-	instance.RegisterValidation("notblank", NotBlank)
-	instance.RegisterValidation("subdomain_rfc1123", isRFC1123SubDomain)
-	instance.RegisterValidation("url", func(fl validator.FieldLevel) bool {
+	_ = instance.RegisterValidation("notblank", NotBlank)
+	_ = instance.RegisterValidation("subdomain_rfc1123", isRFC1123SubDomain)
+	_ = instance.RegisterValidation("url", func(fl validator.FieldLevel) bool {
 		field := fl.Field()
 
 		switch field.Kind() {
@@ -34,7 +34,7 @@ func NewValidator() *validator.Validate {
 		}
 	})
 
-	instance.RegisterTranslation("required", EN, func(ut ut.Translator) error {
+	_ = instance.RegisterTranslation("required", EN, func(ut ut.Translator) error {
 		return ut.Add("required", "{0} is required", true)
 	},
 		func(ut ut.Translator, fe validator.FieldError) string {
@@ -46,7 +46,7 @@ func NewValidator() *validator.Validate {
 			return t
 		})
 
-	instance.RegisterTranslation("min", EN, func(ut ut.Translator) error {
+	_ = instance.RegisterTranslation("min", EN, func(ut ut.Translator) error {
 		return ut.Add("min", "{0} should be more than {1} characters", true)
 	},
 		func(ut ut.Translator, fe validator.FieldError) string {
@@ -59,7 +59,7 @@ func NewValidator() *validator.Validate {
 			return t
 		})
 
-	instance.RegisterTranslation("max", EN, func(ut ut.Translator) error {
+	_ = instance.RegisterTranslation("max", EN, func(ut ut.Translator) error {
 		return ut.Add("max", "{0} should be less than {1} characters", true)
 	},
 		func(ut ut.Translator, fe validator.FieldError) string {
@@ -72,7 +72,7 @@ func NewValidator() *validator.Validate {
 			return t
 		})
 
-	instance.RegisterTranslation("subdomain_rfc1123", EN, func(ut ut.Translator) error {
+	_ = instance.RegisterTranslation("subdomain_rfc1123", EN, func(ut ut.Translator) error {
 		return ut.Add("subdomain_rfc1123", "{0} should be a valid RFC1123 sub-domain", true)
 	},
 		func(ut ut.Translator, fe validator.FieldError) string {

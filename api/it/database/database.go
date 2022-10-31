@@ -1,4 +1,4 @@
-// +build integration integration_local
+//go:build integration
 
 package database
 
@@ -10,6 +10,8 @@ import (
 
 	gomigrate "github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
+
+	// required for gomigrate
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jinzhu/gorm"
 
@@ -17,7 +19,9 @@ import (
 )
 
 func connectionString(db string) string {
-	return fmt.Sprintf("host=%s port=%d user=%s dbname=%s password='%s' sslmode=disable", host, 5432, user, db, password)
+	return fmt.Sprintf(
+		"host=%s port=%d user=%s dbname=%s password='%s' sslmode=disable",
+		host, 5432, user, db, password)
 }
 
 func create(conn *sql.DB, dbName string) (*sql.DB, error) {

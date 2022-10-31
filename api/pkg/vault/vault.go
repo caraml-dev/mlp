@@ -19,7 +19,7 @@ type ClusterSecret struct {
 	ClientKey  string
 }
 
-type VaultClient interface {
+type Client interface {
 	GetClusterSecret(clusterName string) (*ClusterSecret, error)
 }
 
@@ -38,7 +38,7 @@ const (
 	caCertKey     = "certs"
 )
 
-func NewVaultClient(cfg *Config) (VaultClient, error) {
+func NewClient(cfg *Config) (Client, error) {
 	vaultCfg := &api.Config{
 		Address: cfg.Address,
 	}
@@ -49,10 +49,10 @@ func NewVaultClient(cfg *Config) (VaultClient, error) {
 
 	client.SetToken(cfg.Token)
 
-	return newVaultClient(client.Logical())
+	return newClient(client.Logical())
 }
 
-func newVaultClient(secretReader secretReader) (VaultClient, error) {
+func newClient(secretReader secretReader) (Client, error) {
 	return &vaultClient{
 		secretReader: secretReader,
 	}, nil

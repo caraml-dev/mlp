@@ -36,11 +36,16 @@ func main() {
 
 	applicationService, _ := service.NewApplicationService(db)
 	authEnforcer, _ := enforcer.NewEnforcerBuilder().
-		URL(cfg.AuthorizationConfig.AuthorizationServerUrl).
+		URL(cfg.AuthorizationConfig.AuthorizationServerURL).
 		Product("mlp").
 		Build()
 
-	projectsService, err := service.NewProjectsService(cfg.MlflowConfig.TrackingUrl, storage.NewProjectStorage(db), authEnforcer, cfg.AuthorizationConfig.AuthorizationEnabled)
+	projectsService, err := service.NewProjectsService(
+		cfg.MlflowConfig.TrackingURL,
+		storage.NewProjectStorage(db),
+		authEnforcer,
+		cfg.AuthorizationConfig.AuthorizationEnabled)
+
 	if err != nil {
 		log.Panicf("unable to initialize project service: %v", err)
 	}

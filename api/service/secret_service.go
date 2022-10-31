@@ -10,10 +10,10 @@ import (
 )
 
 type SecretService interface {
-	ListSecret(projectId models.Id) ([]*models.Secret, error)
-	FindByIdAndProjectId(secretId models.Id, projectId models.Id) (*models.Secret, error)
+	ListSecret(projectID models.ID) ([]*models.Secret, error)
+	FindByIDAndProjectID(secretID models.ID, projectID models.ID) (*models.Secret, error)
 	Save(secret *models.Secret) (*models.Secret, error)
-	Delete(secretId models.Id, projectId models.Id) error
+	Delete(secretID models.ID, projectID models.ID) error
 }
 
 func NewSecretService(secretStorage storage.SecretStorage) SecretService {
@@ -26,17 +26,19 @@ type secretService struct {
 	secretStorage storage.SecretStorage
 }
 
-func (ss *secretService) ListSecret(projectId models.Id) ([]*models.Secret, error) {
-	return ss.secretStorage.List(projectId)
+func (ss *secretService) ListSecret(projectID models.ID) ([]*models.Secret, error) {
+	return ss.secretStorage.List(projectID)
 }
 
-func (ss *secretService) FindByIdAndProjectId(secretId models.Id, projectId models.Id) (*models.Secret, error) {
-	secret, err := ss.secretStorage.GetAsPlainText(secretId, projectId)
+func (ss *secretService) FindByIDAndProjectID(secretID models.ID, projectID models.ID) (*models.Secret, error) {
+	secret, err := ss.secretStorage.GetAsPlainText(secretID, projectID)
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("error when fetching secret with id: %d, project_id: %d and error: %v", secretId, projectId, err)
+		return nil, fmt.Errorf(
+			"error when fetching secret with id: %d, project_id: %d and error: %v",
+			secretID, projectID, err)
 	}
 	return secret, nil
 }
@@ -44,14 +46,18 @@ func (ss *secretService) FindByIdAndProjectId(secretId models.Id, projectId mode
 func (ss *secretService) Save(secret *models.Secret) (*models.Secret, error) {
 	secretFromDB, err := ss.secretStorage.Save(secret)
 	if err != nil {
-		return nil, fmt.Errorf("error when upsert secret with project_id: %d, name: %v and error: %v", secret.ProjectId, secret.Name, err)
+		return nil, fmt.Errorf(
+			"error when upsert secret with project_id: %d, name: %v and error: %v",
+			secret.ProjectID, secret.Name, err)
 	}
 	return secretFromDB, nil
 }
 
-func (ss *secretService) Delete(secretId models.Id, projectId models.Id) error {
-	if err := ss.secretStorage.Delete(secretId, projectId); err != nil {
-		return fmt.Errorf("error when deleting secret with id: %d, project_id: %d and error: %v", secretId, projectId, err)
+func (ss *secretService) Delete(secretID models.ID, projectID models.ID) error {
+	if err := ss.secretStorage.Delete(secretID, projectID); err != nil {
+		return fmt.Errorf(
+			"error when deleting secret with id: %d, project_id: %d and error: %v",
+			secretID, projectID, err)
 	}
 	return nil
 }

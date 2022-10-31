@@ -225,6 +225,6 @@ func TestCounterInc(t *testing.T) {
 			metricName: counterVec,
 		},
 	}
-	p.Inc(metricName, map[string]string{})
+	_ = p.Inc(metricName, map[string]string{})
 	counter.AssertCalled(t, "Inc")
 }
