@@ -94,10 +94,22 @@ build-api: clean-bin
 	@echo "> Building API binary ..."
 	@cd ${API_PATH} && go build -o ../bin/${BIN_NAME} ./cmd/main.go
 
-.PHONY: build-docker
-build-docker:
-	@echo "> Building docker image ..."
-	@docker build --tag gojektech/mlp:dev .
+.PHONY: build-api-image
+build-api-image: version
+	@$(eval IMAGE_TAG = $(if $(DOCKER_REGISTRY),$(DOCKER_REGISTRY)/,)${BIN_NAME}-api:${VERSION})
+	@echo "Building docker image: ${IMAGE_TAG}"
+	docker build . \
+		--tag ${IMAGE_TAG} \
+		--file api.Dockerfile
+
+.PHONY: build-image
+build-image: version
+	@$(eval IMAGE_TAG = $(if $(DOCKER_REGISTRY),$(DOCKER_REGISTRY)/,)${BIN_NAME}:${VERSION})
+	@echo "Building docker image: ${IMAGE_TAG}"
+	docker build . \
+		--build-arg MLP_API_IMAGE \
+		--tag ${IMAGE_TAG} \
+		--file full.Dockerfile
 
 # ============================================================
 # Run recipes
@@ -155,4 +167,5 @@ swagger-ui:
 
 .PHONY: version
 version:
-	@./scripts/vertagen/vertagen.sh -f docker
+	$(eval VERSION=$(if $(OVERWRITE_VERSION),$(OVERWRITE_VERSION),v$(shell ./scripts/vertagen/vertagen.sh)))
+	@echo "version:" $(VERSION)

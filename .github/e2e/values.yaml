@@ -2,7 +2,7 @@
 # You must use this values together with the default values.yaml:
 # E.g.: helm install mlp-e2e ./chart --values=values.yaml --values=values-e2e.yaml
 
-mlp:
+deployment:
   environment: dev
   resources:
     requests:
@@ -26,3 +26,8 @@ postgresql:
       enabled: false
   replication:
     enabled: false
+
+ingress:
+  enabled: true
+  class: traefik
+  host: mlp.127.0.0.1.nip.io

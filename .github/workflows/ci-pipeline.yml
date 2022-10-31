@@ -1,0 +1,358 @@
+name: CaraML CI Pipeline
+
+on:
+  # Automatically run CI on Release and Pre-Release tags and main branch
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+
+  # Automatically run CI on branches, that have active PR opened
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+
+  # To make it possible to trigger e2e CI workflow for any arbitrary git ref
+  workflow_dispatch:
+
+env:
+  GO_VERSION: 1.18
+  NODE_VERSION: 16
+  ARTIFACT_RETENTION_DAYS: 7
+  CONTAINER_REGISTRY: ghcr.io
+  LOCAL_REGISTRY: registry.localhost:5000
+
+jobs:
+  build-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ui/node_modules
+          key: |
+            ${{ runner.os }}-modules-${{ hashFiles('ui/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-modules-
+
+      - name: Install
+        working-directory: ui
+        run: yarn install
+
+      - name: Lint code
+        run: make lint-ui
+
+      - name: Build UI
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
+        run: make build-ui
+
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mlp-ui-dist
+          path: ui/build/
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  build-api:
+    runs-on: ubuntu-latest
+    outputs:
+      api-version: ${{ steps.build-image.outputs.api-version }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Build Docker image
+        id: build-image
+        run: |
+          set -o pipefail
+          make build-api-image | tee output.log
+          echo "api-version=$(sed -n 's%version: \(.*\)%\1%p' output.log)" >> $GITHUB_OUTPUT
+
+      - name: Save Docker image
+        run: |
+          docker image save \
+            --output mlp-api.${{ steps.build-image.outputs.api-version }}.tar \
+            mlp-api:${{ steps.build-image.outputs.api-version }}
+
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mlp-api.${{ steps.build-image.outputs.api-version }}.tar
+          path: mlp-api.${{ steps.build-image.outputs.api-version }}.tar
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  test-api:
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: ${{ github.workspace }}/.go
+    services:
+      postgres:
+        image: postgres:14.5
+        env:
+          POSTGRES_DB: mlp
+          POSTGRES_USER: mlp
+          POSTGRES_PASSWORD: mlp
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      keto:
+        image: oryd/keto:v0.4
+        env:
+          DSN: memory
+        ports:
+          - 4466:4466
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: .go/pkg/mod/
+          key: |
+            gomod-${{ hashFiles('go.mod') }}
+          restore-keys: gomod-
+
+      - name: Lint code
+        run: make lint-api
+
+      - name: Run Integration Test
+        env:
+          DATABASE_HOST: localhost
+          DATABASE_NAME: mlp
+          DATABASE_USER: mlp
+          DATABASE_PASSWORD: mlp
+          KETO_URL: http://localhost:4466
+        run: make it-test-api-ci
+
+  e2e-test:
+    runs-on: ubuntu-latest
+    needs:
+      - build-api
+      - test-api
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.9.3
+
+      - name: Setup local k8s cluster
+        uses: AbsaOSS/k3d-action@v2.1.0
+        with:
+          cluster-name: mlp-e2e
+          args: >-
+            --agents 1
+            --port 80:80@agent:*
+            --registry-create ${{ env.LOCAL_REGISTRY }}
+            --k3s-arg "--no-deploy=metrics-server@server:*"
+
+      - name: Download API image tar
+        uses: actions/download-artifact@v3
+        with:
+          name: mlp-api.${{ needs.build-api.outputs.api-version }}.tar
+
+      - name: Publish image to the local registry
+        env:
+          DOCKER_REPOSITORY: ${{ env.LOCAL_REGISTRY }}/${{ github.repository }}
+        shell: bash
+        run: |
+          docker image load --input mlp-api.${{ needs.build-api.outputs.api-version }}.tar
+          docker tag \
+            mlp-api:${{ needs.build-api.outputs.api-version }} \
+            ${{ env.DOCKER_REPOSITORY }}/mlp-api:${{ needs.build-api.outputs.api-version }}
+          docker push ${{ env.DOCKER_REPOSITORY }}/mlp-api:${{ needs.build-api.outputs.api-version }}
+
+      - name: Deploy MLP to the local cluster
+        run: |
+          helm repo add caraml https://caraml-dev.github.io/helm-charts/
+          
+          kubectl create ns mlp
+          
+          helm install mlp caraml/mlp --namespace=mlp \
+            --wait --timeout=5m \
+            --values=.github/e2e/values.yaml \
+            --set mlp.image.registry=${{ env.LOCAL_REGISTRY }} \
+            --set mlp.image.repository=${{ github.repository }}/mlp-api \
+            --set mlp.image.tag=${{ needs.build-api.outputs.api-version }}
+          
+          echo "::group::Check cluster resources"
+          kubectl get all --namespace=mlp
+          kubectl get ingress --namespace=mlp
+          echo "::endgroup::"
+
+      - name: Setup MLP project
+        shell: bash
+        run: |
+          sleep 2
+          
+          tee payload.json <<EOF
+          {
+            "name": "e2e-test",
+            "team": "myteam",
+            "stream": "mystream"
+          }
+          EOF
+
+          curl -v \
+            --header 'Content-Type: application/json' \
+            --request POST \
+            --data @payload.json \
+            http://mlp.127.0.0.1.nip.io/v1/projects
+
+      - name: Run E2E tests
+        env:
+          MLP_API_BASEPATH: http://mlp.127.0.0.1.nip.io/v1
+        shell: bash
+        run: |
+          for example in api/client/examples/*; do
+            [[ -e $example ]] || continue
+            echo $example
+            go run $example/main.go
+          done
+
+  release-rules:
+    runs-on: ubuntu-latest
+    outputs:
+      release-type: ${{ steps.release-rules.outputs.release-type }}
+    steps:
+      - id: release-rules
+        uses: caraml-dev/turing/.github/actions/release-rules@main
+
+  publish-docker:
+    # Automatically publish release and pre-release artifacts.
+    #
+    # As for dev releases, make it possible to publish artifacts
+    # manually by approving 'deployment' in the 'manual' environment.
+    #
+    # Dev build can be released either from the 'main' branch or
+    # by running this workflow manually with `workflow_dispatch` event.
+    if: >-
+      contains('release,pre-release', needs.release-rules.outputs.release-type)
+        || ( github.event_name != 'pull_request' )
+        || ( github.event.pull_request.head.repo.full_name == github.repository )
+    needs:
+      - build-ui
+      - build-api
+      - test-api
+      - e2e-test
+      - release-rules
+    runs-on: ubuntu-latest
+    environment: ${{ needs.release-rules.outputs.release-type == 'dev' && 'manual' || '' }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.CONTAINER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download API image tar
+        uses: actions/download-artifact@v3
+        with:
+          name: mlp-api.${{ needs.build-api.outputs.api-version }}.tar
+
+      - name: Download MLP UI Dist
+        uses: actions/download-artifact@v3
+        with:
+          name: mlp-ui-dist
+          path: ui/build
+
+      - name: Build and Publish Turing Docker image
+        env:
+          DOCKER_REGISTRY: ${{ env.CONTAINER_REGISTRY }}/${{ github.repository_owner }}
+          MLP_API_IMAGE: mlp-api:${{ needs.build-api.outputs.api-version }}
+          OVERWRITE_VERSION: ${{ needs.build-api.outputs.api-version }}
+        run: |
+          docker image load --input mlp-api.${{ needs.build-api.outputs.api-version }}.tar
+          make build-image
+          docker push ${{ env.DOCKER_REGISTRY }}/mlp:${{ env.OVERWRITE_VERSION }}
+
+  detect-ui-lib-changes:
+    outputs:
+      changed: ${{ steps.changes.outputs.ui-lib }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            ui-lib:
+              - 'ui/packages/lib/**'
+
+  publish-ui-lib:
+    # Automatically publish release and pre-release UI lib
+    # (if any library component has been changed).
+    #
+    # As for dev releases, make it possible to publish the UI lib bundle
+    # manually by approving 'deployment' in the 'manual' environment.
+    #
+    # Dev build can be released either from the 'main' branch or
+    # from the PR opened to the 'main' branch from the same (not forked) repo.
+    if: >-
+      needs.detect-ui-lib-changes.outputs.changed == 'true'
+        && (
+          contains('release,pre-release', needs.release-rules.outputs.release-type)
+            || ( github.event_name == 'push' )
+            || ( github.event.pull_request.head.repo.full_name == github.repository )
+        )
+    needs:
+      - build-ui
+      - release-rules
+      - detect-ui-lib-changes
+    runs-on: ubuntu-latest
+    environment: ${{ needs.release-rules.outputs.release-type == 'dev' && 'manual' || '' }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: https://registry.npmjs.org
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ui/node_modules
+          key: |
+            ${{ runner.os }}-modules-${{ hashFiles('ui/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-modules-
+
+      - name: Install dependencies
+        working-directory: ui
+        run: yarn install
+
+      - name: Publish @gojek/mlp-ui library
+        working-directory: ui
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          yarn set-version-from-git
+          yarn lib publish

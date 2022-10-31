@@ -13,7 +13,7 @@ services:
       - DATABASE_HOST=postgres
 
   postgres:
-    image: bitnami/postgresql:11.15.0
+    image: bitnami/postgresql:14.5.0
     ports:
       - 5432:5432
     environment:
@@ -26,7 +26,7 @@ services:
     depends_on:
       - keto-db
       - keto-db-migrations
-    image: oryd/keto:v0.4.3-alpha.2
+    image: oryd/keto:v0.4
     ports:
       - 4466:4466
     environment:
@@ -35,7 +35,7 @@ services:
       - serve
 
   keto-db:
-    image: bitnami/postgresql:latest
+    image: bitnami/postgresql:14.5.0
     environment:
       - POSTGRESQL_USERNAME=keto
       - POSTGRESQL_PASSWORD=keto
@@ -44,7 +44,7 @@ services:
   keto-db-migrations:
     depends_on:
       - keto-db
-    image: oryd/keto:v0.4.3-alpha.2
+    image: oryd/keto:v0.4
     environment:
       - DSN=postgres://keto:keto@keto-db:5432/keto?sslmode=disable
     command:
