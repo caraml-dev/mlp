@@ -98,7 +98,7 @@ jobs:
       GOPATH: ${{ github.workspace }}/.go
     services:
       postgres:
-        image: postgres:12.4
+        image: postgres:14.5
         env:
           POSTGRES_DB: mlp
           POSTGRES_USER: mlp
@@ -111,7 +111,7 @@ jobs:
         ports:
           - 5432:5432
       keto:
-        image: oryd/keto:v0.4.5
+        image: oryd/keto:v0.9
         env:
           DSN: memory
         ports:
@@ -130,6 +130,9 @@ jobs:
             gomod-${{ hashFiles('go.mod') }}
           restore-keys: gomod-
 
+      - name: Lint code
+        run: make lint-api
+
       - name: Run Integration Test
         env:
           DATABASE_HOST: localhost
@@ -138,12 +141,6 @@ jobs:
           DATABASE_PASSWORD: mlp
           KETO_URL: http://localhost:4466
         run: make it-test-api-ci
-
-      - name: Lint code
-        run: |
-          make setup
-          make lint-api
-          
 
   e2e-test:
     runs-on: ubuntu-latest
