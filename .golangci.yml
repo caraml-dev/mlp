@@ -1,7 +1,6 @@
 run:
   build-tags:
     - integration
-    - integration_local
   skip-dirs:
     - api/client
 
@@ -30,3 +29,7 @@ linters-settings:
     min-complexity: 25
   lll:
     line-length: 120
+  staticcheck:
+    checks:
+      - all
+      - '-SA1019' # disable SA1019: "github.com/newrelic/go-agent" is deprecated: This package has been supplanted by version 3

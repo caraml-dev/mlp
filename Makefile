@@ -73,7 +73,7 @@ test-api: init-dep-api
 .PHONY: it-test-api-local
 it-test-api-local: local-db start-keto
 	@echo "> API integration testing locally..."
-	@cd ${API_PATH} && go test -race -short -cover -coverprofile cover.out -tags integration_local ${API_ALL_PACKAGES}
+	@cd ${API_PATH} && go test -race -short -cover -coverprofile cover.out -tags integration ${API_ALL_PACKAGES}
 	@cd ${API_PATH} && go tool cover -func cover.out
 	@make stop-docker
 
