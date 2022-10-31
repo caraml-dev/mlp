@@ -111,7 +111,7 @@ jobs:
         ports:
           - 5432:5432
       keto:
-        image: oryd/keto:v0.9
+        image: oryd/keto:v0.4
         env:
           DSN: memory
         ports:
