@@ -11,12 +11,12 @@ import (
 type Project struct {
 	ID                ID             `json:"id"`
 	Name              string         `json:"name" validate:"required,min=3,max=50,subdomain_rfc1123"`
-	MLFlowTrackingURL string         `json:"mlflow_tracking_url" gorm:"column:mlflow_tracking_url" validate:"omitempty,url"`
+	MLFlowTrackingURL string         `json:"mlflow_tracking_url" gorm:"mlflow_tracking_url" validate:"omitempty,url"`
 	Administrators    pq.StringArray `json:"administrators" gorm:"administrators;type:varchar(256)[]"`
 	Readers           pq.StringArray `json:"readers" gorm:"readers;type:varchar(256)[]"`
 	Team              string         `json:"team" validate:"required,min=1,max=64"`
 	Stream            string         `json:"stream" validate:"required,min=1,max=64"`
-	Labels            Labels         `json:"labels,omitempty" gorm:"column:labels"`
+	Labels            Labels         `json:"labels,omitempty" gorm:"labels"`
 	CreatedUpdated
 }
 
