@@ -12,13 +12,13 @@ type SecretStorage struct {
 	mock.Mock
 }
 
-// Delete provides a mock function with given fields: id, projectId
-func (_m *SecretStorage) Delete(id models.Id, projectId models.Id) error {
-	ret := _m.Called(id, projectId)
+// Delete provides a mock function with given fields: id, projectID
+func (_m *SecretStorage) Delete(id models.ID, projectID models.ID) error {
+	ret := _m.Called(id, projectID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(models.Id, models.Id) error); ok {
-		r0 = rf(id, projectId)
+	if rf, ok := ret.Get(0).(func(models.ID, models.ID) error); ok {
+		r0 = rf(id, projectID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -26,13 +26,13 @@ func (_m *SecretStorage) Delete(id models.Id, projectId models.Id) error {
 	return r0
 }
 
-// GetAsPlainText provides a mock function with given fields: id, projectId
-func (_m *SecretStorage) GetAsPlainText(id models.Id, projectId models.Id) (*models.Secret, error) {
-	ret := _m.Called(id, projectId)
+// GetAsPlainText provides a mock function with given fields: id, projectID
+func (_m *SecretStorage) GetAsPlainText(id models.ID, projectID models.ID) (*models.Secret, error) {
+	ret := _m.Called(id, projectID)
 
 	var r0 *models.Secret
-	if rf, ok := ret.Get(0).(func(models.Id, models.Id) *models.Secret); ok {
-		r0 = rf(id, projectId)
+	if rf, ok := ret.Get(0).(func(models.ID, models.ID) *models.Secret); ok {
+		r0 = rf(id, projectID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Secret)
@@ -40,8 +40,8 @@ func (_m *SecretStorage) GetAsPlainText(id models.Id, projectId models.Id) (*mod
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.Id, models.Id) error); ok {
-		r1 = rf(id, projectId)
+	if rf, ok := ret.Get(1).(func(models.ID, models.ID) error); ok {
+		r1 = rf(id, projectID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -49,13 +49,13 @@ func (_m *SecretStorage) GetAsPlainText(id models.Id, projectId models.Id) (*mod
 	return r0, r1
 }
 
-// GetByNameAsPlainText provides a mock function with given fields: name, projectId
-func (_m *SecretStorage) GetByNameAsPlainText(name string, projectId models.Id) (*models.Secret, error) {
-	ret := _m.Called(name, projectId)
+// GetByNameAsPlainText provides a mock function with given fields: name, projectID
+func (_m *SecretStorage) GetByNameAsPlainText(name string, projectID models.ID) (*models.Secret, error) {
+	ret := _m.Called(name, projectID)
 
 	var r0 *models.Secret
-	if rf, ok := ret.Get(0).(func(string, models.Id) *models.Secret); ok {
-		r0 = rf(name, projectId)
+	if rf, ok := ret.Get(0).(func(string, models.ID) *models.Secret); ok {
+		r0 = rf(name, projectID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Secret)
@@ -63,8 +63,8 @@ func (_m *SecretStorage) GetByNameAsPlainText(name string, projectId models.Id) 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, models.Id) error); ok {
-		r1 = rf(name, projectId)
+	if rf, ok := ret.Get(1).(func(string, models.ID) error); ok {
+		r1 = rf(name, projectID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -72,13 +72,13 @@ func (_m *SecretStorage) GetByNameAsPlainText(name string, projectId models.Id) 
 	return r0, r1
 }
 
-// List provides a mock function with given fields: projectId
-func (_m *SecretStorage) List(projectId models.Id) ([]*models.Secret, error) {
-	ret := _m.Called(projectId)
+// List provides a mock function with given fields: projectID
+func (_m *SecretStorage) List(projectID models.ID) ([]*models.Secret, error) {
+	ret := _m.Called(projectID)
 
 	var r0 []*models.Secret
-	if rf, ok := ret.Get(0).(func(models.Id) []*models.Secret); ok {
-		r0 = rf(projectId)
+	if rf, ok := ret.Get(0).(func(models.ID) []*models.Secret); ok {
+		r0 = rf(projectID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Secret)
@@ -86,8 +86,8 @@ func (_m *SecretStorage) List(projectId models.Id) ([]*models.Secret, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.Id) error); ok {
-		r1 = rf(projectId)
+	if rf, ok := ret.Get(1).(func(models.ID) error); ok {
+		r1 = rf(projectID)
 	} else {
 		r1 = ret.Error(1)
 	}

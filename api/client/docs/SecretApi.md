@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 
 # **ProjectsProjectIdSecretsGet**
-> []Secret ProjectsProjectIdSecretsGet(ctx, projectId)
+> []Secret ProjectsProjectIdSecretsGet(ctx, projectID)
 List secret
 
 ### Required Parameters
@@ -19,7 +19,7 @@ List secret
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **projectId** | **int32**|  | 
+  **projectID** | **int32**|  | 
 
 ### Return type
 
@@ -37,7 +37,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ProjectsProjectIdSecretsPost**
-> Secret ProjectsProjectIdSecretsPost(ctx, projectId, body)
+> Secret ProjectsProjectIdSecretsPost(ctx, projectID, body)
 Create secret
 
 ### Required Parameters
@@ -45,7 +45,7 @@ Create secret
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **projectId** | **int32**|  | 
+  **projectID** | **int32**|  | 
   **body** | [**Secret**](Secret.md)|  | 
 
 ### Return type
@@ -64,7 +64,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ProjectsProjectIdSecretsSecretIdDelete**
-> ProjectsProjectIdSecretsSecretIdDelete(ctx, projectId, secretId)
+> ProjectsProjectIdSecretsSecretIdDelete(ctx, projectID, secretID)
 Delete secret
 
 ### Required Parameters
@@ -72,8 +72,8 @@ Delete secret
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **projectId** | **int32**|  | 
-  **secretId** | **int32**|  | 
+  **projectID** | **int32**|  | 
+  **secretID** | **int32**|  | 
 
 ### Return type
 
@@ -91,7 +91,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ProjectsProjectIdSecretsSecretIdPatch**
-> Secret ProjectsProjectIdSecretsSecretIdPatch(ctx, projectId, secretId, optional)
+> Secret ProjectsProjectIdSecretsSecretIdPatch(ctx, projectID, secretID, optional)
 Update secret
 
 ### Required Parameters
@@ -99,8 +99,8 @@ Update secret
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **projectId** | **int32**|  | 
-  **secretId** | **int32**|  | 
+  **projectID** | **int32**|  | 
+  **secretID** | **int32**|  | 
  **optional** | ***SecretApiProjectsProjectIdSecretsSecretIdPatchOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters

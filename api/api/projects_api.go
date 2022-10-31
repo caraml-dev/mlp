@@ -16,7 +16,7 @@ type ProjectsController struct {
 	*AppContext
 }
 
-func (c *ProjectsController) ListProjects(r *http.Request, vars map[string]string, _ interface{}) *ApiResponse {
+func (c *ProjectsController) ListProjects(r *http.Request, vars map[string]string, _ interface{}) *Response {
 	projects, err := c.ProjectsService.ListProjects(vars["name"])
 	if err != nil {
 		return InternalServerError(err.Error())
@@ -31,7 +31,7 @@ func (c *ProjectsController) ListProjects(r *http.Request, vars map[string]strin
 	return Ok(projects)
 }
 
-func (c *ProjectsController) CreateProject(r *http.Request, vars map[string]string, body interface{}) *ApiResponse {
+func (c *ProjectsController) CreateProject(r *http.Request, vars map[string]string, body interface{}) *Response {
 	userAgent := strings.ToLower(r.Header.Get("User-Agent"))
 	if strings.Contains(userAgent, "swagger") {
 		return Forbidden("Project creation from SDK is disabled. Use the MLP console to create a project.")
@@ -61,9 +61,9 @@ func (c *ProjectsController) CreateProject(r *http.Request, vars map[string]stri
 	return Created(project)
 }
 
-func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]string, body interface{}) *ApiResponse {
-	projectID, _ := models.ParseId(vars["project_id"])
-	project, err := c.ProjectsService.FindById(projectID)
+func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]string, body interface{}) *Response {
+	projectID, _ := models.ParseID(vars["project_id"])
+	project, err := c.ProjectsService.FindByID(projectID)
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return NotFound(fmt.Sprintf("Project id %s not found", projectID))
@@ -91,9 +91,9 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 	return Ok(project)
 }
 
-func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string, body interface{}) *ApiResponse {
-	projectID, _ := models.ParseId(vars["project_id"])
-	project, err := c.ProjectsService.FindById(projectID)
+func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string, body interface{}) *Response {
+	projectID, _ := models.ParseID(vars["project_id"])
+	project, err := c.ProjectsService.FindByID(projectID)
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return NotFound(fmt.Sprintf("Project id %s not found", projectID))
@@ -105,13 +105,17 @@ func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string,
 	return Ok(project)
 }
 
-func (c *ProjectsController) filterAuthorizedProjects(user string, projects []*models.Project, action string) ([]*models.Project, error) {
+func (c *ProjectsController) filterAuthorizedProjects(
+	user string,
+	projects []*models.Project,
+	action string,
+) ([]*models.Project, error) {
 	if c.AuthorizationEnabled {
-		projectIds := make([]string, 0, 0)
-		allowedProjects := make([]*models.Project, 0, 0)
+		projectIds := make([]string, 0)
+		allowedProjects := make([]*models.Project, 0)
 		projectMap := make(map[string]*models.Project)
 		for _, project := range projects {
-			projectID := fmt.Sprintf("projects:%s", project.Id)
+			projectID := fmt.Sprintf("projects:%s", project.ID)
 			projectIds = append(projectIds, projectID)
 			projectMap[projectID] = project
 		}
@@ -121,14 +125,14 @@ func (c *ProjectsController) filterAuthorizedProjects(user string, projects []*m
 			return nil, err
 		}
 
-		for _, projectId := range allowedProjectIds {
-			allowedProjects = append(allowedProjects, projectMap[projectId])
+		for _, projectID := range allowedProjectIds {
+			allowedProjects = append(allowedProjects, projectMap[projectID])
 		}
 
 		return allowedProjects, nil
-	} else {
-		return projects, nil
 	}
+
+	return projects, nil
 }
 
 // addRequester add requester to users slice if it doesn't exists

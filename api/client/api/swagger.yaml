@@ -70,7 +70,7 @@ paths:
         description: "project id of the project to be retrieved"
         required: true
         type: "integer"
-        x-exportParamName: "ProjectId"
+        x-exportParamName: "ProjectID"
       responses:
         "200":
           description: "Ok"
@@ -88,7 +88,7 @@ paths:
         description: "project id of the project to be updated"
         required: true
         type: "integer"
-        x-exportParamName: "ProjectId"
+        x-exportParamName: "ProjectID"
       - in: "body"
         name: "body"
         description: "Project object that has to be updated"
@@ -113,7 +113,7 @@ paths:
         in: "path"
         required: true
         type: "integer"
-        x-exportParamName: "ProjectId"
+        x-exportParamName: "ProjectID"
       responses:
         "201":
           description: "Ok"
@@ -130,7 +130,7 @@ paths:
         in: "path"
         required: true
         type: "integer"
-        x-exportParamName: "ProjectId"
+        x-exportParamName: "ProjectID"
       - in: "body"
         name: "body"
         required: true
@@ -152,7 +152,7 @@ paths:
         in: "path"
         required: true
         type: "integer"
-        x-exportParamName: "ProjectId"
+        x-exportParamName: "ProjectID"
       - name: "secret_id"
         in: "path"
         required: true
@@ -170,7 +170,7 @@ paths:
         in: "path"
         required: true
         type: "integer"
-        x-exportParamName: "ProjectId"
+        x-exportParamName: "ProjectID"
       - name: "secret_id"
         in: "path"
         required: true

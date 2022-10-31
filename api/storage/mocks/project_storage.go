@@ -12,13 +12,13 @@ type ProjectStorage struct {
 	mock.Mock
 }
 
-// Get provides a mock function with given fields: projectId
-func (_m *ProjectStorage) Get(projectId models.Id) (*models.Project, error) {
-	ret := _m.Called(projectId)
+// Get provides a mock function with given fields: projectID
+func (_m *ProjectStorage) Get(projectID models.ID) (*models.Project, error) {
+	ret := _m.Called(projectID)
 
 	var r0 *models.Project
-	if rf, ok := ret.Get(0).(func(models.Id) *models.Project); ok {
-		r0 = rf(projectId)
+	if rf, ok := ret.Get(0).(func(models.ID) *models.Project); ok {
+		r0 = rf(projectID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Project)
@@ -26,8 +26,8 @@ func (_m *ProjectStorage) Get(projectId models.Id) (*models.Project, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.Id) error); ok {
-		r1 = rf(projectId)
+	if rf, ok := ret.Get(1).(func(models.ID) error); ok {
+		r1 = rf(projectID)
 	} else {
 		r1 = ret.Error(1)
 	}

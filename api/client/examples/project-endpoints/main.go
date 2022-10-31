@@ -48,7 +48,7 @@ func main() {
 		log.Println("Project:", project.Name)
 
 		// Update project
-		updatedProject, _, err := apiClient.ProjectApi.ProjectsProjectIdPut(ctx, project.Id, client.Project{
+		updatedProject, _, err := apiClient.ProjectApi.ProjectsProjectIdPut(ctx, project.ID, client.Project{
 			Team:   "dsp-new",
 			Stream: "dsp-new",
 			Name:   project.Name,

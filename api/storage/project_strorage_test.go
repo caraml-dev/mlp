@@ -1,4 +1,4 @@
-// +build integration integration_local
+//go:build integration
 
 package storage
 
@@ -59,7 +59,7 @@ func TestProjectsService_SaveAndGet(t *testing.T) {
 				assert.NotNil(t, saved.CreatedAt)
 				assert.NotNil(t, saved.UpdatedAt)
 
-				res, err := projectStorage.Get(saved.Id)
+				res, err := projectStorage.Get(saved.ID)
 				assert.NoError(t, err)
 				assert.Equal(t, tt.project.Name, res.Name)
 				assert.Equal(t, tt.project.Administrators, res.Administrators)
@@ -109,7 +109,7 @@ func TestProjectsService_List(t *testing.T) {
 		}
 
 		for _, p := range projects {
-			projectStorage.Save(&p)
+			_, _ = projectStorage.Save(&p)
 		}
 
 		res, err := projectStorage.ListProjects("")

@@ -12,13 +12,13 @@ type SecretService struct {
 	mock.Mock
 }
 
-// Delete provides a mock function with given fields: secretId, projectId
-func (_m *SecretService) Delete(secretId models.Id, projectId models.Id) error {
-	ret := _m.Called(secretId, projectId)
+// Delete provides a mock function with given fields: secretID, projectID
+func (_m *SecretService) Delete(secretID models.ID, projectID models.ID) error {
+	ret := _m.Called(secretID, projectID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(models.Id, models.Id) error); ok {
-		r0 = rf(secretId, projectId)
+	if rf, ok := ret.Get(0).(func(models.ID, models.ID) error); ok {
+		r0 = rf(secretID, projectID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -26,13 +26,13 @@ func (_m *SecretService) Delete(secretId models.Id, projectId models.Id) error {
 	return r0
 }
 
-// FindByIdAndProjectId provides a mock function with given fields: secretId, projectId
-func (_m *SecretService) FindByIdAndProjectId(secretId models.Id, projectId models.Id) (*models.Secret, error) {
-	ret := _m.Called(secretId, projectId)
+// FindByIDAndProjectID provides a mock function with given fields: secretID, projectID
+func (_m *SecretService) FindByIDAndProjectID(secretID models.ID, projectID models.ID) (*models.Secret, error) {
+	ret := _m.Called(secretID, projectID)
 
 	var r0 *models.Secret
-	if rf, ok := ret.Get(0).(func(models.Id, models.Id) *models.Secret); ok {
-		r0 = rf(secretId, projectId)
+	if rf, ok := ret.Get(0).(func(models.ID, models.ID) *models.Secret); ok {
+		r0 = rf(secretID, projectID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Secret)
@@ -40,8 +40,8 @@ func (_m *SecretService) FindByIdAndProjectId(secretId models.Id, projectId mode
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.Id, models.Id) error); ok {
-		r1 = rf(secretId, projectId)
+	if rf, ok := ret.Get(1).(func(models.ID, models.ID) error); ok {
+		r1 = rf(secretID, projectID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -49,13 +49,13 @@ func (_m *SecretService) FindByIdAndProjectId(secretId models.Id, projectId mode
 	return r0, r1
 }
 
-// ListSecret provides a mock function with given fields: projectId
-func (_m *SecretService) ListSecret(projectId models.Id) ([]*models.Secret, error) {
-	ret := _m.Called(projectId)
+// ListSecret provides a mock function with given fields: projectID
+func (_m *SecretService) ListSecret(projectID models.ID) ([]*models.Secret, error) {
+	ret := _m.Called(projectID)
 
 	var r0 []*models.Secret
-	if rf, ok := ret.Get(0).(func(models.Id) []*models.Secret); ok {
-		r0 = rf(projectId)
+	if rf, ok := ret.Get(0).(func(models.ID) []*models.Secret); ok {
+		r0 = rf(projectID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Secret)
@@ -63,8 +63,8 @@ func (_m *SecretService) ListSecret(projectId models.Id) ([]*models.Secret, erro
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.Id) error); ok {
-		r1 = rf(projectId)
+	if rf, ok := ret.Get(1).(func(models.ID) error); ok {
+		r1 = rf(projectID)
 	} else {
 		r1 = ret.Error(1)
 	}

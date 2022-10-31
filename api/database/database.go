@@ -7,8 +7,8 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/jinzhu/gorm"
 
-	// required for gomigrate
 	"github.com/golang-migrate/migrate/v4/database/postgres"
+	// required for gomigrate
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	// enable postgres dialect

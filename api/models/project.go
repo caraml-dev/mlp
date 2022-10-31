@@ -9,11 +9,12 @@ import (
 )
 
 type Project struct {
-	Id                Id             `json:"id"`
-	Name              string         `json:"name" validate:"required,min=3,max=50,subdomain_rfc1123"`
-	MlflowTrackingUrl string         `json:"mlflow_tracking_url" validate:"omitempty,url"`
-	Administrators    pq.StringArray `json:"administrators" gorm:"administrators;type:varchar(256)[]"`
-	Readers           pq.StringArray `json:"readers" gorm:"readers;type:varchar(256)[]"`
+	ID   ID     `json:"id"`
+	Name string `json:"name" validate:"required,min=3,max=50,subdomain_rfc1123"`
+	// nolint:lll // Next line is 121 characters (lll)
+	MLFlowTrackingURL string         `json:"mlflow_tracking_url" gorm:"column:mlflow_tracking_url" validate:"omitempty,url"`
+	Administrators    pq.StringArray `json:"administrators" gorm:"column:administrators;type:varchar(256)[]"`
+	Readers           pq.StringArray `json:"readers" gorm:"column:readers;type:varchar(256)[]"`
 	Team              string         `json:"team" validate:"required,min=1,max=64"`
 	Stream            string         `json:"stream" validate:"required,min=1,max=64"`
 	Labels            Labels         `json:"labels,omitempty" gorm:"column:labels"`
