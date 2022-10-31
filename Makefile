@@ -51,12 +51,7 @@ fmt:
 .PHONY: lint-api
 lint-api: setup
 	@echo "Linting code..."
-	golangci-lint -v run --timeout 3m $(if $(filter true,$(fix)),--fix,) api/...
-
-#.PHONY: lint-api
-#lint-api:
-#	@echo "> Analyzing API source code..."
-#	@cd ${API_PATH} && golint ${API_ALL_PACKAGES}
+	golangci-lint -v run --timeout 3m $(if $(filter true,$(fix)),--fix,) ${API_PATH}/...
 
 # ============================================================
 # Testing recipes
