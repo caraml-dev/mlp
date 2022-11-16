@@ -3,27 +3,64 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
-	"github.com/kelseyhightower/envconfig"
+	"github.com/iancoleman/strcase"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/env"
+	"github.com/knadh/koanf/providers/file"
 )
 
 type Config struct {
-	APIHost       string `envconfig:"API_HOST" default:"http://localhost:8080/v1"`
-	Port          int    `envconfig:"PORT" default:"8080"`
-	Environment   string `envconfig:"ENVIRONMENT" default:"dev"`
-	EncryptionKey string `envconfig:"ENCRYPTION_KEY" required:"true"`
+	APIHost       string
+	EncryptionKey string
+	Environment   string
+	Port          int
+	SentryDSN     string
+	OauthClientID string
 
-	MlflowConfig        MlflowConfig
-	DbConfig            DatabaseConfig
-	AuthorizationConfig AuthorizationConfig
-	UI                  UIConfig
+	Streams Streams
+	Docs    Documentations
 
-	OauthClientID string `envconfig:"OAUTH_CLIENT_ID"`
-	SentryDSN     string `envconfig:"SENTRY_DSN"`
+	Authorization *AuthorizationConfig
+	Database      *DatabaseConfig
+	Mlflow        *MlflowConfig
+	UI            *UIConfig
+}
 
-	Teams   []string       `envconfig:"TEAM_LIST"`
-	Streams []string       `envconfig:"STREAM_LIST"`
-	Docs    Documentations `envconfig:"DOC_LIST"`
+func NewDefaultConfig() *Config {
+	var c Config
+
+	// make a deep copy of the default config via JSON serialization
+	defaultBytes, _ := json.Marshal(defaultConfig)
+	_ = json.Unmarshal(defaultBytes, &c)
+
+	return &c
+}
+
+func (c *Config) ListenAddress() string {
+	return fmt.Sprintf(":%d", c.Port)
+}
+
+type Streams map[string][]string
+
+type DatabaseConfig struct {
+	Host          string
+	Port          int
+	User          string
+	Password      string
+	Database      string
+	MigrationPath string
+}
+
+type AuthorizationConfig struct {
+	Enabled       bool
+	KetoServerURL string
+}
+
+type MlflowConfig struct {
+	TrackingURL string
 }
 
 type Documentations []Documentation
@@ -33,59 +70,70 @@ type Documentation struct {
 	Href  string `json:"href"`
 }
 
-func (docs *Documentations) Decode(value string) error {
-	var listOfDoc Documentations
-
-	if err := json.Unmarshal([]byte(value), &listOfDoc); err != nil {
-		return err
-	}
-	*docs = listOfDoc
-	return nil
-}
-
 // UIConfig stores the configuration for the UI.
 type UIConfig struct {
-	StaticPath string `envconfig:"UI_STATIC_PATH" default:"ui/build"`
-	IndexPath  string `envconfig:"UI_INDEX_PATH" default:"index.html"`
+	StaticPath string
+	IndexPath  string
 
-	FeastCoreAPI string `envconfig:"REACT_APP_FEAST_CORE_API" json:"REACT_APP_FEAST_CORE_API"`
-	MerlinAPI    string `envconfig:"REACT_APP_MERLIN_API" json:"REACT_APP_MERLIN_API"`
-	TuringAPI    string `envconfig:"REACT_APP_TURING_API" json:"REACT_APP_TURING_API"`
-
-	ClockworkUIHomepage string `envconfig:"REACT_APP_CLOCKWORK_UI_HOMEPAGE" json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
-	FeastUIHomepage     string `envconfig:"REACT_APP_FEAST_UI_HOMEPAGE" json:"REACT_APP_FEAST_UI_HOMEPAGE"`
-	KubeflowUIHomepage  string `envconfig:"REACT_APP_KUBEFLOW_UI_HOMEPAGE" json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`
-	MerlinUIHomepage    string `envconfig:"REACT_APP_MERLIN_UI_HOMEPAGE" json:"REACT_APP_MERLIN_UI_HOMEPAGE"`
-	TuringUIHomepage    string `envconfig:"REACT_APP_TURING_UI_HOMEPAGE" json:"REACT_APP_TURING_UI_HOMEPAGE"`
+	FeastCoreAPI        string `json:"REACT_APP_FEAST_CORE_API"`
+	MerlinAPI           string `json:"REACT_APP_MERLIN_API"`
+	TuringAPI           string `json:"REACT_APP_TURING_API"`
+	ClockworkUIHomepage string `json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
+	FeastUIHomepage     string `json:"REACT_APP_FEAST_UI_HOMEPAGE"`
+	KubeflowUIHomepage  string `json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`
+	MerlinUIHomepage    string `json:"REACT_APP_MERLIN_UI_HOMEPAGE"`
+	TuringUIHomepage    string `json:"REACT_APP_TURING_UI_HOMEPAGE"`
 }
 
-type DatabaseConfig struct {
-	Host          string `envconfig:"DATABASE_HOST" required:"true"`
-	Port          int    `envconfig:"DATABASE_PORT" default:"5432"`
-	User          string `envconfig:"DATABASE_USER" required:"true"`
-	Password      string `envconfig:"DATABASE_PASSWORD" required:"true"`
-	Database      string `envconfig:"DATABASE_NAME" default:"mlp"`
-	MigrationPath string `envconfig:"DATABASE_MIGRATIONS_PATH" default:"file://db-migrations"`
-}
+func Load(paths ...string) (*Config, error) {
+	k := koanf.New(".")
 
-type AuthorizationConfig struct {
-	AuthorizationEnabled   bool   `envconfig:"AUTHORIZATION_ENABLED" default:"false"`
-	AuthorizationServerURL string `envconfig:"AUTHORIZATION_SERVER_URL" default:"http://localhost:4466"`
-}
-
-type MlflowConfig struct {
-	TrackingURL string `envconfig:"MLFLOW_TRACKING_URL" required:"true"`
-}
-
-func InitConfigEnv() (*Config, error) {
-	var cfg Config
-	err := envconfig.Process("", &cfg)
-	if err != nil {
-		return nil, err
+	for _, f := range paths {
+		err := k.Load(file.Provider(f), yaml.Parser())
+		if err != nil {
+			return nil, fmt.Errorf("failed to read config from file '%s': %s", f, err)
+		}
 	}
-	return &cfg, nil
+
+	err := k.Load(env.Provider("", ".", func(s string) string {
+		parts := strings.Split(strings.ToLower(s), "::")
+		transformed := make([]string, len(parts))
+		for idx, key := range parts {
+			transformed[idx] = strcase.ToCamel(key)
+		}
+
+		return strings.Join(transformed, ".")
+	}), nil)
+
+	config := NewDefaultConfig()
+	err = k.Unmarshal("", config)
+
+	return config, err
 }
 
-func (c *Config) ListenAddress() string {
-	return fmt.Sprintf(":%d", c.Port)
+var defaultConfig = &Config{
+	APIHost:     "http://localhost:8080/v1",
+	Environment: "dev",
+	Port:        8080,
+
+	Streams: Streams{},
+	Docs:    Documentations{},
+
+	Authorization: &AuthorizationConfig{
+		Enabled:       false,
+		KetoServerURL: "http://localhost:4466",
+	},
+	Database: &DatabaseConfig{
+		Host:          "localhost",
+		Port:          5432,
+		Database:      "mlp",
+		MigrationPath: "file://db-migrations",
+	},
+	Mlflow: &MlflowConfig{
+		TrackingURL: "",
+	},
+	UI: &UIConfig{
+		IndexPath:  "index.html",
+		StaticPath: "ui/build",
+	},
 }

@@ -20,7 +20,7 @@ var (
 	sentry Client = &NoopClient{}
 )
 
-// Config stores NewRelic configuration.
+// Config stores Sentry configuration.
 type Config struct {
 	Enabled bool
 	DSN     string

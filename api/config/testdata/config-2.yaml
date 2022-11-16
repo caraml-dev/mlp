@@ -1,0 +1,13 @@
+Docs:
+  - label: "Merlin User Guide"
+    href: "https://github.com/gojek/merlin/blob/main/docs/getting-started/README.md"
+
+UI:
+  FeastCoreAPI: /feast/api
+  MerlinAPI: /api/merlin/v1
+  TuringAPI: /api/turing/v1
+  ClockworkUIHomepage: http://clockwork.dev
+  FeastUIHomepage: /feast
+  KubeflowUIHomepage: http://kubeflow.org
+  MerlinUIHomepage: /merlin
+  TuringUIHomepage: /turing

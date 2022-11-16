@@ -8,27 +8,30 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gojek/mlp/api/pkg/authz/enforcer"
-	"github.com/gorilla/mux"
-	"github.com/heptiolabs/healthcheck"
-	"github.com/rs/cors"
-
 	"github.com/gojek/mlp/api/api"
 	"github.com/gojek/mlp/api/config"
 	"github.com/gojek/mlp/api/database"
 	"github.com/gojek/mlp/api/log"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer"
 	"github.com/gojek/mlp/api/service"
 	"github.com/gojek/mlp/api/storage"
+	"github.com/gorilla/mux"
+	"github.com/heptiolabs/healthcheck"
+	"github.com/rs/cors"
+	flag "github.com/spf13/pflag"
 )
 
 func main() {
-	cfg, err := config.InitConfigEnv()
+	configFiles := flag.StringSliceP("config", "c", []string{}, "Path to a configuration files")
+	flag.Parse()
+
+	cfg, err := config.Load(*configFiles...)
 	if err != nil {
 		log.Panicf("Failed initializing config: %v", err)
 	}
 
 	// init db
-	db, err := database.InitDB(&cfg.DbConfig)
+	db, err := database.InitDB(cfg.Database)
 	if err != nil {
 		panic(err)
 	}
@@ -36,15 +39,15 @@ func main() {
 
 	applicationService, _ := service.NewApplicationService(db)
 	authEnforcer, _ := enforcer.NewEnforcerBuilder().
-		URL(cfg.AuthorizationConfig.AuthorizationServerURL).
+		URL(cfg.Authorization.KetoServerURL).
 		Product("mlp").
 		Build()
 
 	projectsService, err := service.NewProjectsService(
-		cfg.MlflowConfig.TrackingURL,
+		cfg.Mlflow.TrackingURL,
 		storage.NewProjectStorage(db),
 		authEnforcer,
-		cfg.AuthorizationConfig.AuthorizationEnabled)
+		cfg.Authorization.Enabled)
 
 	if err != nil {
 		log.Panicf("unable to initialize project service: %v", err)
@@ -57,7 +60,7 @@ func main() {
 		ProjectsService:    projectsService,
 		SecretService:      secretService,
 
-		AuthorizationEnabled: cfg.AuthorizationConfig.AuthorizationEnabled,
+		AuthorizationEnabled: cfg.Authorization.Enabled,
 		Enforcer:             authEnforcer,
 	}
 
@@ -70,11 +73,9 @@ func main() {
 		OauthClientID: cfg.OauthClientID,
 		Environment:   cfg.Environment,
 		SentryDSN:     cfg.SentryDSN,
-		Teams:         cfg.Teams,
 		Streams:       cfg.Streams,
 		Docs:          cfg.Docs,
-
-		UIConfig: cfg.UI,
+		UIConfig:      cfg.UI,
 	}
 
 	router.Methods("GET").Path("/env.js").HandlerFunc(uiEnv.handler)
@@ -96,15 +97,15 @@ func mount(r *mux.Router, path string, handler http.Handler) {
 }
 
 type uiEnvHandler struct {
+	*config.UIConfig
+
 	APIURL        string                `json:"REACT_APP_API_URL,omitempty"`
 	OauthClientID string                `json:"REACT_APP_OAUTH_CLIENT_ID,omitempty"`
 	Environment   string                `json:"REACT_APP_ENVIRONMENT,omitempty"`
 	SentryDSN     string                `json:"REACT_APP_SENTRY_DSN,omitempty"`
 	Teams         []string              `json:"REACT_APP_TEAMS"`
-	Streams       []string              `json:"REACT_APP_STREAMS"`
+	Streams       config.Streams        `json:"REACT_APP_STREAMS"`
 	Docs          config.Documentations `json:"REACT_APP_DOC_LINKS"`
-
-	config.UIConfig
 }
 
 func (h uiEnvHandler) handler(w http.ResponseWriter, r *http.Request) {
