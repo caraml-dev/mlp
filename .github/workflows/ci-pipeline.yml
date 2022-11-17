@@ -195,12 +195,10 @@ jobs:
           docker push ${{ env.DOCKER_REPOSITORY }}/mlp-api:${{ needs.build-api.outputs.api-version }}
 
       - name: Deploy MLP to the local cluster
+        id: deploy
         run: |
-          kubectl create ns mlp
-          
           helm install mlp ./helm-charts/charts/mlp \
             --dependency-update \
-            --namespace=mlp \
             --wait --timeout=5m \
             --values=.github/e2e/values.yaml \
             --set mlp.image.registry=${{ env.LOCAL_REGISTRY }} \
@@ -211,6 +209,38 @@ jobs:
           kubectl get all --namespace=mlp
           kubectl get ingress --namespace=mlp
           echo "::endgroup::"
+
+      - if: steps.deploy.outcome == 'failure' && always()
+        name: "Debug Deployment Failure"
+        run: |
+          echo "::group::describe deployment/mlp"
+          kubectl describe deployment/mlp
+          echo "::endgroup::"
+          
+          echo "::group::configmap/mlp-config"
+          kubectl get cm/mlp-config -o jsonpath='{.data.mlp-config\.yaml}'
+          echo "::endgroup::"
+          
+          echo "::group::logs deployment/mlp"
+          kubectl logs deployment/mlp
+          echo "::endgroup::"
+          
+          echo "::group::kubernetes events"
+          kubectl get events
+          echo "::endgroup::"
+          
+          echo "::group::kubernetes deployment"
+          kubectl get deploy
+          echo "::endgroup::"
+          
+          echo "::group::kubernetes pod describe"
+          kubectl describe pod
+          echo "::endgroup::"
+          
+          echo "::group::kubernetes config map"
+          kubectl get cm -o yaml
+          echo "::endgroup::"
+          
 
       - name: Setup MLP project
         shell: bash

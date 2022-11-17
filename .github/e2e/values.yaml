@@ -1,4 +1,7 @@
 # This values only used for E2E tests.
+fullnameOverride: mlp
+nameOverride: mlp
+
 deployment:
   environment: dev
   resources:
