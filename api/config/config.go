@@ -85,9 +85,29 @@ type UIConfig struct {
 	TuringUIHomepage    string `json:"REACT_APP_TURING_UI_HOMEPAGE"`
 }
 
+// Transform env variables to the format consumed by koanf.
+// Variable name is being split by the double underscore ('__') sequence,
+// which separates nested config variables, and then each config key is
+// converted to camel-case.
+//
+// Example:
+//
+//	MY_VARIABLE => MyVariable
+//	VARIABLES__ANOTHER_VARIABLE => Variables.AnotherVariable
+func envVarKeyTransformer(s string) string {
+	parts := strings.Split(strings.ToLower(s), "__")
+	transformed := make([]string, len(parts))
+	for idx, key := range parts {
+		transformed[idx] = strcase.ToCamel(key)
+	}
+
+	return strings.Join(transformed, ".")
+}
+
 func Load(paths ...string) (*Config, error) {
 	k := koanf.New(".")
 
+	// read config from zero or more YAML config files
 	for _, f := range paths {
 		err := k.Load(file.Provider(f), yaml.Parser())
 		if err != nil {
@@ -95,16 +115,13 @@ func Load(paths ...string) (*Config, error) {
 		}
 	}
 
-	err := k.Load(env.Provider("", ".", func(s string) string {
-		parts := strings.Split(strings.ToLower(s), "::")
-		transformed := make([]string, len(parts))
-		for idx, key := range parts {
-			transformed[idx] = strcase.ToCamel(key)
-		}
+	// read config overrides from env variables
+	err := k.Load(env.Provider("", ".", envVarKeyTransformer), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config from environment variables: %s", err)
+	}
 
-		return strings.Join(transformed, ".")
-	}), nil)
-
+	// create config instance with pre-populated default values
 	config := NewDefaultConfig()
 	err = k.Unmarshal("", config)
 

@@ -79,7 +79,7 @@ func TestLoad(t *testing.T) {
 			configs: []string{"testdata/config-1.yaml"},
 			env: map[string]string{
 				"ENCRYPTION_KEY":     "test-key",
-				"DATABASE::PASSWORD": "secret",
+				"DATABASE__PASSWORD": "secret",
 			},
 			expected: &config.Config{
 				APIHost:       "http://localhost:8080/v1",
@@ -116,8 +116,8 @@ func TestLoad(t *testing.T) {
 			env: map[string]string{
 				"ENCRYPTION_KEY":       "test-key",
 				"OAUTH_CLIENT_ID":      "oauth-client-id",
-				"DATABASE::PASSWORD":   "secret",
-				"MLFLOW::TRACKING_URL": "http://mlflow.dev",
+				"DATABASE__PASSWORD":   "secret",
+				"MLFLOW__TRACKING_URL": "http://mlflow.dev",
 				"SENTRY_DSN":           "1234",
 			},
 			expected: &config.Config{
