@@ -12,6 +12,8 @@ import (
 	"github.com/knadh/koanf/providers/file"
 )
 
+const EnvVarPrefix = "CARAML_"
+
 type Config struct {
 	APIHost       string
 	EncryptionKey string
@@ -86,16 +88,15 @@ type UIConfig struct {
 }
 
 // Transform env variables to the format consumed by koanf.
-// Variable name is being split by the double underscore ('__') sequence,
-// which separates nested config variables, and then each config key is
-// converted to camel-case.
+// First, "CARAML_" prefix is trimmed from the variable key, then it's
+// split by the double underscore ('__') sequence, which separates nested
+// config variables, and then each config key is converted to camel-case.
 //
 // Example:
-//
-//	MY_VARIABLE => MyVariable
-//	VARIABLES__ANOTHER_VARIABLE => Variables.AnotherVariable
+//	CARAML_MY_VARIABLE => MyVariable
+//	CARAML_VARIABLES__ANOTHER_VARIABLE => Variables.AnotherVariable
 func envVarKeyTransformer(s string) string {
-	parts := strings.Split(strings.ToLower(s), "__")
+	parts := strings.Split(strings.ToLower(strings.TrimPrefix(s, EnvVarPrefix)), "__")
 	transformed := make([]string, len(parts))
 	for idx, key := range parts {
 		transformed[idx] = strcase.ToCamel(key)
@@ -116,7 +117,7 @@ func Load(paths ...string) (*Config, error) {
 	}
 
 	// read config overrides from env variables
-	err := k.Load(env.Provider("", ".", envVarKeyTransformer), nil)
+	err := k.Load(env.Provider(EnvVarPrefix, ".", envVarKeyTransformer), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config from environment variables: %s", err)
 	}

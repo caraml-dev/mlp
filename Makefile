@@ -62,20 +62,20 @@ test: test-api
 .PHONY: test-api
 test-api: init-dep-api
 	@echo "> API unit testing ..."
-	@cd ${API_PATH} && go test -v -race -cover -coverprofile cover.out -parallel 1 ${API_ALL_PACKAGES}
+	@cd ${API_PATH} && go test -v -race -cover -coverprofile cover.out ${API_ALL_PACKAGES}
 	@cd ${API_PATH} && go tool cover -func cover.out
 
 .PHONY: it-test-api-local
 it-test-api-local: local-db start-keto
 	@echo "> API integration testing locally..."
-	@cd ${API_PATH} && go test -race -short -cover -coverprofile cover.out -parallel 1 -tags integration ${API_ALL_PACKAGES}
+	@cd ${API_PATH} && go test -race -short -cover -coverprofile cover.out -tags integration ${API_ALL_PACKAGES}
 	@cd ${API_PATH} && go tool cover -func cover.out
 	@make stop-docker
 
 .PHONY: it-test-api-ci
 it-test-api-ci:
 	@echo "> API integration testing ..."
-	@cd ${API_PATH} && go test -race -short -cover -coverprofile cover.out -parallel 1 -tags integration ${API_ALL_PACKAGES}
+	@cd ${API_PATH} && go test -race -short -cover -coverprofile cover.out -tags integration ${API_ALL_PACKAGES}
 	@cd ${API_PATH} && go tool cover -func cover.out
 
 # ============================================================
