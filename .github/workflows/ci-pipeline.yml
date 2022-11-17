@@ -196,11 +196,11 @@ jobs:
 
       - name: Deploy MLP to the local cluster
         run: |
-          ls -l 
-          
           kubectl create ns mlp
           
-          helm install mlp ./helm-charts/charts/mlp --namespace=mlp \
+          helm install mlp ./helm-charts/charts/mlp \
+            --dependency-update \
+            --namespace=mlp \
             --wait --timeout=5m \
             --values=.github/e2e/values.yaml \
             --set mlp.image.registry=${{ env.LOCAL_REGISTRY }} \
