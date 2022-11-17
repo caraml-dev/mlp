@@ -93,6 +93,7 @@ type UIConfig struct {
 // config variables, and then each config key is converted to camel-case.
 //
 // Example:
+//
 //	CARAML_MY_VARIABLE => MyVariable
 //	CARAML_VARIABLES__ANOTHER_VARIABLE => Variables.AnotherVariable
 func envVarKeyTransformer(s string) string {
