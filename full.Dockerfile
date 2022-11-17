@@ -3,4 +3,4 @@ FROM ${MLP_API_IMAGE}
 
 COPY ui/build ./ui/build
 
-CMD ["mlp"]
+ENTRYPOINT ["sh", "-c", "mlp \"$@\"", "--"]

@@ -199,16 +199,11 @@ jobs:
         run: |
           helm install mlp ./helm-charts/charts/mlp \
             --dependency-update \
-            --wait --timeout=5m \
+            --wait --timeout=3m \
             --values=.github/e2e/values.yaml \
             --set mlp.image.registry=${{ env.LOCAL_REGISTRY }} \
             --set mlp.image.repository=${{ github.repository }}/mlp-api \
             --set mlp.image.tag=${{ needs.build-api.outputs.api-version }}
-          
-          echo "::group::Check cluster resources"
-          kubectl get all --namespace=mlp
-          kubectl get ingress --namespace=mlp
-          echo "::endgroup::"
 
       - if: steps.deploy.outcome == 'failure' && always()
         name: "Debug Deployment Failure"
@@ -235,12 +230,7 @@ jobs:
           
           echo "::group::kubernetes pod describe"
           kubectl describe pod
-          echo "::endgroup::"
-          
-          echo "::group::kubernetes config map"
-          kubectl get cm -o yaml
-          echo "::endgroup::"
-          
+          echo "::endgroup::"      
 
       - name: Setup MLP project
         shell: bash
