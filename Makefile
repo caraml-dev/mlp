@@ -6,6 +6,8 @@ UI_BUILD_PATH := ${UI_PATH}/build
 API_PATH := api
 API_ALL_PACKAGES := $(shell cd ${API_PATH} && go list ./... | grep -v github.com/gojek/mlp/client | grep -v mocks)
 BIN_NAME := $(if ${APP_NAME},${APP_NAME},mlp)
+DOCKER_COMPOSE_BIN := "docker-compose"
+DOCKER_COMPOSE_ARG := ""
 
 all: setup init-dep lint test clean build run
 
@@ -117,7 +119,7 @@ build-image: version
 .PHONY: run
 run: build-api local-db
 	@echo "> Running application ..."
-	@./bin/${BIN_NAME}
+	@./bin/${BIN_NAME} --config config-dev.yaml
 
 .PHONY: start-ui
 start-ui:
@@ -148,22 +150,22 @@ generate-client:
 .PHONY: local-db
 local-db:
 	@echo "> Starting up DB ..."
-	@docker-compose up -d postgres
+	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_ARG) up -d postgres
 
 .PHONY: start-keto
 start-keto:
 	@echo "> Starting up keto server ..."
-	@docker-compose up -d keto
+	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_ARG) up -d keto
 
 .PHONY: stop-docker
 stop-docker:
 	@echo "> Stopping Docker compose ..."
-	@docker-compose down
+	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_ARG) down
 
 .PHONY: swagger-ui
 swagger-ui:
 	@echo "> Starting up Swagger UI ..."
-	@docker-compose up -d swagger-ui
+	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_ARG) up -d swagger-ui
 
 .PHONY: version
 version:

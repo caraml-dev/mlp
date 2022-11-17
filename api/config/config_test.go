@@ -78,8 +78,8 @@ func TestLoad(t *testing.T) {
 		"config-1.yaml + env variables | success": {
 			configs: []string{"testdata/config-1.yaml"},
 			env: map[string]string{
-				"CARAML_ENCRYPTION_KEY":     "test-key",
-				"CARAML_DATABASE__PASSWORD": "secret",
+				"ENCRYPTION_KEY":     "test-key",
+				"DATABASE__PASSWORD": "secret",
 			},
 			expected: &config.Config{
 				APIHost:       "http://localhost:8080/v1",
@@ -114,11 +114,11 @@ func TestLoad(t *testing.T) {
 		"config-1.yaml + config-2.yaml + env variables | success": {
 			configs: []string{"testdata/config-1.yaml", "testdata/config-2.yaml"},
 			env: map[string]string{
-				"CARAML_ENCRYPTION_KEY":       "test-key",
-				"CARAML_OAUTH_CLIENT_ID":      "oauth-client-id",
-				"CARAML_DATABASE__PASSWORD":   "secret",
-				"CARAML_MLFLOW__TRACKING_URL": "http://mlflow.dev",
-				"CARAML_SENTRY_DSN":           "1234",
+				"ENCRYPTION_KEY":       "test-key",
+				"OAUTH_CLIENT_ID":      "oauth-client-id",
+				"DATABASE__PASSWORD":   "secret",
+				"MLFLOW__TRACKING_URL": "http://mlflow.dev",
+				"SENTRY_DSN":           "1234",
 			},
 			expected: &config.Config{
 				APIHost:       "http://localhost:8080/v1",

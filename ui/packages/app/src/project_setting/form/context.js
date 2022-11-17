@@ -32,7 +32,8 @@ export const ProjectFormContextProvider = ({
     stream => {
       setProject(p => ({
         ...p,
-        stream: stream
+        stream: stream,
+        team: undefined
       }));
     },
     [setProject]

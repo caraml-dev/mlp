@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { EuiComboBox } from "@elastic/eui";
 
 export const SingleSelectionComboBox = ({
@@ -6,11 +6,17 @@ export const SingleSelectionComboBox = ({
   onChange,
   onValidChange
 }) => {
-  const [allOptions] = useState(
-    options.sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0))
-  );
+  const [allOptions, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState([]);
   const [isValid, setIsValid] = useState(true);
+
+  useEffect(() => {
+    setOptions(
+      options.sort((a, b) =>
+        a.label < b.label ? -1 : a.label > b.label ? 1 : 0
+      )
+    );
+  }, [options, setOptions]);
 
   const onCreate = (searchValue, flattenedOptions = []) => {
     const normalizedSearchValue = searchValue.trim().toLowerCase();

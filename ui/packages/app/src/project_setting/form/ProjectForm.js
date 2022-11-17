@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useMemo } from "react";
 import {
   EuiPanel,
   EuiFormRow,
@@ -31,17 +31,15 @@ const ProjectForm = () => {
     setLabels
   } = useContext(ProjectFormContext);
 
-  const teamOptions = config.TEAMS.map(team => {
-    return {
-      label: team
-    };
-  });
+  const streamOptions = Object.entries(config.STREAMS).map(([stream]) => ({
+    label: stream.trim()
+  }));
 
-  const streamOptions = config.STREAMS.map(stream => {
-    return {
-      label: stream
-    };
-  });
+  const teamOptions = useMemo(() => {
+    return (config.STREAMS[project.stream] || []).map(team => ({
+      label: team.trim()
+    }));
+  }, [project.stream]);
 
   const [projectError, setProjectError] = useState("");
   const [isValidProject, setIsValidProject] = useState(false);
@@ -180,17 +178,6 @@ const ProjectForm = () => {
               </EuiFormRow>
             </EuiDescribedFormGroup>
             <EuiDescribedFormGroup
-              title={<h3>Team</h3>}
-              description="Owner of the project">
-              <EuiFormRow isInvalid={!isValidTeam} error={teamError}>
-                <SingleSelectionComboBox
-                  options={teamOptions}
-                  onChange={onTeamChange}
-                  onValidChange={setIsValidTeam}
-                />
-              </EuiFormRow>
-            </EuiDescribedFormGroup>
-            <EuiDescribedFormGroup
               title={<h3>Stream</h3>}
               description="Product stream the project belongs to">
               <EuiFormRow isInvalid={!isValidStream} error={streamError}>
@@ -198,6 +185,17 @@ const ProjectForm = () => {
                   options={streamOptions}
                   onChange={onStreamChange}
                   onValidChange={setIsValidStream}
+                />
+              </EuiFormRow>
+            </EuiDescribedFormGroup>
+            <EuiDescribedFormGroup
+              title={<h3>Team</h3>}
+              description="Owner of the project">
+              <EuiFormRow isInvalid={!isValidTeam} error={teamError}>
+                <SingleSelectionComboBox
+                  options={teamOptions}
+                  onChange={onTeamChange}
+                  onValidChange={setIsValidTeam}
                 />
               </EuiFormRow>
             </EuiDescribedFormGroup>

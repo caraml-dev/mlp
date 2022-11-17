@@ -1,0 +1,27 @@
+EncryptionKey: "encryption-key"
+OauthClientId: "[OAUTH_CLIENT_ID]"
+
+Database:
+  Host: "localhost"
+  Database: "mlp"
+  User: "mlp"
+  Password: "mlp"
+
+Docs:
+  - label: "Merlin User Guide"
+    href: "https://github.com/gojek/merlin/blob/main/docs/getting-started/README.md"
+  - label: "Turing User Guide"
+    href: "https://github.com/gojek/turing"
+  - label: "Feast User Guide"
+    href: "https://docs.feast.dev/user-guide/overview"
+
+Mlflow:
+  TrackingURL: "http://mlflow.mlp.dev"
+
+Streams:
+  marketing:
+    - growth
+    - retention
+  operations:
+    - inventory
+    - partners
