@@ -2,9 +2,7 @@ package config_test
 
 import (
 	"errors"
-	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/gojek/mlp/api/config"
@@ -182,8 +180,6 @@ func TestLoad(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Cleanup(envSetter(tt.env))
 			actual, err := config.Load(tt.configs...)
-
-			fmt.Printf("############ %s:\n\t%s\n", name, strings.Join(os.Environ(), "\n\t"))
 
 			if tt.error == nil {
 				require.NoError(t, err)

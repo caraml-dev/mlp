@@ -157,6 +157,7 @@ jobs:
         with:
           repository: ${{ env.CARAML_CHARTS_REPOSITORY }}
           ref: ${{ env.CARAML_CHARTS_REF }}
+          path: 'helm-charts'
 
       - uses: actions/setup-go@v3
         with:
