@@ -9,9 +9,8 @@ import {
   EuiButton,
   EuiForm
 } from "@elastic/eui";
-import { addToast, useMlpApi } from "@gojek/mlp-ui";
+import { addToast, EuiComboBoxSelect, useMlpApi } from "@gojek/mlp-ui";
 import { ProjectFormContext } from "./context";
-import { SingleSelectionComboBox } from "./SingleSelectionComboBox";
 import { EmailTextArea } from "./EmailTextArea";
 import { Labels } from "./Labels";
 import { isDNS1123Label } from "../../validation/validation";
@@ -31,14 +30,17 @@ const ProjectForm = () => {
     setLabels
   } = useContext(ProjectFormContext);
 
-  const streamOptions = Object.entries(config.STREAMS).map(([stream]) => ({
-    label: stream.trim()
-  }));
+  const streamOptions = useMemo(() => {
+    return Object.entries(config.STREAMS)
+      .map(([stream]) => stream.trim())
+      .sort((a, b) => a.localeCompare(b))
+      .map(stream => ({ label: stream }));
+  }, []);
 
   const teamOptions = useMemo(() => {
-    return (config.STREAMS[project.stream] || []).map(team => ({
-      label: team.trim()
-    }));
+    return (config.STREAMS[project.stream] || [])
+      .sort((a, b) => a.localeCompare(b))
+      .map(team => ({ label: team.trim() }));
   }, [project.stream]);
 
   const [projectError, setProjectError] = useState("");
@@ -55,31 +57,41 @@ const ProjectForm = () => {
     setName(newValue);
   };
 
-  const [teamError, setTeamError] = useState("");
-  const [isValidTeam, setIsValidTeam] = useState(false);
-  const onTeamChange = selectedTeam => {
-    let isValid = isDNS1123Label(selectedTeam.label);
-    if (!isValid) {
-      setTeamError(
-        "Team name is invalid. It should contain only lowercase alphanumeric and dash (-)"
-      );
-    }
-    setIsValidTeam(isValid);
-    setTeam(selectedTeam.label);
-  };
-
   const [streamError, setStreamError] = useState("");
   const [isValidStream, setIsValidStream] = useState(false);
   const onStreamChange = selectedStream => {
-    let isValid = isDNS1123Label(selectedStream.label);
-    if (!isValid) {
-      setStreamError(
-        "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-)"
-      );
+    if (selectedStream !== project.stream) {
+      let isValid = isDNS1123Label(selectedStream);
+      if (!isValid) {
+        setStreamError(
+          "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-)"
+        );
+      }
+      setIsValidStream(isValid);
+      setStream(selectedStream);
     }
-    setIsValidStream(isValid);
-    setStream(selectedStream.label);
   };
+
+  const [teamError, setTeamError] = useState("");
+  const [isValidTeam, setIsValidTeam] = useState(false);
+  const onTeamChange = selectedTeam => {
+    if (selectedTeam !== project.team) {
+      let isValid = isDNS1123Label(selectedTeam);
+      if (!isValid) {
+        setTeamError(
+          "Team name is invalid. It should contain only lowercase alphanumeric and dash (-)"
+        );
+      }
+      setIsValidTeam(isValid);
+      setTeam(selectedTeam);
+    }
+  };
+
+  useEffect(() => {
+    if (!project.team) {
+      setIsValidTeam(false);
+    }
+  }, [project.team]);
 
   const onAdminValueChange = emails => {
     setAdmin(emails);
@@ -181,10 +193,11 @@ const ProjectForm = () => {
               title={<h3>Stream</h3>}
               description="Product stream the project belongs to">
               <EuiFormRow isInvalid={!isValidStream} error={streamError}>
-                <SingleSelectionComboBox
+                <EuiComboBoxSelect
+                  value={project.stream}
                   options={streamOptions}
                   onChange={onStreamChange}
-                  onValidChange={setIsValidStream}
+                  onCreateOption={onStreamChange}
                 />
               </EuiFormRow>
             </EuiDescribedFormGroup>
@@ -192,10 +205,11 @@ const ProjectForm = () => {
               title={<h3>Team</h3>}
               description="Owner of the project">
               <EuiFormRow isInvalid={!isValidTeam} error={teamError}>
-                <SingleSelectionComboBox
+                <EuiComboBoxSelect
+                  value={project.team}
                   options={teamOptions}
                   onChange={onTeamChange}
-                  onValidChange={setIsValidTeam}
+                  onCreateOption={onTeamChange}
                 />
               </EuiFormRow>
             </EuiDescribedFormGroup>
