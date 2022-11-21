@@ -2,6 +2,10 @@ Docs:
   - label: "Merlin User Guide"
     href: "https://github.com/gojek/merlin/blob/main/docs/getting-started/README.md"
 
+Authorization:
+  Enabled: true
+  KetoServerURL: http://localhost:4466
+
 UI:
   FeastCoreAPI: /feast/api
   MerlinAPI: /api/merlin/v1

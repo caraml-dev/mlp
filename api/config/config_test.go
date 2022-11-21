@@ -52,8 +52,7 @@ func TestLoad(t *testing.T) {
 				Port:        8080,
 				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
-					Enabled:       false,
-					KetoServerURL: "http://localhost:4466",
+					Enabled: false,
 				},
 				Database: &config.DatabaseConfig{
 					Host:          "localhost",
@@ -87,8 +86,7 @@ func TestLoad(t *testing.T) {
 				EncryptionKey: "test-key",
 				Environment:   "dev",
 				Authorization: &config.AuthorizationConfig{
-					Enabled:       false,
-					KetoServerURL: "http://localhost:4466",
+					Enabled: false,
 				},
 				Database: &config.DatabaseConfig{
 					Host:          "localhost",
@@ -128,7 +126,7 @@ func TestLoad(t *testing.T) {
 				OauthClientID: "oauth-client-id",
 				SentryDSN:     "1234",
 				Authorization: &config.AuthorizationConfig{
-					Enabled:       false,
+					Enabled:       true,
 					KetoServerURL: "http://localhost:4466",
 				},
 				Database: &config.DatabaseConfig{
@@ -186,6 +184,110 @@ func TestLoad(t *testing.T) {
 				assert.Equal(t, tt.expected, actual)
 			} else {
 				assert.EqualError(t, err, tt.error.Error())
+			}
+		})
+	}
+}
+
+func TestValidate(t *testing.T) {
+	suite := map[string]struct {
+		config *config.Config
+		error  error
+	}{
+		"minimal | success": {
+			config: &config.Config{
+				APIHost:       "/v1",
+				Port:          8080,
+				Environment:   "dev",
+				EncryptionKey: "secret-key",
+				Authorization: &config.AuthorizationConfig{
+					Enabled: false,
+				},
+				Database: &config.DatabaseConfig{
+					Host:          "localhost",
+					Port:          5432,
+					User:          "mlp",
+					Password:      "mlp",
+					Database:      "mlp",
+					MigrationPath: "file://db-migrations",
+				},
+				Mlflow: &config.MlflowConfig{
+					TrackingURL: "http://mlflow.tracking",
+				},
+			},
+		},
+		"extended | success": {
+			config: &config.Config{
+				APIHost:       "/v1",
+				Port:          8080,
+				Environment:   "dev",
+				EncryptionKey: "secret-key",
+				Authorization: &config.AuthorizationConfig{
+					Enabled:       true,
+					KetoServerURL: "http://keto.mlp",
+				},
+				Database: &config.DatabaseConfig{
+					Host:          "localhost",
+					Port:          5432,
+					User:          "mlp",
+					Password:      "mlp",
+					Database:      "mlp",
+					MigrationPath: "file://db-migrations",
+				},
+				Mlflow: &config.MlflowConfig{
+					TrackingURL: "http://mlflow.tracking",
+				},
+				Streams: map[string][]string{
+					"my-stream": {"my-team"},
+				},
+			},
+		},
+		"default config | failure": {
+			config: config.NewDefaultConfig(),
+			error: errors.New(
+				"failed to validate configuration: " +
+					"Key: 'Config.EncryptionKey' Error:Field validation for 'EncryptionKey' failed on the 'required' tag\n" +
+					"Key: 'Config.Database.User' Error:Field validation for 'User' failed on the 'required' tag\n" +
+					"Key: 'Config.Database.Password' Error:Field validation for 'Password' failed on the 'required' tag",
+			),
+		},
+		"missing auth server | failure": {
+			config: &config.Config{
+				APIHost:       "/v1",
+				Port:          8080,
+				Environment:   "dev",
+				EncryptionKey: "secret-key",
+				Authorization: &config.AuthorizationConfig{
+					Enabled: true,
+				},
+				Database: &config.DatabaseConfig{
+					Host:          "localhost",
+					Port:          5432,
+					User:          "mlp",
+					Password:      "mlp",
+					Database:      "mlp",
+					MigrationPath: "file://db-migrations",
+				},
+				Mlflow: &config.MlflowConfig{
+					TrackingURL: "http://mlflow.tracking",
+				},
+			},
+			error: errors.New(
+				"failed to validate configuration: " +
+					"Key: 'Config.Authorization.KetoServerURL' " +
+					"Error:Field validation for 'KetoServerURL' failed on the 'required_if' tag",
+			),
+		},
+	}
+
+	for name, tt := range suite {
+		t.Run(name, func(t *testing.T) {
+			actual := config.Validate(tt.config)
+
+			if tt.error == nil {
+				require.NoError(t, actual)
+			} else {
+				assert.EqualError(t, actual, tt.error.Error())
 			}
 		})
 	}

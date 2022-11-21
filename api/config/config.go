@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/iancoleman/strcase"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
@@ -13,19 +14,19 @@ import (
 )
 
 type Config struct {
-	APIHost       string
-	EncryptionKey string
-	Environment   string
-	Port          int
+	APIHost       string `validate:"required"`
+	EncryptionKey string `validate:"required"`
+	Environment   string `validate:"required"`
+	Port          int    `validate:"required"`
 	SentryDSN     string
 	OauthClientID string
 
-	Streams Streams
+	Streams Streams `validate:"dive,required"`
 	Docs    Documentations
 
-	Authorization *AuthorizationConfig
-	Database      *DatabaseConfig
-	Mlflow        *MlflowConfig
+	Authorization *AuthorizationConfig `validate:"required"`
+	Database      *DatabaseConfig      `validate:"required"`
+	Mlflow        *MlflowConfig        `validate:"required"`
 	UI            *UIConfig
 }
 
@@ -46,21 +47,21 @@ func (c *Config) ListenAddress() string {
 type Streams map[string][]string
 
 type DatabaseConfig struct {
-	Host          string
-	Port          int
-	User          string
-	Password      string
-	Database      string
-	MigrationPath string
+	Host          string `validate:"required"`
+	Port          int    `validate:"required"`
+	User          string `validate:"required"`
+	Password      string `validate:"required"`
+	Database      string `validate:"required"`
+	MigrationPath string `validate:"required,url"`
 }
 
 type AuthorizationConfig struct {
 	Enabled       bool
-	KetoServerURL string
+	KetoServerURL string `validate:"required_if=Enabled True"`
 }
 
 type MlflowConfig struct {
-	TrackingURL string
+	TrackingURL string `validated:"required,url"`
 }
 
 type Documentations []Documentation
@@ -72,8 +73,8 @@ type Documentation struct {
 
 // UIConfig stores the configuration for the UI.
 type UIConfig struct {
-	StaticPath string
-	IndexPath  string
+	StaticPath string `validated:"required"`
+	IndexPath  string `validated:"required"`
 
 	FeastCoreAPI        string `json:"REACT_APP_FEAST_CORE_API"`
 	MerlinAPI           string `json:"REACT_APP_MERLIN_API"`
@@ -123,8 +124,32 @@ func Load(paths ...string) (*Config, error) {
 
 	// create config instance with pre-populated default values
 	config := NewDefaultConfig()
-	err = k.Unmarshal("", config)
 
+	err = k.Unmarshal("", config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshall config values: %s", err)
+	}
+
+	return config, err
+}
+
+func Validate(config *Config) error {
+	validate := validator.New()
+
+	err := validate.Struct(config)
+	if err != nil {
+		return fmt.Errorf("failed to validate configuration: %s", err)
+	}
+	return nil
+}
+
+func LoadAndValidate(paths ...string) (*Config, error) {
+	config, err := Load(paths...)
+	if err != nil {
+		return nil, err
+	}
+
+	err = Validate(config)
 	return config, err
 }
 
@@ -137,8 +162,7 @@ var defaultConfig = &Config{
 	Docs:    Documentations{},
 
 	Authorization: &AuthorizationConfig{
-		Enabled:       false,
-		KetoServerURL: "http://localhost:4466",
+		Enabled: false,
 	},
 	Database: &DatabaseConfig{
 		Host:          "localhost",

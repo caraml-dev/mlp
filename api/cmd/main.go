@@ -25,7 +25,7 @@ func main() {
 	configFiles := flag.StringSliceP("config", "c", []string{}, "Path to a configuration files")
 	flag.Parse()
 
-	cfg, err := config.Load(*configFiles...)
+	cfg, err := config.LoadAndValidate(*configFiles...)
 	if err != nil {
 		log.Panicf("Failed initializing config: %v", err)
 	}
@@ -103,7 +103,6 @@ type uiEnvHandler struct {
 	OauthClientID string                `json:"REACT_APP_OAUTH_CLIENT_ID,omitempty"`
 	Environment   string                `json:"REACT_APP_ENVIRONMENT,omitempty"`
 	SentryDSN     string                `json:"REACT_APP_SENTRY_DSN,omitempty"`
-	Teams         []string              `json:"REACT_APP_TEAMS"`
 	Streams       config.Streams        `json:"REACT_APP_STREAMS"`
 	Docs          config.Documentations `json:"REACT_APP_DOC_LINKS"`
 }
