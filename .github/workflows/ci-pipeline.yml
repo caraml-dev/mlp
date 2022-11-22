@@ -27,6 +27,9 @@ env:
   CONTAINER_REGISTRY: ghcr.io
   LOCAL_REGISTRY: registry.localhost:5000
 
+  CARAML_CHARTS_REPOSITORY: romanwozniak/helm-charts
+  CARAML_CHARTS_REF: feat-mlp-support-configmap
+
 jobs:
   build-ui:
     runs-on: ubuntu-latest
@@ -68,7 +71,7 @@ jobs:
     outputs:
       api-version: ${{ steps.build-image.outputs.api-version }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -150,6 +153,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ env.CARAML_CHARTS_REPOSITORY }}
+          ref: ${{ env.CARAML_CHARTS_REF }}
+          path: 'helm-charts'
+
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION }}
@@ -186,22 +195,38 @@ jobs:
           docker push ${{ env.DOCKER_REPOSITORY }}/mlp-api:${{ needs.build-api.outputs.api-version }}
 
       - name: Deploy MLP to the local cluster
+        id: deploy
         run: |
-          helm repo add caraml https://caraml-dev.github.io/helm-charts/
-          
-          kubectl create ns mlp
-          
-          helm install mlp caraml/mlp --namespace=mlp \
-            --wait --timeout=5m \
+          helm install mlp ./helm-charts/charts/mlp \
+            --dependency-update \
+            --wait --timeout=3m \
             --values=.github/e2e/values.yaml \
-            --set mlp.image.registry=${{ env.LOCAL_REGISTRY }} \
-            --set mlp.image.repository=${{ github.repository }}/mlp-api \
-            --set mlp.image.tag=${{ needs.build-api.outputs.api-version }}
-          
-          echo "::group::Check cluster resources"
-          kubectl get all --namespace=mlp
-          kubectl get ingress --namespace=mlp
+            --set deployment.image.registry=${{ env.LOCAL_REGISTRY }} \
+            --set deployment.image.repository=${{ github.repository }}/mlp-api \
+            --set deployment.image.tag=${{ needs.build-api.outputs.api-version }}
+
+      - if: steps.deploy.outcome == 'failure' && always()
+        name: "Debug Deployment Failure"
+        run: |
+          echo "::group::describe deployment/mlp"
+          kubectl describe deployment/mlp
           echo "::endgroup::"
+          
+          echo "::group::configmap/mlp-config"
+          kubectl get cm/mlp-config -o jsonpath='{.data.mlp-config\.yaml}'
+          echo "::endgroup::"
+          
+          echo "::group::logs deployment/mlp"
+          kubectl logs deployment/mlp
+          echo "::endgroup::"
+          
+          echo "::group::kubernetes events"
+          kubectl get events
+          echo "::endgroup::"
+
+          echo "::group::kubernetes pod describe"
+          kubectl describe pod
+          echo "::endgroup::"      
 
       - name: Setup MLP project
         shell: bash

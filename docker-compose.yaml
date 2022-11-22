@@ -21,7 +21,6 @@ services:
       - POSTGRESQL_PASSWORD=mlp
       - POSTGRESQL_DATABASE=mlp
 
-
   keto:
     depends_on:
       - keto-db

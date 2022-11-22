@@ -18,4 +18,4 @@ FROM alpine:3.16
 COPY --from=go-builder /src/api/bin/mlp-api /usr/bin/mlp
 COPY db-migrations ./db-migrations
 
-CMD ["mlp"]
+ENTRYPOINT ["sh", "-c", "mlp \"$@\"", "--"]

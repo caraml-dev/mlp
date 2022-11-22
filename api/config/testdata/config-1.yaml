@@ -1,0 +1,10 @@
+Database:
+  User: mlp
+
+Streams:
+  stream-1:
+    - team-a
+    - team-b
+  SecondStream:
+    - MyTeam
+  EmptyStream: []
