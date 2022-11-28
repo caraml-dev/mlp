@@ -100,3 +100,36 @@ func (c *SecretsController) ListSecret(r *http.Request, vars map[string]string, 
 	}
 	return Ok(secrets)
 }
+
+func (c *SecretsController) Routes() []Route {
+	return []Route{
+		{
+			http.MethodGet,
+			"/projects/{project_id:[0-9]+}/secrets",
+			nil,
+			c.ListSecret,
+			"ListSecret",
+		},
+		{
+			http.MethodPost,
+			"/projects/{project_id:[0-9]+}/secrets",
+			models.Secret{},
+			c.CreateSecret,
+			"CreateSecret",
+		},
+		{
+			http.MethodPatch,
+			"/projects/{project_id:[0-9]+}/secrets/{secret_id}",
+			models.Secret{},
+			c.UpdateSecret,
+			"UpdateSecret",
+		},
+		{
+			http.MethodDelete,
+			"/projects/{project_id:[0-9]+}/secrets/{secret_id}",
+			nil,
+			c.DeleteSecret,
+			"DeleteSecret",
+		},
+	}
+}

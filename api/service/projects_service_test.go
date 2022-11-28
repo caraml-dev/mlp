@@ -85,8 +85,10 @@ func TestProjectsService_CreateProject(t *testing.T) {
 			projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.ID)
 			projectNameResource := fmt.Sprintf(ProjectResources, tt.arg.Name)
 
-			authEnforcer := &enforcerMock.Enforcer{}
+			var authEnforcer *enforcerMock.Enforcer
 			if tt.authEnabled {
+				authEnforcer = &enforcerMock.Enforcer{}
+
 				authEnforcer.On(
 					"UpsertRole",
 					fmt.Sprintf("%s-administrators", tt.arg.Name),
@@ -132,7 +134,7 @@ func TestProjectsService_CreateProject(t *testing.T) {
 				}, nil)
 			}
 
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer)
 			assert.NoError(t, err)
 
 			res, err := projectsService.CreateProject(tt.arg)
@@ -194,8 +196,9 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 			storage := &mocks.ProjectStorage{}
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
 
-			authEnforcer := &enforcerMock.Enforcer{}
+			var authEnforcer *enforcerMock.Enforcer
 			if tt.authEnabled {
+				authEnforcer = &enforcerMock.Enforcer{}
 
 				projectResource := fmt.Sprintf(ProjectResources, tt.arg.ID)
 				projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.ID)
@@ -245,7 +248,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 				}, nil)
 			}
 
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer)
 			assert.NoError(t, err)
 
 			res, err := projectsService.UpdateProject(tt.arg)
@@ -272,8 +275,7 @@ func TestProjectsService_ListProjects(t *testing.T) {
 	storage := &mocks.ProjectStorage{}
 	storage.On("ListProjects", projectFilter).Return(exp, nil)
 
-	authEnforcer := &enforcerMock.Enforcer{}
-	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false)
+	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, nil)
 	assert.NoError(t, err)
 
 	res, err := projectsService.ListProjects(projectFilter)
@@ -296,8 +298,7 @@ func TestProjectsService_FindById(t *testing.T) {
 	storage := &mocks.ProjectStorage{}
 	storage.On("Get", id).Return(exp, nil)
 
-	authEnforcer := &enforcerMock.Enforcer{}
-	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false)
+	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, nil)
 	assert.NoError(t, err)
 
 	res, err := projectsService.FindByID(id)

@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gojek/mlp/api/pkg/authz/enforcer"
-	"github.com/jinzhu/gorm"
-
 	"github.com/gojek/mlp/api/log"
 	"github.com/gojek/mlp/api/models"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer"
+	"github.com/jinzhu/gorm"
 )
 
 type ProjectsController struct {
@@ -133,6 +132,39 @@ func (c *ProjectsController) filterAuthorizedProjects(
 	}
 
 	return projects, nil
+}
+
+func (c *ProjectsController) Routes() []Route {
+	return []Route{
+		{
+			http.MethodGet,
+			"/projects/{project_id:[0-9]+}",
+			nil,
+			c.GetProject,
+			"GetProject",
+		},
+		{
+			http.MethodGet,
+			"/projects",
+			nil,
+			c.ListProjects,
+			"ListProjects",
+		},
+		{
+			http.MethodPost,
+			"/projects",
+			models.Project{},
+			c.CreateProject,
+			"CreateProject",
+		},
+		{
+			http.MethodPut,
+			"/projects/{project_id:[0-9]+}",
+			models.Project{},
+			c.UpdateProject,
+			"UpdateProject",
+		},
+	}
 }
 
 // addRequester add requester to users slice if it doesn't exists

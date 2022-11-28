@@ -35,8 +35,7 @@ const (
 func NewProjectsService(
 	mlflowURL string,
 	projectStorage storage.ProjectStorage,
-	authEnforcer enforcer.Enforcer,
-	authEnabled bool) (ProjectsService, error) {
+	authEnforcer enforcer.Enforcer) (ProjectsService, error) {
 	if strings.TrimSpace(mlflowURL) == "" {
 		return nil, errors.New("default mlflow tracking url should be provided")
 	}
@@ -45,7 +44,6 @@ func NewProjectsService(
 		projectStorage:              projectStorage,
 		defaultMlflowTrackingServer: mlflowURL,
 		authEnforcer:                authEnforcer,
-		authEnabled:                 authEnabled,
 	}, nil
 }
 
@@ -53,7 +51,6 @@ type projectsService struct {
 	projectStorage              storage.ProjectStorage
 	defaultMlflowTrackingServer string
 	authEnforcer                enforcer.Enforcer
-	authEnabled                 bool
 }
 
 func (service *projectsService) CreateProject(project *models.Project) (*models.Project, error) {
@@ -70,7 +67,7 @@ func (service *projectsService) CreateProject(project *models.Project) (*models.
 		return nil, fmt.Errorf("unable to create new project")
 	}
 
-	if service.authEnabled {
+	if service.authEnforcer != nil {
 		err = service.upsertAuthorizationPolicy(project)
 		if err != nil {
 			return nil, fmt.Errorf("error while creating authorization policy for project %s", project.Name)
@@ -85,7 +82,7 @@ func (service *projectsService) ListProjects(name string) (projects []*models.Pr
 }
 
 func (service *projectsService) UpdateProject(project *models.Project) (*models.Project, error) {
-	if service.authEnabled {
+	if service.authEnforcer != nil {
 		err := service.upsertAuthorizationPolicy(project)
 		if err != nil {
 			return nil, fmt.Errorf("error while updating authorization policy for project %s", project.Name)

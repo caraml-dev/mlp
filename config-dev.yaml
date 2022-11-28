@@ -1,6 +1,23 @@
 EncryptionKey: "encryption-key"
 OauthClientId: "[OAUTH_CLIENT_ID]"
 
+Applications:
+  - Name: Feast
+    Description: Platform for managing and serving ML features
+    Configuration:
+      Icon: appSearchApp
+      Href: /feast
+  - Name: Merlin
+    Description: Platform for deploying machine learning models
+    Configuration:
+      Icon: machineLearningApp
+      Href: /merlin
+  - Name: Turing
+    Description: Platform for setting up ML experiments
+    Configuration:
+      Icon: graphApp
+      Href: /turing
+
 Database:
   Host: "localhost"
   Database: "mlp"
