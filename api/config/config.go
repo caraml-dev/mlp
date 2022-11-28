@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gojek/mlp/api/models/v2"
 	"github.com/iancoleman/strcase"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
@@ -24,6 +25,7 @@ type Config struct {
 	Streams Streams `validate:"dive,required"`
 	Docs    Documentations
 
+	Applications  []models.Application `validate:"dive"`
 	Authorization *AuthorizationConfig `validate:"required"`
 	Database      *DatabaseConfig      `validate:"required"`
 	Mlflow        *MlflowConfig        `validate:"required"`

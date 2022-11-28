@@ -74,17 +74,17 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 type Handler func(r *http.Request, vars map[string]string, body interface{}) *Response
 
 type Route struct {
-	method  string
-	path    string
-	body    interface{}
-	handler Handler
-	name    string
+	Method  string
+	Path    string
+	Body    interface{}
+	Handler Handler
+	Name    string
 }
 
 func (route Route) HandlerFunc(validate *validator.Validate) http.HandlerFunc {
 	var bodyType reflect.Type
-	if route.body != nil {
-		bodyType = reflect.TypeOf(route.body)
+	if route.Body != nil {
+		bodyType = reflect.TypeOf(route.Body)
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +109,7 @@ func (route Route) HandlerFunc(validate *validator.Validate) http.HandlerFunc {
 					return BadRequest(errMessage)
 				}
 			}
-			return route.handler(r, vars, body)
+			return route.Handler(r, vars, body)
 		}()
 
 		response.WriteTo(w)
@@ -127,15 +127,15 @@ func NewRouter(appCtx *AppContext, controllers []Controller) *mux.Router {
 
 	for _, c := range controllers {
 		for _, r := range c.Routes() {
-			_, handler := newrelic.WrapHandle(r.name, r.HandlerFunc(validator))
+			_, handler := newrelic.WrapHandle(r.Name, r.HandlerFunc(validator))
 
-			if r.name == "CreateProject" {
+			if r.Name == "CreateProject" {
 				handler = middleware.ProjectCreationMiddleware(handler)
 			}
 
-			router.Name(r.name).
-				Methods(r.method).
-				Path(r.path).
+			router.Name(r.Name).
+				Methods(r.Method).
+				Path(r.Path).
 				Handler(handler)
 		}
 	}

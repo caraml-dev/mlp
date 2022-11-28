@@ -2,21 +2,52 @@ EncryptionKey: "encryption-key"
 OauthClientId: "[OAUTH_CLIENT_ID]"
 
 Applications:
-  - Name: Feast
-    Description: Platform for managing and serving ML features
-    Configuration:
-      Icon: appSearchApp
-      Href: /feast
   - Name: Merlin
     Description: Platform for deploying machine learning models
     Configuration:
-      Icon: machineLearningApp
-      Href: /merlin
+      API: /api/merlin
+      IconName: machineLearningApp
+      Homepage: /merlin
+      Navigation:
+        - Label: Models
+          Destination: /models
+        - Label: Transformer Simulator
+          Destination: /transformer-simulator
   - Name: Turing
     Description: Platform for setting up ML experiments
     Configuration:
-      Icon: graphApp
-      Href: /turing
+      API: /api/turing
+      IconName: graphApp
+      Homepage: /turing
+      Navigation:
+        - Label: Routers
+          Destination: /routers
+        - Label: Ensemblers
+          Destination: /ensemblers
+        - Label: Ensembling Jobs
+          Destination: /jobs
+        - Label: Experiments
+          Destination: /experiments
+  - Name: Feast
+    Description: Platform for managing and serving ML features
+    Configuration:
+      API: /feast/api
+      IconName: appSearchApp
+      Homepage: /feast
+      Navigation:
+        - Label: Entities
+          Destination: /entities
+        - Label: Feature Tables
+          Destination: /featuretables
+        - Label: Batch Ingestion Jobs
+          Destination: /jobs/batch
+        - Label: Stream Ingestion Jobs
+          Destination: /jobs/stream
+  - Name: Pipelines
+    Description: Platform for managing ML pipelines
+    Configuration:
+      IconName: pipelineApp
+      Homepage: /pipeline
 
 Database:
   Host: "localhost"

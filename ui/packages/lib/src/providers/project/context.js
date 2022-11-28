@@ -36,7 +36,7 @@ export const ProjectsContextProvider = ({ children }) => {
   const { currentApp = {} } = useContext(ApplicationsContext);
 
   const projectIdMatch = useMatch({
-    path: urlJoin(currentApp.href, "/projects/:projectId"),
+    path: urlJoin(currentApp.homepage, "/projects/:projectId"),
     caseSensitive: true,
     end: false
   });

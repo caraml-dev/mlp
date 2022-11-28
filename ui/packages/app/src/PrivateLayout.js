@@ -20,7 +20,7 @@ export const PrivateLayout = () => {
             {({ currentApp }) => (
               <Header
                 onProjectSelect={pId =>
-                  navigate(urlJoin(currentApp?.href, "projects", pId))
+                  navigate(urlJoin(currentApp?.homepage, "projects", pId))
                 }
                 docLinks={config.DOC_LINKS}
               />

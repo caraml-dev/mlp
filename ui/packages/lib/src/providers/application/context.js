@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useMlpApi } from "../../hooks/useMlpApi";
+import { useMlpApi } from "../../hooks";
 import { useLocation } from "react-router-dom";
 
 const ApplicationsContext = React.createContext({
@@ -9,10 +9,10 @@ const ApplicationsContext = React.createContext({
 
 export const ApplicationsContextProvider = ({ children }) => {
   const location = useLocation();
-  const [{ data: apps }] = useMlpApi("/v1/applications", {}, []);
+  const [{ data: apps }] = useMlpApi("/v2/applications", {}, []);
 
   const currentApp = useMemo(
-    () => apps.find(a => location.pathname.startsWith(a.href)),
+    () => apps.find(a => location.pathname.startsWith(a.homepage)),
     [apps, location.pathname]
   );
 

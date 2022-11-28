@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/gojek/mlp/api/api"
+	apiV2 "github.com/gojek/mlp/api/api/v2"
 	"github.com/gojek/mlp/api/config"
 	"github.com/gojek/mlp/api/database"
 	"github.com/gojek/mlp/api/log"
@@ -51,7 +52,7 @@ func main() {
 	mount(router, "/v1", api.NewRouter(appCtx, v1Controllers))
 
 	v2Controllers := []api.Controller{
-		&api.ApplicationsV2Controller{},
+		&apiV2.ApplicationsController{Apps: cfg.Applications},
 	}
 	mount(router, "/v2", api.NewRouter(appCtx, v2Controllers))
 
