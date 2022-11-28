@@ -4,7 +4,7 @@ import { EuiConfirmModal, EuiOverlayMask } from "@elastic/eui";
 
 const DeleteSecretModal = ({ projectId, secret, closeModal, fetchUpdates }) => {
   const [deleteResponse, deleteSecret] = useMlpApi(
-    `/projects/${projectId}/secrets/${secret.id}`,
+    `/v1/projects/${projectId}/secrets/${secret.id}`,
     {
       method: "DELETE"
     },

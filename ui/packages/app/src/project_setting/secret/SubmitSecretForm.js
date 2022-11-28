@@ -29,8 +29,8 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
 
   const [submissionResponse, submitForm] = useMlpApi(
     secret
-      ? `/projects/${projectId}/secrets/${secret.id}`
-      : `/projects/${projectId}/secrets`,
+      ? `/v1/projects/${projectId}/secrets/${secret.id}`
+      : `/v1/projects/${projectId}/secrets`,
     {
       method: secret ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" }

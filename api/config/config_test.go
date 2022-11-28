@@ -48,7 +48,7 @@ func TestLoad(t *testing.T) {
 			configs: []string{"testdata/config-1.yaml"},
 			env:     map[string]string{},
 			expected: &config.Config{
-				APIHost:     "http://localhost:8080/v1",
+				APIHost:     "http://localhost:8080",
 				Port:        8080,
 				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
@@ -81,7 +81,7 @@ func TestLoad(t *testing.T) {
 				"DATABASE__PASSWORD": "secret",
 			},
 			expected: &config.Config{
-				APIHost:       "http://localhost:8080/v1",
+				APIHost:       "http://localhost:8080",
 				Port:          8080,
 				EncryptionKey: "test-key",
 				Environment:   "dev",
@@ -119,7 +119,7 @@ func TestLoad(t *testing.T) {
 				"SENTRY_DSN":           "1234",
 			},
 			expected: &config.Config{
-				APIHost:       "http://localhost:8080/v1",
+				APIHost:       "http://localhost:8080",
 				Port:          8080,
 				EncryptionKey: "test-key",
 				Environment:   "dev",

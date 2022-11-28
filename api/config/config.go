@@ -154,7 +154,7 @@ func LoadAndValidate(paths ...string) (*Config, error) {
 }
 
 var defaultConfig = &Config{
-	APIHost:     "http://localhost:8080/v1",
+	APIHost:     "http://localhost:8080",
 	Environment: "dev",
 	Port:        8080,
 

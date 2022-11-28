@@ -26,7 +26,7 @@ const SubmitUserRoleForm = ({ userRole, project, fetchUpdates, toggleAdd }) => {
   });
 
   const [submissionResponse, submitForm] = useMlpApi(
-    `/projects/${project.id}`,
+    `/v1/projects/${project.id}`,
     {
       method: "PUT",
       headers: { "Content-Type": "application/json" }

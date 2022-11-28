@@ -30,7 +30,7 @@
     "start": "craco start",
     "test": "craco test"
   },
-  "proxy": "http://localhost:8080/v1",
+  "proxy": "http://localhost:8080",
   "browserslist": {
     "production": [
       ">0.2%",

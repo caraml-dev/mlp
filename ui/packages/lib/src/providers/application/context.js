@@ -9,7 +9,7 @@ const ApplicationsContext = React.createContext({
 
 export const ApplicationsContextProvider = ({ children }) => {
   const location = useLocation();
-  const [{ data: apps }] = useMlpApi("/applications", {}, []);
+  const [{ data: apps }] = useMlpApi("/v1/applications", {}, []);
 
   const currentApp = useMemo(
     () => apps.find(a => location.pathname.startsWith(a.href)),
