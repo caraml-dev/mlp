@@ -52,7 +52,8 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 	projectsService, err := service.NewProjectsService(
 		cfg.Mlflow.TrackingURL,
 		storage.NewProjectStorage(db),
-		authEnforcer)
+		authEnforcer,
+		cfg.Authorization.Enabled)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize projects service: %v", err)
