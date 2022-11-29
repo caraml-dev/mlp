@@ -78,9 +78,6 @@ type UIConfig struct {
 	StaticPath string `validated:"required"`
 	IndexPath  string `validated:"required"`
 
-	FeastCoreAPI        string `json:"REACT_APP_FEAST_CORE_API"`
-	MerlinAPI           string `json:"REACT_APP_MERLIN_API"`
-	TuringAPI           string `json:"REACT_APP_TURING_API"`
 	ClockworkUIHomepage string `json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
 	FeastUIHomepage     string `json:"REACT_APP_FEAST_UI_HOMEPAGE"`
 	KubeflowUIHomepage  string `json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`

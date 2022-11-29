@@ -7,9 +7,6 @@ Authorization:
   KetoServerURL: http://localhost:4466
 
 UI:
-  FeastCoreAPI: /feast/api
-  MerlinAPI: /api/merlin/v1
-  TuringAPI: /api/turing/v1
   ClockworkUIHomepage: http://clockwork.dev
   FeastUIHomepage: /feast
   KubeflowUIHomepage: http://kubeflow.org
