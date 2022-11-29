@@ -38,7 +38,7 @@ export const MerlinModels = ({ project, models, homepage }) => {
       });
       setModelItems(items);
     }
-  }, [project, models]);
+  }, [project, models, homepage]);
 
   return modelItems.length > 0 ? (
     <EuiListGroup

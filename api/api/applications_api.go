@@ -1,7 +1,7 @@
 package api
 
 import (
-	"net/http"
+	http "net/http"
 )
 
 type ApplicationsController struct {

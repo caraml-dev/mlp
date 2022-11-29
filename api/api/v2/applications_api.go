@@ -18,11 +18,10 @@ func (c *ApplicationsController) ListApplications(_ *http.Request, _ map[string]
 func (c *ApplicationsController) Routes() []api.Route {
 	return []api.Route{
 		{
-			http.MethodGet,
-			"/applications",
-			nil,
-			c.ListApplications,
-			"ListApplications",
+			Method:  http.MethodGet,
+			Path:    "/applications",
+			Handler: c.ListApplications,
+			Name:    "ListApplications",
 		},
 	}
 }

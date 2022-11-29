@@ -43,7 +43,7 @@ export const FeastResources = ({ project, homepage }) => {
         size: "s"
       }
     ]);
-  }, [project, entities, featureTables]);
+  }, [project, entities, featureTables, homepage]);
 
   return items.length > 0 ? (
     <EuiListGroup

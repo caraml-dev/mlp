@@ -12,7 +12,6 @@ import { ProjectSummary } from "./components/ProjectSummary";
 import { Resources } from "./components/Resources";
 import { useMerlinApi } from "../../hooks/useMerlinApi";
 import { useTuringApi } from "../../hooks/useTuringApi";
-import { useFeastCoreApi } from "../../hooks/useFeastCoreApi";
 import { ComingSoonPanel } from "./components/ComingSoonPanel";
 
 import imageCharts from "../../images/charts.svg";

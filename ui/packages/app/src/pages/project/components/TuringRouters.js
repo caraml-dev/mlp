@@ -43,7 +43,7 @@ export const TuringRouters = ({ project, routers, homepage }) => {
       });
       setExperiments(exps);
     }
-  }, [project, routers]);
+  }, [project, routers, homepage]);
 
   return experiments.length > 0 ? (
     <EuiListGroup
