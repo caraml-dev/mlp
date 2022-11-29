@@ -4,7 +4,7 @@ info:
   description: "API Guide for accessing MLP API"
   version: "0.4.0"
 host: "localhost:8080"
-basePath: "/v1"
+basePath: "/"
 tags:
   - name: "project"
     description: "Project Management API. Project is used to namespace model, secret, and user access"
@@ -13,7 +13,18 @@ tags:
 schemes:
   - "http"
 paths:
-  "/projects":
+  "/v2/applications":
+    get:
+      tags: ["application"]
+      summary: "List CaraML applications"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Application"
+  "/v1/projects":
     get:
       tags: ["project"]
       summary: "List existing projects"
@@ -49,7 +60,7 @@ paths:
           description: "Invalid request format"
         409:
           description: "Project with the same name already exists"
-  "/projects/{project_id}":
+  "/v1/projects/{project_id}":
     get:
       tags: ["project"]
       summary: "Get project"
@@ -89,7 +100,7 @@ paths:
         400:
           description: "Invalid request format"
 
-  "/projects/{project_id}/secrets":
+  "/v1/projects/{project_id}/secrets":
     post:
       tags: ["secret"]
       summary: "Create secret"
@@ -124,7 +135,7 @@ paths:
             items:
               $ref: "#/definitions/Secret"
 
-  "/projects/{project_id}/secrets/{secret_id}":
+  "/v1/projects/{project_id}/secrets/{secret_id}":
     patch:
       tags: ["secret"]
       summary: "Update secret"
@@ -163,6 +174,35 @@ paths:
           description: "No content"
 
 definitions:
+  Application:
+    type: "object"
+    required:
+      - name
+      - homepage
+    properties:
+      name:
+        type: "string"
+      description:
+        type: "string"
+      homepage:
+        type: "string"
+      config:
+        type: "object"
+        properties:
+          api:
+            type: "string"
+          icon:
+            type: "string"
+          navigation:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                label:
+                  type: "string"
+                destination:
+                  type: "string"
+
   Project:
     type: "object"
     required:
