@@ -27,8 +27,8 @@ env:
   CONTAINER_REGISTRY: ghcr.io
   LOCAL_REGISTRY: registry.localhost:5000
 
-  CARAML_CHARTS_REPOSITORY: romanwozniak/helm-charts
-  CARAML_CHARTS_REF: feat-mlp-support-configmap
+  CARAML_CHARTS_REPOSITORY: caraml-dev/helm-charts
+  CARAML_CHARTS_REF: main
 
 jobs:
   build-ui:
