@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { EuiInMemoryTable } from "@elastic/eui";
 
-export const MerlinDeploymentsTable = ({ project, models }) => {
+export const MerlinDeploymentsTable = ({ project, models, homepage }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export const MerlinDeploymentsTable = ({ project, models }) => {
   const cellProps = item => ({
     style: { cursor: "pointer" },
     onClick: () =>
-      (window.location.href = `/merlin/projects/${project.id}/models/${item.id}/versions/${item.version_id}/endpoints/${item.version_endpoint_id}/details`)
+      (window.location.href = `${homepage}/projects/${project.id}/models/${item.id}/versions/${item.version_id}/endpoints/${item.version_endpoint_id}/details`)
   });
 
   return (

@@ -4,7 +4,7 @@ import { MODEL_TYPE_NAME_MAP } from "../../../services/merlin/Model";
 
 import "./ListGroup.scss";
 
-export const MerlinModels = ({ project, models }) => {
+export const MerlinModels = ({ project, models, homepage }) => {
   const [modelItems, setModelItems] = useState([]);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export const MerlinModels = ({ project, models }) => {
             </EuiText>
           ),
           onClick: () => {
-            window.location.href = `/merlin/projects/${project.id}/models?type=${modelType}`;
+            window.location.href = `${homepage}/projects/${project.id}/models?type=${modelType}`;
           },
           size: "s"
         });

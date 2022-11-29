@@ -1,11 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { EuiInMemoryTable } from "@elastic/eui";
+import { useFeastCoreApi } from "../../../hooks/useFeastCoreApi";
 
-export const FeastJobsTable = ({
-  project,
-  feastStreamIngestionJobs,
-  feastBatchIngestionJobs
-}) => {
+export const FeastJobsTable = ({ project, homepage }) => {
+  const [{ data: feastStreamIngestionJobs }] = useFeastCoreApi(
+    `/jobs/ingestion/stream`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        include_terminated: true,
+        project: (project?.name || "").replace(/-/g, "_")
+      })
+    },
+    [],
+    !!project
+  );
+  const [{ data: feastBatchIngestionJobs }] = useFeastCoreApi(
+    `/jobs/ingestion/batch`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        include_terminated: true,
+        project: (project?.name || "").replace(/-/g, "_")
+      })
+    },
+    [],
+    !!project
+  );
+
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -30,7 +52,6 @@ export const FeastJobsTable = ({
     }
 
     if (feastBatchIngestionJobs) {
-      console.log("feastBatchIngestionJobs", feastBatchIngestionJobs);
       feastBatchIngestionJobs
         .filter(job => job.status === "IN PROGRESS")
         .sort((a, b) => (a.startTime > b.startTime ? 1 : -1))
@@ -77,7 +98,7 @@ export const FeastJobsTable = ({
   const cellProps = item => ({
     style: { cursor: "pointer" },
     onClick: () =>
-      (window.location.href = `/feast/projects/${project.id}/jobs/${item.type}`)
+      (window.location.href = `${homepage}/projects/${project.id}/jobs/${item.type}`)
   });
 
   return (

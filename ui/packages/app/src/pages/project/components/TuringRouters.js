@@ -4,7 +4,7 @@ import { EXPERIMENT_TYPE_NAME_MAP } from "../../../services/turing/Turing";
 
 import "./ListGroup.scss";
 
-export const TuringRouters = ({ project, routers }) => {
+export const TuringRouters = ({ project, routers, homepage }) => {
   const [experiments, setExperiments] = useState([]);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export const TuringRouters = ({ project, routers }) => {
             </EuiText>
           ),
           onClick: () => {
-            window.location.href = `/turing/projects/${project.id}/routers?experiment_type=${expType}`;
+            window.location.href = `${homepage}/projects/${project.id}/routers?experiment_type=${expType}`;
           },
           size: "s"
         });

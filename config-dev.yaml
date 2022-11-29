@@ -4,10 +4,10 @@ OauthClientId: "[OAUTH_CLIENT_ID]"
 Applications:
   - Name: Merlin
     Description: Platform for deploying machine learning models
+    Homepage: /merlin
     Configuration:
       API: /api/merlin
       IconName: machineLearningApp
-      Homepage: /merlin
       Navigation:
         - Label: Models
           Destination: /models
@@ -15,10 +15,10 @@ Applications:
           Destination: /transformer-simulator
   - Name: Turing
     Description: Platform for setting up ML experiments
+    Homepage: /turing
     Configuration:
       API: /api/turing
       IconName: graphApp
-      Homepage: /turing
       Navigation:
         - Label: Routers
           Destination: /routers
@@ -30,10 +30,10 @@ Applications:
           Destination: /experiments
   - Name: Feast
     Description: Platform for managing and serving ML features
+    Homepage: /feast
     Configuration:
       API: /feast/api
       IconName: appSearchApp
-      Homepage: /feast
       Navigation:
         - Label: Entities
           Destination: /entities
@@ -45,9 +45,9 @@ Applications:
           Destination: /jobs/stream
   - Name: Pipelines
     Description: Platform for managing ML pipelines
+    Homepage: /pipeline
     Configuration:
       IconName: pipelineApp
-      Homepage: /pipeline
 
 Database:
   Host: "localhost"

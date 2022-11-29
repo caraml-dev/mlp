@@ -79,10 +79,7 @@ type UIConfig struct {
 	IndexPath  string `validated:"required"`
 
 	ClockworkUIHomepage string `json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
-	FeastUIHomepage     string `json:"REACT_APP_FEAST_UI_HOMEPAGE"`
 	KubeflowUIHomepage  string `json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`
-	MerlinUIHomepage    string `json:"REACT_APP_MERLIN_UI_HOMEPAGE"`
-	TuringUIHomepage    string `json:"REACT_APP_TURING_UI_HOMEPAGE"`
 }
 
 // Transform env variables to the format consumed by koanf.
