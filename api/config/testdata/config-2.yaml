@@ -1,24 +1,24 @@
-Docs:
+docs:
   - label: "Merlin User Guide"
     href: "https://github.com/gojek/merlin/blob/main/docs/getting-started/README.md"
 
-Applications:
-  - Name: Turing
-    Description: ML Experimentation System
-    Homepage: /turing
-    Configuration:
-      API: /api/turing/v1
-      IconName: graphApp
-      Navigation:
-        - Label: Routers
-          Destination: /routers
-        - Label: Experiments
-          Destination: /experiments
+applications:
+  - name: Turing
+    description: ML Experimentation System
+    homepage: /turing
+    configuration:
+      aPI: /api/turing/v1
+      iconName: graphApp
+      navigation:
+        - label: Routers
+          destination: /routers
+        - label: Experiments
+          destination: /experiments
 
-Authorization:
-  Enabled: true
-  KetoServerURL: http://localhost:4466
+authorization:
+  enabled: true
+  ketoServerURL: http://localhost:4466
 
-UI:
-  ClockworkUIHomepage: http://clockwork.dev
-  KubeflowUIHomepage: http://kubeflow.org
+ui:
+  clockworkUIHomepage: http://clockwork.dev
+  kubeflowUIHomepage: http://kubeflow.org

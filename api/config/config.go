@@ -85,17 +85,17 @@ type UIConfig struct {
 // Transform env variables to the format consumed by koanf.
 // The variable key is split by the double underscore ('__') sequence,
 // which separates nested config variables, and then each config key is
-// converted to camel-case.
+// converted to lower camel-case.
 //
 // Example:
 //
 //	MY_VARIABLE => MyVariable
-//	VARIABLES__ANOTHER_VARIABLE => Variables.AnotherVariable
+//	VARIABLES__ANOTHER_VARIABLE => variables.anotherVariable
 func envVarKeyTransformer(s string) string {
 	parts := strings.Split(strings.ToLower(s), "__")
 	transformed := make([]string, len(parts))
 	for idx, key := range parts {
-		transformed[idx] = strcase.ToCamel(key)
+		transformed[idx] = strcase.ToLowerCamel(key)
 	}
 
 	return strings.Join(transformed, ".")
