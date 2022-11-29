@@ -35,7 +35,7 @@ export const Instances = ({ project, models, routers }) => {
                 title="Features Ingestion"
                 href={`${
                   apps.find(a => a.name === "Feast").homepage
-                }/jobs/stream`}
+                }/projects/${project.id}/jobs/stream`}
               />
             ),
             description: (
