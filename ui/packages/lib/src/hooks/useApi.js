@@ -67,7 +67,8 @@ export const useApi = (
   const [args, dispatchArgsUpdate] = useReducer(argumentsReducer, {
     result,
     options,
-    authCtx
+    authCtx,
+    callImmediately
   });
 
   useEffect(() => {
@@ -81,6 +82,10 @@ export const useApi = (
   useEffect(() => {
     dispatchArgsUpdate({ name: "result", value: result });
   }, [result]);
+
+  useEffect(() => {
+    dispatchArgsUpdate({ name: "callImmediately", value: callImmediately });
+  }, [callImmediately]);
 
   const [state, dispatch] = useReducer(
     dataFetchReducer,
@@ -139,11 +144,11 @@ export const useApi = (
   useEffect(() => {
     dispatch({ type: "FETCH_RESET", payload: args.result });
 
-    if (callImmediately) {
+    if (args.callImmediately) {
       const call = fetchData();
       return call.cancel;
     }
-  }, [args.result, callImmediately, fetchData]);
+  }, [args.result, args.callImmediately, fetchData]);
 
   return [state, fetchData];
 };

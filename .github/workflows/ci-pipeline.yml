@@ -28,7 +28,7 @@ env:
   LOCAL_REGISTRY: registry.localhost:5000
 
   CARAML_CHARTS_REPOSITORY: romanwozniak/helm-charts
-  CARAML_CHARTS_REF: feat-mlp-support-configmap
+  CARAML_CHARTS_REF: feat-mlp-apps-configuration
 
 jobs:
   build-ui:

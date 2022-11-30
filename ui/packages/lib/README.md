@@ -62,7 +62,7 @@ const DummyButton = () => {
 
 ```js
 const [response, fetch] = useMlpApi(
-  `/projects/${projectId}/environments`,
+  `/v1/projects/${projectId}/environments`,
   {}, // request options
   [], // initial value of the response.data
   true // whether or not to send the request to the API immediately

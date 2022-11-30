@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AuthContext, useApi } from "@gojek/mlp-ui";
+import { ApplicationsContext, AuthContext, useApi } from "@gojek/mlp-ui";
 import config from "../config";
 
 export const useTuringApi = (
@@ -9,17 +9,18 @@ export const useTuringApi = (
   callImmediately = true
 ) => {
   const authCtx = useContext(AuthContext);
+  const { apps } = useContext(ApplicationsContext);
 
   return useApi(
     endpoint,
     {
-      baseApiUrl: config.TURING_API,
+      baseApiUrl: apps.find(app => app.name === "Turing")?.config?.api,
       timeout: config.TIMEOUT,
       useMockData: config.USE_MOCK_DATA,
       ...options
     },
     authCtx,
     result,
-    callImmediately
+    apps.some(app => app.name === "Turing") && callImmediately
   );
 };

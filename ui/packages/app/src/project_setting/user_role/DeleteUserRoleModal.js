@@ -9,7 +9,7 @@ const DeleteUserRoleModal = ({
   fetchUpdates
 }) => {
   const [deleteResponse, deleteUserRole] = useMlpApi(
-    `/projects/${project.id}`,
+    `/v1/projects/${project.id}`,
     {
       method: "PUT"
     },

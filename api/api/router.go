@@ -6,17 +6,21 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/gojek/mlp/api/pkg/instrumentation/newrelic"
-
 	"github.com/go-playground/validator"
-	"github.com/gojek/mlp/api/pkg/authz/enforcer"
-	"github.com/gorilla/mux"
-
+	"github.com/gojek/mlp/api/config"
 	"github.com/gojek/mlp/api/middleware"
-	"github.com/gojek/mlp/api/models"
+	"github.com/gojek/mlp/api/pkg/authz/enforcer"
+	"github.com/gojek/mlp/api/pkg/instrumentation/newrelic"
 	"github.com/gojek/mlp/api/service"
+	"github.com/gojek/mlp/api/storage"
 	"github.com/gojek/mlp/api/validation"
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
+
+type Controller interface {
+	Routes() []Route
+}
 
 type AppContext struct {
 	ApplicationService service.ApplicationService
@@ -27,21 +31,60 @@ type AppContext struct {
 	Enforcer             enforcer.Enforcer
 }
 
+func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error) {
+	var authEnforcer enforcer.Enforcer
+	if cfg.Authorization.Enabled {
+		authEnforcer, err = enforcer.NewEnforcerBuilder().
+			URL(cfg.Authorization.KetoServerURL).
+			Product("mlp").
+			Build()
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize authorization service: %v", err)
+		}
+	}
+
+	applicationService, err := service.NewApplicationService(db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize applications service: %v", err)
+	}
+
+	projectsService, err := service.NewProjectsService(
+		cfg.Mlflow.TrackingURL,
+		storage.NewProjectStorage(db),
+		authEnforcer,
+		cfg.Authorization.Enabled)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize projects service: %v", err)
+	}
+
+	secretService := service.NewSecretService(storage.NewSecretStorage(db, cfg.EncryptionKey))
+
+	return &AppContext{
+		ApplicationService:   applicationService,
+		ProjectsService:      projectsService,
+		SecretService:        secretService,
+		AuthorizationEnabled: cfg.Authorization.Enabled,
+		Enforcer:             authEnforcer,
+	}, nil
+}
+
 // type Handler func(r *http.Request, vars map[string]string, body interface{}) *Response
 type Handler func(r *http.Request, vars map[string]string, body interface{}) *Response
 
 type Route struct {
-	method  string
-	path    string
-	body    interface{}
-	handler Handler
-	name    string
+	Method  string
+	Path    string
+	Body    interface{}
+	Handler Handler
+	Name    string
 }
 
 func (route Route) HandlerFunc(validate *validator.Validate) http.HandlerFunc {
 	var bodyType reflect.Type
-	if route.body != nil {
-		bodyType = reflect.TypeOf(route.body)
+	if route.Body != nil {
+		bodyType = reflect.TypeOf(route.Body)
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -66,113 +109,35 @@ func (route Route) HandlerFunc(validate *validator.Validate) http.HandlerFunc {
 					return BadRequest(errMessage)
 				}
 			}
-			return route.handler(r, vars, body)
+			return route.Handler(r, vars, body)
 		}()
 
 		response.WriteTo(w)
 	}
 }
 
-func NewRouter(appCtx AppContext) *mux.Router {
+func NewRouter(appCtx *AppContext, controllers []Controller) *mux.Router {
+	router := mux.NewRouter().StrictSlash(true)
 	validator := validation.NewValidator()
-	applicationsController := ApplicationsController{&appCtx}
-	projectsController := ProjectsController{&appCtx}
-	secretController := SecretsController{&appCtx}
-
-	routes := []Route{
-		//Applications API
-		{
-			http.MethodGet,
-			"/applications",
-			nil,
-			applicationsController.ListApplications,
-			"ListApplications",
-		},
-
-		//Projects API
-		{
-			http.MethodGet,
-			"/projects/{project_id:[0-9]+}",
-			nil,
-			projectsController.GetProject,
-			"GetProject",
-		},
-		{
-			http.MethodGet,
-			"/projects",
-			nil,
-			projectsController.ListProjects,
-			"ListProjects",
-		},
-		{
-			http.MethodPost,
-			"/projects",
-			models.Project{},
-			projectsController.CreateProject,
-			"CreateProject",
-		},
-		{
-			http.MethodPut,
-			"/projects/{project_id:[0-9]+}",
-			models.Project{},
-			projectsController.UpdateProject,
-			"UpdateProject",
-		},
-
-		// Secret Management API
-		{
-			http.MethodGet,
-			"/projects/{project_id:[0-9]+}/secrets",
-			nil,
-			secretController.ListSecret,
-			"ListSecret",
-		},
-		{
-			http.MethodPost,
-			"/projects/{project_id:[0-9]+}/secrets",
-			models.Secret{},
-			secretController.CreateSecret,
-			"CreateSecret",
-		},
-		{
-			http.MethodPatch,
-			"/projects/{project_id:[0-9]+}/secrets/{secret_id}",
-			models.Secret{},
-			secretController.UpdateSecret,
-			"UpdateSecret",
-		},
-		{
-			http.MethodDelete,
-			"/projects/{project_id:[0-9]+}/secrets/{secret_id}",
-			nil,
-			secretController.DeleteSecret,
-			"DeleteSecret",
-		},
-	}
-
-	var authzMiddleware *middleware.Authorizer
-	var projCreationMiddleware *middleware.ProjectCreation
 
 	if appCtx.AuthorizationEnabled {
-		authzMiddleware = middleware.NewAuthorizer(appCtx.Enforcer)
+		authzMiddleware := middleware.NewAuthorizer(appCtx.Enforcer)
+		router.Use(authzMiddleware.AuthorizationMiddleware)
 	}
 
-	router := mux.NewRouter().StrictSlash(true)
-	for _, r := range routes {
-		_, handler := newrelic.WrapHandle(r.name, r.HandlerFunc(validator))
+	for _, c := range controllers {
+		for _, r := range c.Routes() {
+			_, handler := newrelic.WrapHandle(r.Name, r.HandlerFunc(validator))
 
-		if r.name == "CreateProject" {
-			handler = projCreationMiddleware.ProjectCreationMiddleware(handler)
+			if r.Name == "CreateProject" {
+				handler = middleware.ProjectCreationMiddleware(handler)
+			}
+
+			router.Name(r.Name).
+				Methods(r.Method).
+				Path(r.Path).
+				Handler(handler)
 		}
-
-		if appCtx.AuthorizationEnabled {
-			handler = authzMiddleware.AuthorizationMiddleware(handler)
-		}
-
-		router.Name(r.name).
-			Methods(r.method).
-			Path(r.path).
-			Handler(handler)
 	}
 
 	return router

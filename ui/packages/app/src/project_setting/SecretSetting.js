@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 const SecretSetting = () => {
   const { projectId } = useParams();
   const [{ data, isLoaded, error }, fetchSecrets] = useMlpApi(
-    `/projects/${projectId}/secrets`
+    `/v1/projects/${projectId}/secrets`
   );
 
   return (

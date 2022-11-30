@@ -5,9 +5,7 @@ import (
 	"strings"
 )
 
-type ProjectCreation struct{}
-
-func (a *ProjectCreation) ProjectCreationMiddleware(next http.Handler) http.Handler {
+func ProjectCreationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		userAgent := strings.ToLower(r.Header.Get("User-Agent"))

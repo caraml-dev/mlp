@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gojek/mlp/api/models/v2"
 	"github.com/iancoleman/strcase"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
@@ -24,6 +25,7 @@ type Config struct {
 	Streams Streams `validate:"dive,required"`
 	Docs    Documentations
 
+	Applications  []models.Application `validate:"dive"`
 	Authorization *AuthorizationConfig `validate:"required"`
 	Database      *DatabaseConfig      `validate:"required"`
 	Mlflow        *MlflowConfig        `validate:"required"`
@@ -76,30 +78,24 @@ type UIConfig struct {
 	StaticPath string `validated:"required"`
 	IndexPath  string `validated:"required"`
 
-	FeastCoreAPI        string `json:"REACT_APP_FEAST_CORE_API"`
-	MerlinAPI           string `json:"REACT_APP_MERLIN_API"`
-	TuringAPI           string `json:"REACT_APP_TURING_API"`
 	ClockworkUIHomepage string `json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
-	FeastUIHomepage     string `json:"REACT_APP_FEAST_UI_HOMEPAGE"`
 	KubeflowUIHomepage  string `json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`
-	MerlinUIHomepage    string `json:"REACT_APP_MERLIN_UI_HOMEPAGE"`
-	TuringUIHomepage    string `json:"REACT_APP_TURING_UI_HOMEPAGE"`
 }
 
 // Transform env variables to the format consumed by koanf.
 // The variable key is split by the double underscore ('__') sequence,
 // which separates nested config variables, and then each config key is
-// converted to camel-case.
+// converted to lower camel-case.
 //
 // Example:
 //
 //	MY_VARIABLE => MyVariable
-//	VARIABLES__ANOTHER_VARIABLE => Variables.AnotherVariable
+//	VARIABLES__ANOTHER_VARIABLE => variables.anotherVariable
 func envVarKeyTransformer(s string) string {
 	parts := strings.Split(strings.ToLower(s), "__")
 	transformed := make([]string, len(parts))
 	for idx, key := range parts {
-		transformed[idx] = strcase.ToCamel(key)
+		transformed[idx] = strcase.ToLowerCamel(key)
 	}
 
 	return strings.Join(transformed, ".")
@@ -154,7 +150,7 @@ func LoadAndValidate(paths ...string) (*Config, error) {
 }
 
 var defaultConfig = &Config{
-	APIHost:     "http://localhost:8080/v1",
+	APIHost:     "http://localhost:8080",
 	Environment: "dev",
 	Port:        8080,
 

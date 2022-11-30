@@ -149,7 +149,7 @@ const ProjectForm = () => {
     submitForm({ body: JSON.stringify(project) });
   };
   const [submissionResponse, submitForm] = useMlpApi(
-    "/projects",
+    "/v1/projects",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" }

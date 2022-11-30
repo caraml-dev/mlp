@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { EuiFlexGroup, EuiFlexItem, EuiText, EuiTitle } from "@elastic/eui";
 import { Panel } from "./Panel";
 import { FeastJobsTable } from "./FeastJobsTable";
 import { MerlinDeploymentsTable } from "./MerlinDeploymentsTable";
 import { TuringRoutersTable } from "./TuringRoutersTable";
+import { ApplicationsContext } from "@gojek/mlp-ui";
 
 const Title = ({ title, href }) => {
   return (
@@ -22,42 +23,72 @@ const Title = ({ title, href }) => {
   );
 };
 
-export const Instances = ({
-  project,
-  feastStreamIngestionJobs,
-  feastBatchIngestionJobs,
-  models,
-  routers
-}) => {
+export const Instances = ({ project, models, routers }) => {
+  const { apps } = useContext(ApplicationsContext);
+
   const items = [
-    {
-      title: <Title title="Features Ingestion" href={`/feast/jobs/stream`} />,
-      description: (
-        <FeastJobsTable
-          project={project}
-          feastStreamIngestionJobs={feastStreamIngestionJobs}
-          feastBatchIngestionJobs={feastBatchIngestionJobs}
-        />
-      )
-    },
-    {
-      title: (
-        <Title
-          title="Merlin Deployments"
-          href={`/merlin/projects/${project.id}/models`}
-        />
-      ),
-      description: <MerlinDeploymentsTable project={project} models={models} />
-    },
-    {
-      title: (
-        <Title
-          title="Turing Routers"
-          href={`/turing/projects/${project.id}/routers`}
-        />
-      ),
-      description: <TuringRoutersTable project={project} routers={routers} />
-    }
+    ...(apps.some(a => a.name === "Feast")
+      ? [
+          {
+            title: (
+              <Title
+                title="Features Ingestion"
+                href={`${
+                  apps.find(a => a.name === "Feast").homepage
+                }/projects/${project.id}/jobs/stream`}
+              />
+            ),
+            description: (
+              <FeastJobsTable
+                project={project}
+                homepage={apps.find(a => a.name === "Feast").homepage}
+              />
+            )
+          }
+        ]
+      : []),
+    ...(apps.some(a => a.name === "Merlin")
+      ? [
+          {
+            title: (
+              <Title
+                title="Merlin Deployments"
+                href={`${
+                  apps.find(a => a.name === "Merlin").homepage
+                }/projects/${project.id}/models`}
+              />
+            ),
+            description: (
+              <MerlinDeploymentsTable
+                project={project}
+                models={models}
+                homepage={apps.find(a => a.name === "Merlin").homepage}
+              />
+            )
+          }
+        ]
+      : []),
+    ...(apps.some(a => a.name === "Turing")
+      ? [
+          {
+            title: (
+              <Title
+                title="Turing Routers"
+                href={`${
+                  apps.find(a => a.name === "Turing").homepage
+                }/projects/${project.id}/routers`}
+              />
+            ),
+            description: (
+              <TuringRoutersTable
+                project={project}
+                routers={routers}
+                homepage={apps.find(a => a.name === "Turing").homepage}
+              />
+            )
+          }
+        ]
+      : [])
   ];
 
   return (

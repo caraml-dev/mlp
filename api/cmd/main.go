@@ -9,12 +9,10 @@ import (
 	"strings"
 
 	"github.com/gojek/mlp/api/api"
+	apiV2 "github.com/gojek/mlp/api/api/v2"
 	"github.com/gojek/mlp/api/config"
 	"github.com/gojek/mlp/api/database"
 	"github.com/gojek/mlp/api/log"
-	"github.com/gojek/mlp/api/pkg/authz/enforcer"
-	"github.com/gojek/mlp/api/service"
-	"github.com/gojek/mlp/api/storage"
 	"github.com/gorilla/mux"
 	"github.com/heptiolabs/healthcheck"
 	"github.com/rs/cors"
@@ -27,46 +25,36 @@ func main() {
 
 	cfg, err := config.LoadAndValidate(*configFiles...)
 	if err != nil {
-		log.Panicf("Failed initializing config: %v", err)
+		log.Panicf("failed initializing config: %v", err)
 	}
 
 	// init db
 	db, err := database.InitDB(cfg.Database)
 	if err != nil {
-		panic(err)
+		log.Panicf("unable to initialize DB connectivity: %v", err)
 	}
 	defer db.Close()
 
-	applicationService, _ := service.NewApplicationService(db)
-	authEnforcer, _ := enforcer.NewEnforcerBuilder().
-		URL(cfg.Authorization.KetoServerURL).
-		Product("mlp").
-		Build()
-
-	projectsService, err := service.NewProjectsService(
-		cfg.Mlflow.TrackingURL,
-		storage.NewProjectStorage(db),
-		authEnforcer,
-		cfg.Authorization.Enabled)
-
+	appCtx, err := api.NewAppContext(db, cfg)
 	if err != nil {
-		log.Panicf("unable to initialize project service: %v", err)
-	}
-
-	secretService := service.NewSecretService(storage.NewSecretStorage(db, cfg.EncryptionKey))
-
-	appCtx := api.AppContext{
-		ApplicationService: applicationService,
-		ProjectsService:    projectsService,
-		SecretService:      secretService,
-
-		AuthorizationEnabled: cfg.Authorization.Enabled,
-		Enforcer:             authEnforcer,
+		log.Panicf("unable to initialize application context: %v", err)
 	}
 
 	router := mux.NewRouter()
+
 	mount(router, "/v1/internal", healthcheck.NewHandler())
-	mount(router, "/v1", api.NewRouter(appCtx))
+
+	v1Controllers := []api.Controller{
+		&api.ApplicationsController{AppContext: appCtx},
+		&api.ProjectsController{AppContext: appCtx},
+		&api.SecretsController{AppContext: appCtx},
+	}
+	mount(router, "/v1", api.NewRouter(appCtx, v1Controllers))
+
+	v2Controllers := []api.Controller{
+		&apiV2.ApplicationsController{Apps: cfg.Applications},
+	}
+	mount(router, "/v2", api.NewRouter(appCtx, v2Controllers))
 
 	uiEnv := uiEnvHandler{
 		APIURL:        cfg.APIHost,

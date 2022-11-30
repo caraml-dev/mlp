@@ -12,7 +12,6 @@ import { ProjectSummary } from "./components/ProjectSummary";
 import { Resources } from "./components/Resources";
 import { useMerlinApi } from "../../hooks/useMerlinApi";
 import { useTuringApi } from "../../hooks/useTuringApi";
-import { useFeastCoreApi } from "../../hooks/useFeastCoreApi";
 import { ComingSoonPanel } from "./components/ComingSoonPanel";
 
 import imageCharts from "../../images/charts.svg";
@@ -22,42 +21,6 @@ const Project = () => {
   const { apps } = useContext(ApplicationsContext);
   const { currentProject } = useContext(ProjectsContext);
 
-  const [{ data: entities }] = useFeastCoreApi(
-    `/entities?project=${currentProject?.name}`,
-    { method: "GET" },
-    undefined,
-    !!currentProject
-  );
-  const [{ data: featureTables }] = useFeastCoreApi(
-    `/tables?project=${currentProject?.name}`,
-    { method: "GET" },
-    undefined,
-    !!currentProject
-  );
-  const [{ data: feastStreamIngestionJobs }] = useFeastCoreApi(
-    `/jobs/ingestion/stream`,
-    {
-      method: "POST",
-      body: JSON.stringify({
-        include_terminated: true,
-        project: (currentProject?.name || "").replace(/-/g, "_")
-      })
-    },
-    undefined,
-    !!currentProject
-  );
-  const [{ data: feastBatchIngestionJobs }] = useFeastCoreApi(
-    `/jobs/ingestion/batch`,
-    {
-      method: "POST",
-      body: JSON.stringify({
-        include_terminated: true,
-        project: (currentProject?.name || "").replace(/-/g, "_")
-      })
-    },
-    undefined,
-    !!currentProject
-  );
   const [{ data: models }] = useMerlinApi(
     `/projects/${currentProject?.id}/models`,
     { method: "GET" },
@@ -74,7 +37,7 @@ const Project = () => {
   return (
     <EuiPageTemplate panelled={false} restrictWidth="90%">
       <EuiPageTemplate.Section>
-        {apps && !!currentProject ? (
+        {!!currentProject ? (
           <>
             <EuiFlexGroup>
               <EuiFlexItem grow={3}>
@@ -84,8 +47,6 @@ const Project = () => {
                 <Resources
                   apps={apps}
                   project={currentProject}
-                  entities={entities}
-                  featureTables={featureTables}
                   models={models}
                   routers={routers}
                 />
@@ -105,8 +66,6 @@ const Project = () => {
               <EuiFlexItem grow={true}>
                 <Instances
                   project={currentProject}
-                  feastStreamIngestionJobs={feastStreamIngestionJobs}
-                  feastBatchIngestionJobs={feastBatchIngestionJobs}
                   models={models}
                   routers={routers}
                 />

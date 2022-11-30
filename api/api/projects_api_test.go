@@ -17,7 +17,6 @@ import (
 
 	"github.com/gojek/mlp/api/it/database"
 	"github.com/gojek/mlp/api/models"
-	enforcerMock "github.com/gojek/mlp/api/pkg/authz/enforcer/mocks"
 	"github.com/gojek/mlp/api/service"
 	"github.com/gojek/mlp/api/storage"
 )
@@ -207,13 +206,15 @@ func TestCreateProject(t *testing.T) {
 					_, err := prjStorage.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, &enforcerMock.Enforcer{}, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, nil, false)
 				assert.NoError(t, err)
 
-				r := NewRouter(AppContext{
+				appCtx := &AppContext{
 					ProjectsService:      projectService,
 					AuthorizationEnabled: false,
-				})
+				}
+				controllers := []Controller{&ProjectsController{appCtx}}
+				r := NewRouter(appCtx, controllers)
 
 				requestByte, _ := json.Marshal(tC.body)
 				req, err := http.NewRequest(http.MethodPost, "/v1/projects", bytes.NewReader(requestByte))
@@ -315,13 +316,15 @@ func TestListProjects(t *testing.T) {
 						assert.NoError(t, err)
 					}
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, &enforcerMock.Enforcer{}, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, nil, false)
 				assert.NoError(t, err)
 
-				r := NewRouter(AppContext{
+				appCtx := &AppContext{
 					ProjectsService:      projectService,
 					AuthorizationEnabled: false,
-				})
+				}
+				controllers := []Controller{&ProjectsController{appCtx}}
+				r := NewRouter(appCtx, controllers)
 
 				req, err := http.NewRequest(http.MethodGet, "/v1/projects", nil)
 				if err != nil {
@@ -473,13 +476,15 @@ func TestUpdateProject(t *testing.T) {
 					_, err := prjStorage.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, &enforcerMock.Enforcer{}, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, nil, false)
 				assert.NoError(t, err)
 
-				r := NewRouter(AppContext{
+				appCtx := &AppContext{
 					ProjectsService:      projectService,
 					AuthorizationEnabled: false,
-				})
+				}
+				controllers := []Controller{&ProjectsController{appCtx}}
+				r := NewRouter(appCtx, controllers)
 
 				requestByte, _ := json.Marshal(tC.body)
 				req, err := http.NewRequest(http.MethodPut, "/v1/projects/"+tC.projectID.String(), bytes.NewReader(requestByte))
@@ -590,13 +595,15 @@ func TestGetProject(t *testing.T) {
 					_, err := prjStorage.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, &enforcerMock.Enforcer{}, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, nil, false)
 				assert.NoError(t, err)
 
-				r := NewRouter(AppContext{
+				appCtx := &AppContext{
 					ProjectsService:      projectService,
 					AuthorizationEnabled: false,
-				})
+				}
+				controllers := []Controller{&ProjectsController{appCtx}}
+				r := NewRouter(appCtx, controllers)
 
 				req, err := http.NewRequest(http.MethodGet, "/v1/projects/"+tC.projectID.String(), nil)
 				if err != nil {

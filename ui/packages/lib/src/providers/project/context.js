@@ -31,12 +31,12 @@ const Context = React.createContext({
 });
 
 export const ProjectsContextProvider = ({ children }) => {
-  const [{ data: projects }, refresh] = useMlpApi(`/projects`, {}, []);
+  const [{ data: projects }, refresh] = useMlpApi(`/v1/projects`, {}, []);
 
   const { currentApp = {} } = useContext(ApplicationsContext);
 
   const projectIdMatch = useMatch({
-    path: urlJoin(currentApp.href, "/projects/:projectId"),
+    path: urlJoin(currentApp.homepage, "/projects/:projectId"),
     caseSensitive: true,
     end: false
   });

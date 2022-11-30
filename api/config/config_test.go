@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gojek/mlp/api/config"
+	"github.com/gojek/mlp/api/models/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -48,7 +49,7 @@ func TestLoad(t *testing.T) {
 			configs: []string{"testdata/config-1.yaml"},
 			env:     map[string]string{},
 			expected: &config.Config{
-				APIHost:     "http://localhost:8080/v1",
+				APIHost:     "http://localhost:8080",
 				Port:        8080,
 				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
@@ -81,7 +82,7 @@ func TestLoad(t *testing.T) {
 				"DATABASE__PASSWORD": "secret",
 			},
 			expected: &config.Config{
-				APIHost:       "http://localhost:8080/v1",
+				APIHost:       "http://localhost:8080",
 				Port:          8080,
 				EncryptionKey: "test-key",
 				Environment:   "dev",
@@ -119,12 +120,33 @@ func TestLoad(t *testing.T) {
 				"SENTRY_DSN":           "1234",
 			},
 			expected: &config.Config{
-				APIHost:       "http://localhost:8080/v1",
+				APIHost:       "http://localhost:8080",
 				Port:          8080,
 				EncryptionKey: "test-key",
 				Environment:   "dev",
 				OauthClientID: "oauth-client-id",
 				SentryDSN:     "1234",
+				Applications: []models.Application{
+					{
+						Name:        "Turing",
+						Description: "ML Experimentation System",
+						Homepage:    "/turing",
+						Configuration: &models.ApplicationConfig{
+							API:      "/api/turing/v1",
+							IconName: "graphApp",
+							Navigation: []models.NavigationMenuItem{
+								{
+									Label:       "Routers",
+									Destination: "/routers",
+								},
+								{
+									Label:       "Experiments",
+									Destination: "/experiments",
+								},
+							},
+						},
+					},
+				},
 				Authorization: &config.AuthorizationConfig{
 					Enabled:       true,
 					KetoServerURL: "http://localhost:4466",
@@ -155,14 +177,8 @@ func TestLoad(t *testing.T) {
 					StaticPath: "ui/build",
 					IndexPath:  "index.html",
 
-					FeastCoreAPI:        "/feast/api",
-					MerlinAPI:           "/api/merlin/v1",
-					TuringAPI:           "/api/turing/v1",
 					ClockworkUIHomepage: "http://clockwork.dev",
-					FeastUIHomepage:     "/feast",
 					KubeflowUIHomepage:  "http://kubeflow.org",
-					MerlinUIHomepage:    "/merlin",
-					TuringUIHomepage:    "/turing",
 				},
 			},
 		},

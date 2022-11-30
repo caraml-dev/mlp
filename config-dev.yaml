@@ -1,13 +1,61 @@
-EncryptionKey: "encryption-key"
-OauthClientId: "[OAUTH_CLIENT_ID]"
+encryptionKey: "encryption-key"
+oauthClientId: "[OAUTH_CLIENT_ID]"
 
-Database:
-  Host: "localhost"
-  Database: "mlp"
-  User: "mlp"
-  Password: "mlp"
+applications:
+  - name: Merlin
+    description: Platform for deploying machine learning models
+    homepage: /merlin
+    configuration:
+      api: /api/merlin
+      iconName: machineLearningApp
+      navigation:
+        - label: Models
+          destination: /models
+        - label: Transformer Simulator
+          destination: /transformer-simulator
+  - name: Turing
+    description: Platform for setting up ML experiments
+    homepage: /turing
+    configuration:
+      api: /api/turing
+      iconName: graphApp
+      navigation:
+        - label: Routers
+          destination: /routers
+        - label: Ensemblers
+          destination: /ensemblers
+        - label: Ensembling Jobs
+          destination: /jobs
+        - label: Experiments
+          destination: /experiments
+  - name: Feast
+    description: Platform for managing and serving ML features
+    homepage: /feast
+    configuration:
+      api: /feast/api
+      iconName: appSearchApp
+      navigation:
+        - label: Entities
+          destination: /entities
+        - label: Feature Tables
+          destination: /featuretables
+        - label: Batch Ingestion Jobs
+          destination: /jobs/batch
+        - label: Stream Ingestion Jobs
+          destination: /jobs/stream
+  - name: Pipelines
+    description: Platform for managing ML pipelines
+    homepage: /pipeline
+    configuration:
+      iconName: pipelineApp
 
-Docs:
+database:
+  host: "localhost"
+  database: "mlp"
+  user: "mlp"
+  password: "mlp"
+
+docs:
   - label: "Merlin User Guide"
     href: "https://github.com/gojek/merlin/blob/main/docs/getting-started/README.md"
   - label: "Turing User Guide"
@@ -15,10 +63,10 @@ Docs:
   - label: "Feast User Guide"
     href: "https://docs.feast.dev/user-guide/overview"
 
-Mlflow:
-  TrackingURL: "http://mlflow.mlp.dev"
+mlflow:
+  trackingURL: "http://mlflow.mlp.dev"
 
-Streams:
+streams:
   marketing:
     - growth
     - retention

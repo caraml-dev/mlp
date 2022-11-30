@@ -30,17 +30,16 @@ export const NavDrawer = ({ docLinks }) => {
 
     return apps.map(a => {
       const isAppActive = a === currentApp;
-
       const children = !!currentProject
-        ? a?.config?.sections.map(s => ({
-            id: slugify(`${a.name}.${s.name}`),
-            label: s.name,
+        ? a?.config?.navigation?.map(s => ({
+            id: slugify(`${a.name}.${s.label}`),
+            label: s.label,
             callback: () => {
               const dest = urlJoin(
-                a.href,
+                a.homepage,
                 "projects",
                 currentProject.id,
-                s.href
+                s.destination
               );
 
               isAppActive ? navigate(dest) : (window.location.href = dest);
@@ -52,7 +51,7 @@ export const NavDrawer = ({ docLinks }) => {
       return {
         id: slugify(a.name),
         label: a.name,
-        icon: <EuiIcon type={a.icon} />,
+        icon: <EuiIcon type={a.config.icon} />,
         isExpanded: isAppActive || isRootApplication,
         className: isAppActive
           ? "euiTreeView__node---small---active"
@@ -61,8 +60,8 @@ export const NavDrawer = ({ docLinks }) => {
         callback: () =>
           !children || !currentProject
             ? (window.location.href = !!currentProject
-                ? urlJoin(a.href, "projects", currentProject.id)
-                : a.href)
+                ? urlJoin(a.homepage, "projects", currentProject.id)
+                : a.homepage)
             : {},
         children: children
       };
