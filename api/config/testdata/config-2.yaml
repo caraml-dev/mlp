@@ -7,7 +7,7 @@ applications:
     description: ML Experimentation System
     homepage: /turing
     configuration:
-      aPI: /api/turing/v1
+      api: /api/turing/v1
       iconName: graphApp
       navigation:
         - label: Routers
