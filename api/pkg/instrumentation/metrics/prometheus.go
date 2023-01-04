@@ -180,3 +180,32 @@ func (p PrometheusClient) RecordGauge(
 
 	return nil
 }
+
+func (p PrometheusClient) RegisterMetrics(
+	gaugeMap map[MetricName]PrometheusGaugeVec,
+	histogramMap map[MetricName]PrometheusHistogramVec,
+	counterMap map[MetricName]PrometheusCounterVec,
+) error {
+	for name, obs := range gaugeMap {
+		if _, ok := p.gaugeMap[name]; ok {
+			return errors.Newf("Metric of type Gauge with name %s already exists", name)
+		}
+		p.gaugeMap[name] = obs
+		prometheus.MustRegister(obs)
+	}
+	for name, obs := range histogramMap {
+		if _, ok := p.histogramMap[name]; ok {
+			return errors.Newf("Metric of type Histogram with name %s already exists", name)
+		}
+		p.histogramMap[name] = obs
+		prometheus.MustRegister(obs)
+	}
+	for name, obs := range counterMap {
+		if _, ok := p.counterMap[name]; ok {
+			return errors.Newf("Metric of type Counter with name %s already exists", name)
+		}
+		p.counterMap[name] = obs
+		prometheus.MustRegister(obs)
+	}
+	return nil
+}
