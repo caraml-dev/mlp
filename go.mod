@@ -11,6 +11,7 @@ require (
 	github.com/go-playground/validator v9.30.0+incompatible
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/golang-migrate/migrate/v4 v4.11.0
+	github.com/google/go-cmp v0.5.9
 	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
