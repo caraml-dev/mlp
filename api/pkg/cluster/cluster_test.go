@@ -44,7 +44,7 @@ func TestGenerateConfig(t *testing.T) {
 			credsM := NewK8sCredsManager(&tt.input)
 			res, err := credsM.GenerateConfig()
 			if err != nil && !tt.wantError {
-				t.Errorf("Error not expected but occured: %s", err.Error())
+				t.Errorf("Error not expected but occurred: %s", err.Error())
 			}
 			if diff := cmp.Diff(*res, tt.output); diff != "" {
 				t.Errorf("diff is not empty %s", diff)
@@ -53,7 +53,7 @@ func TestGenerateConfig(t *testing.T) {
 	}
 }
 
-func TestgenerateKubeConfig(t *testing.T) {
+func TestGenerateKubeConfig(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -87,7 +87,7 @@ func TestgenerateKubeConfig(t *testing.T) {
 				},
 				AuthInfos: []clientcmdapiv1.NamedAuthInfo{
 					{
-						Name: K8sUser,
+						Name: k8sUser,
 						AuthInfo: clientcmdapiv1.AuthInfo{
 							ClientCertificateData: []byte(`ABCDEF`),
 							ClientKeyData:         []byte(`12345`),
@@ -99,7 +99,7 @@ func TestgenerateKubeConfig(t *testing.T) {
 						Name: "dummy-cluster-user",
 						Context: clientcmdapiv1.Context{
 							Cluster:  "dummy-cluster",
-							AuthInfo: K8sUser,
+							AuthInfo: k8sUser,
 						},
 					},
 				},
