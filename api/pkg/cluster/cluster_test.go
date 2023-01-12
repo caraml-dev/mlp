@@ -46,7 +46,7 @@ func TestGenerateConfig(t *testing.T) {
 			if err != nil && !tt.wantError {
 				t.Errorf("Error not expected but occurred: %s", err.Error())
 			}
-			if diff := cmp.Diff(*res, tt.output); diff != "" {
+			if diff := cmp.Diff(res, &tt.output); diff != "" {
 				t.Errorf("diff is not empty %s", diff)
 			}
 		})
@@ -110,7 +110,7 @@ func TestGenerateKubeConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res := generateKubeConfig(&tt.input)
-			if diff := cmp.Diff(*res, tt.output); diff != "" {
+			if diff := cmp.Diff(res, tt.output); diff != "" {
 				t.Errorf("diff is not empty %s", diff)
 			}
 		})
