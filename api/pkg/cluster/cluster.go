@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
@@ -11,27 +12,51 @@ import (
 )
 
 const (
-	K8sUser = "user"
+	k8sUser = "user"
 )
 
+// CredsManager interface manages all cluster related tasks
 type CredsManager interface {
 	GenerateConfig() (*rest.Config, error)
-	GetClusterName() string
 }
 
+// K8sCredsManager implements CredsManager interface
 type K8sCredsManager struct {
 	K8sConfig *K8sConfig
 }
 
+// NewK8sCredsManager returns a K8sCredsManager
 func NewK8sCredsManager(k *K8sConfig) *K8sCredsManager {
 	return &K8sCredsManager{K8sConfig: k}
 }
 
 // K8sConfig contains fields on how to connect to a k8s cluster
 type K8sConfig struct {
-	Cluster  *clientcmdapiv1.Cluster  `json:"cluster"`
-	AuthInfo *clientcmdapiv1.AuthInfo `json:"user"`
-	Name     string                   `json:"name"`
+	Cluster  *clientcmdapiv1.Cluster  `json:"cluster" yaml:"cluster"`
+	AuthInfo *clientcmdapiv1.AuthInfo `json:"user" yaml:"user" mapstructure:"user"`
+	Name     string                   `json:"name" yaml:"name"`
+}
+
+// UnmarshalYAML implements Unmarshal interface
+// Since K8sConfig fields only have json tags, sigyaml.Unmarshal needs to be used
+// to unmarshal all the fields. This method reads K8sConfig into a map[string]interface{},
+// marshals it into a byte for, before passing to sigyaml.Unmarshal
+func (k *K8sConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var kubeconfig map[string]interface{}
+	// Unmarshal into map[string]interface{}
+	if err := unmarshal(&kubeconfig); err != nil {
+		return err
+	}
+	// convert back to byte string
+	byteForm, err := yaml.Marshal(kubeconfig)
+	if err != nil {
+		return err
+	}
+	// use sigyaml.Unmarshal to convert to json object then unmarshal
+	if err := sigyaml.Unmarshal(byteForm, k); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Decode provides envconfig steps to parse env var to K8sConfig struct
@@ -62,10 +87,6 @@ func (k *K8sCredsManager) GenerateConfig() (*rest.Config, error) {
 	return cfg, nil
 }
 
-func (k *K8sCredsManager) GetClusterName() string {
-	return k.K8sConfig.Name
-}
-
 func generateKubeConfig(c *K8sConfig) *clientcmdapiv1.Config {
 	return &clientcmdapiv1.Config{
 		Clusters: []clientcmdapiv1.NamedCluster{
@@ -76,19 +97,19 @@ func generateKubeConfig(c *K8sConfig) *clientcmdapiv1.Config {
 		},
 		AuthInfos: []clientcmdapiv1.NamedAuthInfo{
 			{
-				Name:     K8sUser,
+				Name:     k8sUser,
 				AuthInfo: *c.AuthInfo,
 			},
 		},
 		Contexts: []clientcmdapiv1.NamedContext{
 			{
-				Name: fmt.Sprintf("%s-%s", c.Name, K8sUser),
+				Name: fmt.Sprintf("%s-%s", c.Name, k8sUser),
 				Context: clientcmdapiv1.Context{
 					Cluster:  c.Name,
-					AuthInfo: K8sUser,
+					AuthInfo: k8sUser,
 				},
 			},
 		},
-		CurrentContext: fmt.Sprintf("%s-%s", c.Name, K8sUser),
+		CurrentContext: fmt.Sprintf("%s-%s", c.Name, k8sUser),
 	}
 }
