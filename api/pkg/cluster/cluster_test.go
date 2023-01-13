@@ -8,7 +8,7 @@ import (
 	clientcmdapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 )
 
-func TestGenerateConfig(t *testing.T) {
+func TestK8sClusterCredsToRestConfig(t *testing.T) {
 	tests := []struct {
 		name      string
 		wantError bool
@@ -41,8 +41,8 @@ func TestGenerateConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			credsM := NewK8sCredsManager(&tt.input)
-			res, err := credsM.GenerateConfig()
+			credsM := NewK8sClusterCreds(&tt.input)
+			res, err := credsM.ToRestConfig()
 			if err != nil && !tt.wantError {
 				t.Errorf("Error not expected but occurred: %s", err.Error())
 			}
