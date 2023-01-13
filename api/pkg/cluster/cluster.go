@@ -77,9 +77,6 @@ func (k *K8sClusterCreds) ToRestConfig() (*rest.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
 	cfg, err := clientcmd.RESTConfigFromKubeConfig(r)
 	if err != nil {
 		return nil, err

@@ -21,7 +21,7 @@ func TestK8sClusterCredsToRestConfig(t *testing.T) {
 			input: K8sConfig{
 				Name: "dummy-cluster",
 				Cluster: &clientcmdapiv1.Cluster{
-					Server:                "https://123.456.789",
+					Server:                "https://123.123.123",
 					InsecureSkipTLSVerify: true,
 				},
 				AuthInfo: &clientcmdapiv1.AuthInfo{
