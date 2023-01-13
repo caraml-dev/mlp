@@ -21,7 +21,7 @@ func TestK8sClusterCredsToRestConfig(t *testing.T) {
 			input: K8sConfig{
 				Name: "dummy-cluster",
 				Cluster: &clientcmdapiv1.Cluster{
-					Server:                "https://123.123.123",
+					Server:                "https://some_ip_address",
 					InsecureSkipTLSVerify: true,
 				},
 				AuthInfo: &clientcmdapiv1.AuthInfo{
@@ -30,7 +30,7 @@ func TestK8sClusterCredsToRestConfig(t *testing.T) {
 				},
 			},
 			output: rest.Config{
-				Host: "https://123.456.789",
+				Host: "https://some_ip_address",
 				TLSClientConfig: rest.TLSClientConfig{
 					Insecure: true,
 					CertData: []byte(`ABCDEF`),
@@ -67,7 +67,7 @@ func TestGenerateKubeConfig(t *testing.T) {
 			input: K8sConfig{
 				Name: "dummy-cluster",
 				Cluster: &clientcmdapiv1.Cluster{
-					Server:                "https://123.456.789",
+					Server:                "https://some_ip_address",
 					InsecureSkipTLSVerify: true,
 				},
 				AuthInfo: &clientcmdapiv1.AuthInfo{
@@ -80,7 +80,7 @@ func TestGenerateKubeConfig(t *testing.T) {
 					{
 						Name: "dummy-cluster",
 						Cluster: clientcmdapiv1.Cluster{
-							Server:                "https://123.456.789",
+							Server:                "https://some_ip_address",
 							InsecureSkipTLSVerify: true,
 						},
 					},
