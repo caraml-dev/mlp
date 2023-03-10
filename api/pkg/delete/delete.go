@@ -10,6 +10,7 @@ import (
 type deleteExperimentRequest struct {
 	ExperimentId string `json:"experiment_id" required:"true"`
 }
+
 type deleteRunRequest struct {
 	RunId string `json:"run_id" required:"true"`
 }
@@ -18,6 +19,7 @@ type deleteExperimentErrorResponse struct {
 	ErrorCode string `json:"error_code"`
 	Message   string `json:"message"`
 }
+
 type searchRunRequest struct {
 	ExperimentId []string `json:"experiment_ids" required:"true"`
 }
@@ -35,23 +37,23 @@ type infoRun struct {
 	ExperimentId   string `json:"experiment_id"`
 	UserId         string `json:"user_id"`
 	LifecycleStage string `json:"lifecycle_stage"`
+	ArtifactURI    string `json:"artifact_uri"`
 }
 type runResponse struct {
 	Info infoRun `json:"info"`
 	Data dataRun `json:"data"`
 }
+type searchRunsResponse struct {
+	RunsData []runResponse `json:"runs"`
+}
 type searchRunResponse struct {
-	RunData []runResponse `json:"runs"`
+	RunData runResponse `json:"run"`
 }
 
-// func httpCall()
-
-func DeleteExperiment(idExperiment string, deleteArtefact bool) error {
+func DeleteExperiment(trackingURL string, idExperiment string, deleteArtifact bool) error {
 	// Creating Input Format for Delete experiment
 	input := deleteExperimentRequest{ExperimentId: idExperiment}
 	// HIT Delete Experiment API
-	// TODO: Create URL Based On Tracking URL
-	trackingURL := "https://mlflow.d.ai.golabs.io"
 	delExpURL := fmt.Sprintf("%s/api/2.0/mlflow/experiments/delete", trackingURL)
 
 	jsonReq, err := json.Marshal(input)
@@ -75,7 +77,8 @@ func DeleteExperiment(idExperiment string, deleteArtefact bool) error {
 		}
 		return fmt.Errorf(errMessage.Message)
 	}
-
+	// Uncomment depends on mlflow gc treatment
+	// (If mlflow gc also delete the related artifact this code section can be deleted)
 	// Search For the available run
 	relatedRunId, err := SearchRunForExperiment(idExperiment)
 	if err != nil {
@@ -84,7 +87,7 @@ func DeleteExperiment(idExperiment string, deleteArtefact bool) error {
 	var deletedRunId []string
 	var failDeletedRunId []string
 	for _, runId := range relatedRunId {
-		err = DeleteRun(runId)
+		err = DeleteRun(runId, false)
 		if err != nil {
 			failDeletedRunId = append(failDeletedRunId, runId)
 			// return err
@@ -92,17 +95,20 @@ func DeleteExperiment(idExperiment string, deleteArtefact bool) error {
 			deletedRunId = append(deletedRunId, runId)
 		}
 	}
-
+	// deleting folder
+	// err = deleteArtifact(idExperiment)
+	// if err != nil {
+	// 	return nil
+	// }
 	return nil
 }
 
-func SearchRunForExperiment(idExperiment string) ([]string, error) {
+// CHANGE RETURN ALL DATA
+func SearchRunForExperiment(trackingURL string, idExperiment string) ([]string, error) {
 	// searchInput := []string{idExperiment}
 	input := searchRunRequest{ExperimentId: []string{idExperiment}}
 	var runID []string
 	// HIT Delete Experiment API
-	// TODO: Create URL Based On Tracking URL
-	trackingURL := "https://mlflow.d.ai.golabs.io"
 
 	searchRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/search", trackingURL)
 
@@ -125,7 +131,7 @@ func SearchRunForExperiment(idExperiment string) ([]string, error) {
 		// json.Unmarshal(bodyBytes, &errMessage)
 		return runID, fmt.Errorf(errMessage.Message)
 	}
-	var responseObject searchRunResponse
+	var responseObject searchRunsResponse
 	err = json.NewDecoder(runResp.Body).Decode(&responseObject)
 	if err != nil {
 		// Handle the error
@@ -133,18 +139,47 @@ func SearchRunForExperiment(idExperiment string) ([]string, error) {
 		return runID, err
 	}
 
-	for _, run := range responseObject.RunData {
+	for _, run := range responseObject.RunsData {
 		runID = append(runID, run.Info.RunId)
 	}
 	return runID, nil
 }
 
-func DeleteRun(idRun string) error {
+func SearchRunData(trackingURL string, idRun string) (searchRunResponse, error) {
+	// Creating Input Format for Delete experiment
+	var runResponse searchRunResponse
+	getRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/get?run_id=%s", trackingURL, idRun)
+
+	resp, err := http.Get(getRunURL)
+	if err != nil {
+		return runResponse, err
+	}
+	defer resp.Body.Close()
+
+	if !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
+		// Convert response body to Error Message struct
+		var errMessage deleteExperimentErrorResponse
+		err = json.NewDecoder(resp.Body).Decode(&errMessage)
+		if err != nil {
+			// Handle the error
+			fmt.Println("Error:", err)
+			return runResponse, err
+		}
+		return runResponse, fmt.Errorf(errMessage.Message)
+	}
+	err = json.NewDecoder(resp.Body).Decode(&runResponse)
+	if err != nil {
+		// Handle the error
+		fmt.Println("Error:", err)
+		return runResponse, err
+	}
+	return runResponse, nil
+}
+
+func DeleteRun(trackingURL string, idRun string, delArtifact bool) error {
 	// Creating Input Format for Delete experiment
 	input := deleteRunRequest{RunId: idRun}
 	// HIT Delete Experiment API
-	// TODO: Create URL Based On Tracking URL
-	trackingURL := "https://mlflow.d.ai.golabs.io"
 	delRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/delete", trackingURL)
 
 	jsonReq, err := json.Marshal(input)
@@ -169,17 +204,17 @@ func DeleteRun(idRun string) error {
 		}
 		return fmt.Errorf(errMessage.Message)
 	}
+	if delArtifact {
+		runDetail, err := SearchRunData(trackingURL, idRun)
+		if err != nil {
+			return err
+		}
+		fmt.Println(runDetail)
+		// err = deleteArtifact(runDetail)
+		// if err != nil {
+		// 	return nil
+		// }
+
+	}
 	return nil
 }
-
-// func main() {
-// 	data, err := SearchRunForExperiment("2220")
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	} else {
-// 		fmt.Println("Experiment Deleted")
-// 	}
-// 	fmt.Println(data)
-// 	fmt.Println(data[0])
-// 	// fmt.Println(time.Now().Unix() * 1000)
-// }
