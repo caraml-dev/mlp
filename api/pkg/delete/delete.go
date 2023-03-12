@@ -50,17 +50,38 @@ type searchRunResponse struct {
 	RunData runResponse `json:"run"`
 }
 
-func DeleteExperiment(trackingURL string, idExperiment string, deleteArtifact bool) error {
-	// Creating Input Format for Delete experiment
-	input := deleteExperimentRequest{ExperimentId: idExperiment}
-	// HIT Delete Experiment API
-	delExpURL := fmt.Sprintf("%s/api/2.0/mlflow/experiments/delete", trackingURL)
+type deleteClient struct {
+	Client *http.Client
+	Config Config
+}
 
-	jsonReq, err := json.Marshal(input)
+type Config struct {
+	TrackingURL string
+}
+
+type DeletePackage interface {
+	DeleteExperiment(trackingURL string, idExperiment string, deleteArtifact bool)
+	DeleteRun(trackingURL string, idRun string, delArtifact bool)
+}
+
+func NewDeleteClient(delClient *http.Client, config Config) *deleteClient {
+	return &deleteClient{
+		Client: delClient,
+		Config: config,
+	}
+}
+
+func (dc *deleteClient) httpCall(method string, url string, headers map[string]string, body []byte, response interface{}) error {
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
-	resp, err := http.Post(delExpURL, "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
+
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+
+	resp, err := dc.Client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -69,25 +90,49 @@ func DeleteExperiment(trackingURL string, idExperiment string, deleteArtifact bo
 	if !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
 		// Convert response body to Error Message struct
 		var errMessage deleteExperimentErrorResponse
-		err = json.NewDecoder(resp.Body).Decode(&errMessage)
-		if err != nil {
-			// Handle the error
-			fmt.Println("Error:", err)
+		if err := json.NewDecoder(resp.Body).Decode(&errMessage); err != nil {
 			return err
 		}
 		return fmt.Errorf(errMessage.Message)
 	}
-	// Uncomment depends on mlflow gc treatment
-	// (If mlflow gc also delete the related artifact this code section can be deleted)
-	// Search For the available run
-	relatedRunId, err := SearchRunForExperiment(idExperiment)
+
+	if response != nil {
+		if err := json.NewDecoder(resp.Body).Decode(response); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (dc *deleteClient) DeleteExperiment(idExperiment string, deleteArtifact bool) error {
+	// Creating Input Format for Delete experiment
+	input := deleteExperimentRequest{ExperimentId: idExperiment}
+	// HIT Delete Experiment API
+	delExpURL := fmt.Sprintf("%s/api/2.0/mlflow/experiments/delete", dc.Config.TrackingURL)
+
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+
+	jsonInput, err := json.Marshal(input)
+	if err != nil {
+		return err
+	}
+
+	err = dc.httpCall("POST", delExpURL, headers, jsonInput, nil)
+	if err != nil {
+		return err
+	}
+
+	relatedRunId, err := dc.SearchRunForExperiment(idExperiment)
 	if err != nil {
 		return err
 	}
 	var deletedRunId []string
 	var failDeletedRunId []string
 	for _, runId := range relatedRunId {
-		err = DeleteRun(runId, false)
+		err = dc.DeleteRun(runId, false)
 		if err != nil {
 			failDeletedRunId = append(failDeletedRunId, runId)
 			// return err
@@ -103,109 +148,69 @@ func DeleteExperiment(trackingURL string, idExperiment string, deleteArtifact bo
 	return nil
 }
 
-// CHANGE RETURN ALL DATA
-func SearchRunForExperiment(trackingURL string, idExperiment string) ([]string, error) {
-	// searchInput := []string{idExperiment}
-	input := searchRunRequest{ExperimentId: []string{idExperiment}}
-	var runID []string
+func (dc *deleteClient) SearchRunForExperiment(idExperiment string) ([]string, error) {
+	var runsID []string
 	// HIT Delete Experiment API
-
-	searchRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/search", trackingURL)
-
-	jsonReq, err := json.Marshal(input)
-	if err != nil {
-		return runID, err
-	}
-
-	runResp, err := http.Post(searchRunURL, "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
-	if err != nil {
-		return runID, err
-	}
-
-	defer runResp.Body.Close()
-	fmt.Println(runResp.StatusCode)
-
-	if !(runResp.StatusCode >= http.StatusOK && runResp.StatusCode < http.StatusMultipleChoices) {
-		// Convert response body to Error Message struct
-		var errMessage deleteExperimentErrorResponse
-		// json.Unmarshal(bodyBytes, &errMessage)
-		return runID, fmt.Errorf(errMessage.Message)
-	}
 	var responseObject searchRunsResponse
-	err = json.NewDecoder(runResp.Body).Decode(&responseObject)
+
+	searchRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/search", dc.Config.TrackingURL)
+
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+
+	input := searchRunRequest{ExperimentId: []string{idExperiment}}
+	jsonInput, err := json.Marshal(input)
 	if err != nil {
-		// Handle the error
-		fmt.Println("Error:", err)
-		return runID, err
+		return runsID, err
+	}
+
+	err = dc.httpCall("POST", searchRunURL, headers, jsonInput, &responseObject)
+	if err != nil {
+		return runsID, err
 	}
 
 	for _, run := range responseObject.RunsData {
-		runID = append(runID, run.Info.RunId)
+		runsID = append(runsID, run.Info.RunId)
 	}
-	return runID, nil
+	fmt.Println(runsID)
+	return runsID, nil
 }
 
-func SearchRunData(trackingURL string, idRun string) (searchRunResponse, error) {
+func (dc *deleteClient) SearchRunData(idRun string) (searchRunResponse, error) {
 	// Creating Input Format for Delete experiment
 	var runResponse searchRunResponse
-	getRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/get?run_id=%s", trackingURL, idRun)
+	getRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/get?run_id=%s", dc.Config.TrackingURL, idRun)
 
-	resp, err := http.Get(getRunURL)
+	err := dc.httpCall("GET", getRunURL, nil, nil, &runResponse)
 	if err != nil {
-		return runResponse, err
-	}
-	defer resp.Body.Close()
-
-	if !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
-		// Convert response body to Error Message struct
-		var errMessage deleteExperimentErrorResponse
-		err = json.NewDecoder(resp.Body).Decode(&errMessage)
-		if err != nil {
-			// Handle the error
-			fmt.Println("Error:", err)
-			return runResponse, err
-		}
-		return runResponse, fmt.Errorf(errMessage.Message)
-	}
-	err = json.NewDecoder(resp.Body).Decode(&runResponse)
-	if err != nil {
-		// Handle the error
-		fmt.Println("Error:", err)
 		return runResponse, err
 	}
 	return runResponse, nil
 }
 
-func DeleteRun(trackingURL string, idRun string, delArtifact bool) error {
-	// Creating Input Format for Delete experiment
+func (dc *deleteClient) DeleteRun(idRun string, delArtifact bool) error {
+	// Creating Input Format for Delete run
 	input := deleteRunRequest{RunId: idRun}
-	// HIT Delete Experiment API
-	delRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/delete", trackingURL)
+	// HIT Delete Run API
+	delRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/delete", dc.Config.TrackingURL)
 
-	jsonReq, err := json.Marshal(input)
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+
+	jsonInput, err := json.Marshal(input)
 	if err != nil {
 		return err
 	}
-	resp, err := http.Post(delRunURL, "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
+
+	err = dc.httpCall("POST", delRunURL, headers, jsonInput, nil)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	fmt.Println(resp.StatusCode)
 
-	if !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
-		// Convert response body to Error Message struct
-		var errMessage deleteExperimentErrorResponse
-		err = json.NewDecoder(resp.Body).Decode(&errMessage)
-		if err != nil {
-			// Handle the error
-			fmt.Println("Error:", err)
-			return err
-		}
-		return fmt.Errorf(errMessage.Message)
-	}
 	if delArtifact {
-		runDetail, err := SearchRunData(trackingURL, idRun)
+		runDetail, err := dc.SearchRunData(idRun)
 		if err != nil {
 			return err
 		}
