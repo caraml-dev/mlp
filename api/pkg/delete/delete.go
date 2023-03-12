@@ -7,6 +7,27 @@ import (
 	"net/http"
 )
 
+type deleteClient struct {
+	Client *http.Client
+	Config Config
+}
+
+type Config struct {
+	TrackingURL string
+}
+
+type DeletePackage interface {
+	DeleteExperiment(trackingURL string, idExperiment string, deleteArtifact bool)
+	DeleteRun(trackingURL string, idRun string, delArtifact bool)
+}
+
+func NewDeleteClient(delClient *http.Client, config Config) *deleteClient {
+	return &deleteClient{
+		Client: delClient,
+		Config: config,
+	}
+}
+
 type deleteExperimentRequest struct {
 	ExperimentId string `json:"experiment_id" required:"true"`
 }
@@ -48,27 +69,6 @@ type searchRunsResponse struct {
 }
 type searchRunResponse struct {
 	RunData runResponse `json:"run"`
-}
-
-type deleteClient struct {
-	Client *http.Client
-	Config Config
-}
-
-type Config struct {
-	TrackingURL string
-}
-
-type DeletePackage interface {
-	DeleteExperiment(trackingURL string, idExperiment string, deleteArtifact bool)
-	DeleteRun(trackingURL string, idRun string, delArtifact bool)
-}
-
-func NewDeleteClient(delClient *http.Client, config Config) *deleteClient {
-	return &deleteClient{
-		Client: delClient,
-		Config: config,
-	}
 }
 
 func (dc *deleteClient) httpCall(method string, url string, headers map[string]string, body []byte, response interface{}) error {
