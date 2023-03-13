@@ -2,7 +2,6 @@ package gcs
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -28,11 +27,10 @@ func NewGcsClient(client *storage.Client, cfg Config) *gcsClient {
 }
 
 func (gc *gcsClient) DeleteArtifact(url string) error {
-	// Sets the name for the new bucket.
+	// Get bucket name and gcsPrefix
 	gcsBucket, gcsLocation := gc.RemoveAndSplit(url, "/")
-	fmt.Println(gcsBucket)
-	fmt.Println(gcsLocation)
 
+	// Sets the name for the bucket.
 	bucket := gc.Client.Bucket(gcsBucket)
 
 	it := bucket.Objects(gc.Config.Ctx, &storage.Query{
@@ -44,16 +42,11 @@ func (gc *gcsClient) DeleteArtifact(url string) error {
 			break
 		}
 		if err != nil {
-			fmt.Println(err)
 			return err
 		}
 		if err := bucket.Object(attrs.Name).Delete(gc.Config.Ctx); err != nil {
-			// TODO: Handle error.
-			fmt.Println(err)
-			fmt.Println("Error Deleting Object")
 			return err
 		}
-		fmt.Println(attrs.Name)
 	}
 	return nil
 }

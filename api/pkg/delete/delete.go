@@ -134,6 +134,7 @@ func (dc *deleteClient) DeleteExperiment(idExperiment string, deleteArtifact boo
 	if err != nil {
 		return err
 	}
+
 	var deletedRunId []string
 	var failDeletedRunId []string
 	for _, run := range relatedRunId.RunsData {
@@ -145,8 +146,6 @@ func (dc *deleteClient) DeleteExperiment(idExperiment string, deleteArtifact boo
 			deletedRunId = append(deletedRunId, run.Info.RunId)
 		}
 	}
-	fmt.Println(failDeletedRunId)
-	fmt.Println(deletedRunId)
 
 	if len(relatedRunId.RunsData) > 0 {
 		path := relatedRunId.RunsData[0].Info.ArtifactURI[5:]
@@ -162,7 +161,7 @@ func (dc *deleteClient) DeleteExperiment(idExperiment string, deleteArtifact boo
 }
 
 func (dc *deleteClient) SearchRunForExperiment(idExperiment string) (searchRunsResponse, error) {
-	// HIT Delete Experiment API
+	// Search related runs for an experiment id
 	var responseObject searchRunsResponse
 
 	searchRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/search", dc.Config.TrackingURL)
@@ -186,7 +185,7 @@ func (dc *deleteClient) SearchRunForExperiment(idExperiment string) (searchRunsR
 }
 
 func (dc *deleteClient) SearchRunData(idRun string) (searchRunResponse, error) {
-	// Creating Input Format for Delete experiment
+	// Creating Output Format for Run Detail
 	var runResponse searchRunResponse
 	getRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/get?run_id=%s", dc.Config.TrackingURL, idRun)
 
@@ -222,10 +221,10 @@ func (dc *deleteClient) DeleteRun(idRun string, delArtifact bool) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(runDetail)
+
 		err = dc.GcsPackage.DeleteArtifact(runDetail.RunData.Info.ArtifactURI[5:])
 		if err != nil {
-			return nil
+			return err
 		}
 
 	}
