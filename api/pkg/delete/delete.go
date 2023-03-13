@@ -5,11 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
+
+	"github.com/gojek/mlp/api/pkg/gcs"
 )
 
 type deleteClient struct {
-	Client *http.Client
-	Config Config
+	Client     *http.Client
+	GcsPackage gcs.GcsPackage
+	Config     Config
 }
 
 type Config struct {
@@ -21,10 +25,11 @@ type DeletePackage interface {
 	DeleteRun(trackingURL string, idRun string, delArtifact bool)
 }
 
-func NewDeleteClient(delClient *http.Client, config Config) *deleteClient {
+func NewDeleteClient(delClient *http.Client, gcspkg gcs.GcsPackage, config Config) *deleteClient {
 	return &deleteClient{
-		Client: delClient,
-		Config: config,
+		Client:     delClient,
+		GcsPackage: gcspkg,
+		Config:     config,
 	}
 }
 
@@ -131,25 +136,32 @@ func (dc *deleteClient) DeleteExperiment(idExperiment string, deleteArtifact boo
 	}
 	var deletedRunId []string
 	var failDeletedRunId []string
-	for _, runId := range relatedRunId {
-		err = dc.DeleteRun(runId, false)
+	for _, run := range relatedRunId.RunsData {
+		err = dc.DeleteRun(run.Info.RunId, false)
 		if err != nil {
-			failDeletedRunId = append(failDeletedRunId, runId)
+			failDeletedRunId = append(failDeletedRunId, run.Info.RunId)
 			// return err
 		} else {
-			deletedRunId = append(deletedRunId, runId)
+			deletedRunId = append(deletedRunId, run.Info.RunId)
 		}
 	}
-	// deleting folder
-	// err = deleteArtifact(idExperiment)
-	// if err != nil {
-	// 	return nil
-	// }
+	fmt.Println(failDeletedRunId)
+	fmt.Println(deletedRunId)
+
+	if len(relatedRunId.RunsData) > 0 {
+		path := relatedRunId.RunsData[0].Info.ArtifactURI[5:]
+		splitPath := strings.SplitN(path, "/", 4)
+		folderPath := strings.Join(splitPath[0:3], "/")
+		// deleting folder
+		err = dc.GcsPackage.DeleteArtifact(folderPath)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-func (dc *deleteClient) SearchRunForExperiment(idExperiment string) ([]string, error) {
-	var runsID []string
+func (dc *deleteClient) SearchRunForExperiment(idExperiment string) (searchRunsResponse, error) {
 	// HIT Delete Experiment API
 	var responseObject searchRunsResponse
 
@@ -162,19 +174,15 @@ func (dc *deleteClient) SearchRunForExperiment(idExperiment string) ([]string, e
 	input := searchRunRequest{ExperimentId: []string{idExperiment}}
 	jsonInput, err := json.Marshal(input)
 	if err != nil {
-		return runsID, err
+		return responseObject, err
 	}
 
 	err = dc.httpCall("POST", searchRunURL, headers, jsonInput, &responseObject)
 	if err != nil {
-		return runsID, err
+		return responseObject, err
 	}
 
-	for _, run := range responseObject.RunsData {
-		runsID = append(runsID, run.Info.RunId)
-	}
-	fmt.Println(runsID)
-	return runsID, nil
+	return responseObject, nil
 }
 
 func (dc *deleteClient) SearchRunData(idRun string) (searchRunResponse, error) {
@@ -215,10 +223,10 @@ func (dc *deleteClient) DeleteRun(idRun string, delArtifact bool) error {
 			return err
 		}
 		fmt.Println(runDetail)
-		// err = deleteArtifact(runDetail)
-		// if err != nil {
-		// 	return nil
-		// }
+		err = dc.GcsPackage.DeleteArtifact(runDetail.RunData.Info.ArtifactURI[5:])
+		if err != nil {
+			return nil
+		}
 
 	}
 	return nil

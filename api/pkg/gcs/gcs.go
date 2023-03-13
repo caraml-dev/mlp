@@ -17,7 +17,7 @@ type Config struct {
 	Ctx context.Context
 }
 type GcsPackage interface {
-	DeleteArtifact(url string)
+	DeleteArtifact(url string) error
 }
 
 func NewGcsClient(client *storage.Client, cfg Config) *gcsClient {
@@ -27,7 +27,7 @@ func NewGcsClient(client *storage.Client, cfg Config) *gcsClient {
 	}
 }
 
-func (gc *gcsClient) DeleteArtifact(url string) {
+func (gc *gcsClient) DeleteArtifact(url string) error {
 	// Sets the name for the new bucket.
 	gcsBucket, gcsLocation := gc.RemoveAndSplit(url, "/")
 	fmt.Println(gcsBucket)
@@ -45,21 +45,20 @@ func (gc *gcsClient) DeleteArtifact(url string) {
 		}
 		if err != nil {
 			fmt.Println(err)
+			return err
 		}
 		if err := bucket.Object(attrs.Name).Delete(gc.Config.Ctx); err != nil {
 			// TODO: Handle error.
 			fmt.Println(err)
 			fmt.Println("Error Deleting Object")
+			return err
 		}
 		fmt.Println(attrs.Name)
-
 	}
+	return nil
 }
 
 func (gc *gcsClient) RemoveAndSplit(str, delimiter string) (string, string) {
-	// Remove first 4 characters
-	str = str[5:]
-
 	// Split string using delimiter
 	splitStr := strings.SplitN(str, delimiter, 2)
 
