@@ -49,6 +49,8 @@ func (dc *deleteClient) DeleteExperiment(idExperiment string) error {
 	}
 
 	if len(relatedRunId.RunsData) > 0 {
+		// the [5:] is to remove the "gs://" on the artifact uri
+		// ex : gs://bucketName/path → bucketName/path
 		path := relatedRunId.RunsData[0].Info.ArtifactURI[5:]
 		splitPath := strings.SplitN(path, "/", 4)
 		folderPath := strings.Join(splitPath[0:3], "/")
@@ -72,7 +74,8 @@ func (dc *deleteClient) DeleteRun(idRun string, delArtifact bool) error {
 		if err != nil {
 			return err
 		}
-
+		// the [5:] is to remove the "gs://" on the artifact uri
+		// ex : gs://bucketName/path → bucketName/path
 		err = dc.GcsPackage.DeleteArtifact(runDetail.RunData.Info.ArtifactURI[5:])
 		if err != nil {
 			return err
