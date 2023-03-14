@@ -17,53 +17,53 @@ type Config struct {
 }
 
 type Mlflow interface {
-	SearchRunForExperiment(idExperiment string) (searchRunsResponse, error)
-	SearchRunData(idRun string) (searchRunResponse, error)
+	SearchRunForExperiment(idExperiment string) (SearchRunsResponse, error)
+	SearchRunData(idRun string) (SearchRunResponse, error)
 	DeleteExperiment(idExperiment string) error
 	DeleteRun(idRun string) error
 }
 
-type deleteExperimentRequest struct {
+type DeleteExperimentRequest struct {
 	ExperimentId string `json:"experiment_id" required:"true"`
 }
 
-type deleteRunRequest struct {
+type DeleteRunRequest struct {
 	RunId string `json:"run_id" required:"true"`
 }
 
-type deleteExperimentErrorResponse struct {
+type DeleteExperimentErrorResponse struct {
 	ErrorCode string `json:"error_code"`
 	Message   string `json:"message"`
 }
 
-type searchRunRequest struct {
+type SearchRunRequest struct {
 	ExperimentId []string `json:"experiment_ids" required:"true"`
 }
 
-type tagRun struct {
+type TagRun struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
-type dataRun struct {
-	Tags []tagRun `json:"tags"`
+type DataRun struct {
+	Tags []TagRun `json:"tags"`
 }
 
-type infoRun struct {
+type InfoRun struct {
 	RunId          string `json:"run_id"`
 	ExperimentId   string `json:"experiment_id"`
 	UserId         string `json:"user_id"`
 	LifecycleStage string `json:"lifecycle_stage"`
 	ArtifactURI    string `json:"artifact_uri"`
 }
-type runResponse struct {
-	Info infoRun `json:"info"`
-	Data dataRun `json:"data"`
+type RunResponse struct {
+	Info InfoRun `json:"info"`
+	Data DataRun `json:"data"`
 }
-type searchRunsResponse struct {
-	RunsData []runResponse `json:"runs"`
+type SearchRunsResponse struct {
+	RunsData []RunResponse `json:"runs"`
 }
-type searchRunResponse struct {
-	RunData runResponse `json:"run"`
+type SearchRunResponse struct {
+	RunData RunResponse `json:"run"`
 }
 
 func NewMlflowClient(httpClient *http.Client, config Config) *mlflowClient {
@@ -91,7 +91,7 @@ func (mfc *mlflowClient) httpCall(method string, url string, headers map[string]
 
 	if !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
 		// Convert response body to Error Message struct
-		var errMessage deleteExperimentErrorResponse
+		var errMessage DeleteExperimentErrorResponse
 		if err := json.NewDecoder(resp.Body).Decode(&errMessage); err != nil {
 			return err
 		}
@@ -107,9 +107,9 @@ func (mfc *mlflowClient) httpCall(method string, url string, headers map[string]
 	return nil
 }
 
-func (mfc *mlflowClient) SearchRunForExperiment(idExperiment string) (searchRunsResponse, error) {
+func (mfc *mlflowClient) SearchRunForExperiment(idExperiment string) (SearchRunsResponse, error) {
 	// Search related runs for an experiment id
-	var responseObject searchRunsResponse
+	var responseObject SearchRunsResponse
 
 	searchRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/search", mfc.Config.TrackingURL)
 
@@ -117,7 +117,7 @@ func (mfc *mlflowClient) SearchRunForExperiment(idExperiment string) (searchRuns
 		"Content-Type": "application/json",
 	}
 
-	input := searchRunRequest{ExperimentId: []string{idExperiment}}
+	input := SearchRunRequest{ExperimentId: []string{idExperiment}}
 	jsonInput, err := json.Marshal(input)
 	if err != nil {
 		return responseObject, err
@@ -131,9 +131,9 @@ func (mfc *mlflowClient) SearchRunForExperiment(idExperiment string) (searchRuns
 	return responseObject, nil
 }
 
-func (mfc *mlflowClient) SearchRunData(idRun string) (searchRunResponse, error) {
+func (mfc *mlflowClient) SearchRunData(idRun string) (SearchRunResponse, error) {
 	// Creating Output Format for Run Detail
-	var runResponse searchRunResponse
+	var runResponse SearchRunResponse
 	getRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/get?run_id=%s", mfc.Config.TrackingURL, idRun)
 
 	err := mfc.httpCall("GET", getRunURL, nil, nil, &runResponse)
@@ -145,7 +145,7 @@ func (mfc *mlflowClient) SearchRunData(idRun string) (searchRunResponse, error) 
 
 func (mfc *mlflowClient) DeleteExperiment(idExperiment string) error {
 	// Creating Input Format for Delete experiment
-	input := deleteExperimentRequest{ExperimentId: idExperiment}
+	input := DeleteExperimentRequest{ExperimentId: idExperiment}
 	// HIT Delete Experiment API
 	delExpURL := fmt.Sprintf("%s/api/2.0/mlflow/experiments/delete", mfc.Config.TrackingURL)
 
@@ -167,7 +167,7 @@ func (mfc *mlflowClient) DeleteExperiment(idExperiment string) error {
 
 func (mfc *mlflowClient) DeleteRun(idRun string) error {
 	// Creating Input Format for Delete run
-	input := deleteRunRequest{RunId: idRun}
+	input := DeleteRunRequest{RunId: idRun}
 	// HIT Delete Run API
 	delRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/delete", mfc.Config.TrackingURL)
 
