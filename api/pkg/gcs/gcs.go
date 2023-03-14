@@ -9,19 +9,19 @@ import (
 )
 
 type gcsClient struct {
-	Client *storage.Client
+	Api    *storage.Client
 	Config Config
 }
 type Config struct {
 	Ctx context.Context
 }
-type GcsPackage interface {
+type GcsService interface {
 	DeleteArtifact(url string) error
 }
 
-func NewGcsClient(client *storage.Client, cfg Config) *gcsClient {
+func NewGcsClient(api *storage.Client, cfg Config) *gcsClient {
 	return &gcsClient{
-		Client: client,
+		Api:    api,
 		Config: cfg,
 	}
 }
@@ -31,7 +31,7 @@ func (gc *gcsClient) DeleteArtifact(url string) error {
 	gcsBucket, gcsLocation := gc.RemoveAndSplit(url, "/")
 
 	// Sets the name for the bucket.
-	bucket := gc.Client.Bucket(gcsBucket)
+	bucket := gc.Api.Bucket(gcsBucket)
 
 	it := bucket.Objects(gc.Config.Ctx, &storage.Query{
 		Prefix: gcsLocation,

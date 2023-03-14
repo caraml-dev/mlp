@@ -8,16 +8,16 @@ import (
 )
 
 type deleteClient struct {
-	Client     mlflow.Mlflow
-	GcsPackage gcs.GcsPackage
+	Client     mlflow.MlflowService
+	GcsPackage gcs.GcsService
 }
 
-type DeletePackage interface {
+type DeleteService interface {
 	DeleteExperiment(trackingURL string, idExperiment string, deleteArtifact bool)
 	DeleteRun(trackingURL string, idRun string, delArtifact bool)
 }
 
-func NewDeleteClient(mlfclient mlflow.Mlflow, gcspkg gcs.GcsPackage) *deleteClient {
+func NewDeleteClient(mlfclient mlflow.MlflowService, gcspkg gcs.GcsService) *deleteClient {
 	return &deleteClient{
 		Client:     mlfclient,
 		GcsPackage: gcspkg,

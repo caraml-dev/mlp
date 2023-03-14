@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-type Mlflow interface {
+type MlflowService interface {
 	SearchRunForExperiment(idExperiment string) (SearchRunsResponse, error)
 	SearchRunData(idRun string) (SearchRunResponse, error)
 	DeleteExperiment(idExperiment string) error
