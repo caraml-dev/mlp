@@ -28,7 +28,7 @@ func NewGcsClient(api *storage.Client, cfg Config) *gcsClient {
 
 func (gc *gcsClient) DeleteArtifact(url string) error {
 	// Get bucket name and gcsPrefix
-	gcsBucket, gcsLocation := gc.RemoveAndSplit(url, "/")
+	gcsBucket, gcsLocation := gc.getGcsBucketAndLocation(url)
 
 	// Sets the name for the bucket.
 	bucket := gc.Api.Bucket(gcsBucket)
@@ -51,9 +51,9 @@ func (gc *gcsClient) DeleteArtifact(url string) error {
 	return nil
 }
 
-func (gc *gcsClient) RemoveAndSplit(str, delimiter string) (string, string) {
+func (gc *gcsClient) getGcsBucketAndLocation(str string) (string, string) {
 	// Split string using delimiter
-	splitStr := strings.SplitN(str, delimiter, 2)
-
+	// ex : bucketName/path/path1/item → (bucketName , path/path1/item)
+	splitStr := strings.SplitN(str, "/", 2)
 	return splitStr[0], splitStr[1]
 }

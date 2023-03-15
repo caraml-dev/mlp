@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
+
+	"github.com/gojek/mlp/api/pkg/gcs"
 )
 
 type MlflowService interface {
@@ -15,14 +18,16 @@ type MlflowService interface {
 }
 
 type mlflowClient struct {
-	Api    *http.Client
-	Config Config
+	Api        *http.Client
+	GcsService gcs.GcsService
+	Config     Config
 }
 
-func NewMlflowClient(httpClient *http.Client, config Config) *mlflowClient {
+func NewMlflowClient(httpClient *http.Client, config Config, gcsService gcs.GcsService) *mlflowClient {
 	return &mlflowClient{
-		Api:    httpClient,
-		Config: config,
+		Api:        httpClient,
+		Config:     config,
+		GcsService: gcsService,
 	}
 }
 
@@ -98,24 +103,44 @@ func (mfc *mlflowClient) SearchRunData(idRun string) (SearchRunResponse, error) 
 }
 
 func (mfc *mlflowClient) DeleteExperiment(idExperiment string) error {
-	// Creating Input Format for Delete experiment
-	input := DeleteExperimentRequest{ExperimentId: idExperiment}
-	// HIT Delete Experiment API
-	delExpURL := fmt.Sprintf("%s/api/2.0/mlflow/experiments/delete", mfc.Config.TrackingURL)
 
-	jsonInput, err := json.Marshal(input)
+	relatedRunId, err := mfc.SearchRunForExperiment(idExperiment)
 	if err != nil {
 		return err
 	}
+	// Error Handling, keep runId that failed to delete
+	// TODO: What should i do with this?
+	var deletedRunId []string
+	var failDeletedRunId []string
+	for _, run := range relatedRunId.RunsData {
+		err = mfc.DeleteRun(run.Info.RunId, false)
+		if err != nil {
+			failDeletedRunId = append(failDeletedRunId, run.Info.RunId)
+			// return err
+		} else {
+			deletedRunId = append(deletedRunId, run.Info.RunId)
+		}
+	}
 
-	err = mfc.httpCall("POST", delExpURL, jsonInput, nil)
-	if err != nil {
-		return err
+	if len(relatedRunId.RunsData) > 0 {
+		// the [5:] is to remove the "gs://" on the artifact uri
+		// ex : gs://bucketName/path → bucketName/path
+		path := relatedRunId.RunsData[0].Info.ArtifactURI[5:]
+
+		// This section is getting gcs path for a folder, from a run id
+		// ex : bucketName/mlflow/idExperiment/runId/artefact  → bucketName/path/mlflow/idExperiment
+		splitPath := strings.SplitN(path, "/", 4)
+		folderPath := strings.Join(splitPath[0:3], "/")
+		// deleting folder
+		err = mfc.GcsService.DeleteArtifact(folderPath)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func (mfc *mlflowClient) DeleteRun(idRun string) error {
+func (mfc *mlflowClient) DeleteRun(idRun string, deleteArtifact bool) error {
 	// Creating Input Format for Delete run
 	input := DeleteRunRequest{RunId: idRun}
 	// HIT Delete Run API
@@ -129,6 +154,20 @@ func (mfc *mlflowClient) DeleteRun(idRun string) error {
 	err = mfc.httpCall("POST", delRunURL, jsonInput, nil)
 	if err != nil {
 		return err
+	}
+
+	if deleteArtifact {
+		runDetail, err := mfc.SearchRunData(idRun)
+		if err != nil {
+			return err
+		}
+		// the [5:] is to remove the "gs://" on the artifact uri
+		// ex : gs://bucketName/path → bucketName/path
+		err = mfc.GcsService.DeleteArtifact(runDetail.RunData.Info.ArtifactURI[5:])
+		if err != nil {
+			return err
+		}
+
 	}
 	return nil
 }
