@@ -13,7 +13,7 @@ type DeleteExperimentErrorResponse struct {
 	Message   string `json:"message"`
 }
 
-type SearchRunRequest struct {
+type SearchRunsRequest struct {
 	ExperimentId []string `json:"experiment_ids" required:"true"`
 }
 

@@ -182,7 +182,7 @@ func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 				TrackingURL: server.URL,
 			}, &mocks.GcsService{})
 
-			resp, errAPI := client.SearchRunForExperiment(tc.idExperiment)
+			resp, errAPI := client.searchRunsForExperiment(tc.idExperiment)
 			assert.Equal(t, tc.expectedError, errAPI)
 			assert.Equal(t, tc.expectedResponse, resp)
 
@@ -244,7 +244,7 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 				TrackingURL: server.URL,
 			}, &mocks.GcsService{})
 
-			resp, errAPI := client.SearchRunData(tc.idRun)
+			resp, errAPI := client.searchRunData(tc.idRun)
 
 			assert.Equal(t, tc.expectedError, errAPI)
 			assert.Equal(t, tc.expectedResponse, resp)
@@ -341,7 +341,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 				TrackingURL: server.URL,
 			}, &mocks.GcsService{})
 
-			errAPI := client.DeleteRun(tc.idRun, false)
+			errAPI := client.DeleteRun(tc.idRun)
 			assert.Equal(t, tc.expectedError, errAPI)
 		})
 	}
