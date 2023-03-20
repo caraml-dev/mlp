@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gojek/mlp/api/pkg/gcs/mocks"
+	"github.com/gojek/mlp/api/pkg/artifact/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -180,7 +180,7 @@ func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 			defer server.Close()
 			client := NewMlflowService(server.Client(), Config{
 				TrackingURL: server.URL,
-			}, &mocks.GcsService{})
+			}, &mocks.ArtifactService{})
 
 			resp, errAPI := client.searchRunsForExperiment(tc.idExperiment)
 			assert.Equal(t, tc.expectedError, errAPI)
@@ -242,7 +242,7 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 			defer server.Close()
 			client := NewMlflowService(server.Client(), Config{
 				TrackingURL: server.URL,
-			}, &mocks.GcsService{})
+			}, &mocks.ArtifactService{})
 
 			resp, errAPI := client.searchRunData(tc.idRun)
 
@@ -287,7 +287,7 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 			defer server.Close()
 			client := NewMlflowService(server.Client(), Config{
 				TrackingURL: server.URL,
-			}, &mocks.GcsService{})
+			}, &mocks.ArtifactService{})
 
 			errAPI := client.DeleteExperiment(tc.idExperiment)
 
@@ -339,7 +339,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 			defer server.Close()
 			client := NewMlflowService(server.Client(), Config{
 				TrackingURL: server.URL,
-			}, &mocks.GcsService{})
+			}, &mocks.ArtifactService{})
 
 			errAPI := client.DeleteRun(tc.idRun)
 			assert.Equal(t, tc.expectedError, errAPI)

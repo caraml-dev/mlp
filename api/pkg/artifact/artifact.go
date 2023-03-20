@@ -1,4 +1,4 @@
-package gcs
+package artifact
 
 import (
 	"context"
@@ -15,7 +15,8 @@ type gcsClient struct {
 type Config struct {
 	Ctx context.Context
 }
-type GcsService interface {
+
+type ArtifactService interface {
 	DeleteArtifact(url string) error
 }
 

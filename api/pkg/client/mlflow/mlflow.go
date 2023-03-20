@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gojek/mlp/api/pkg/gcs"
+	"github.com/gojek/mlp/api/pkg/artifact"
 )
 
 type MlflowService interface {
@@ -17,16 +17,16 @@ type MlflowService interface {
 }
 
 type mlflowService struct {
-	Api        *http.Client
-	GcsService gcs.ArtifactService
-	Config     Config
+	Api             *http.Client
+	ArtifactService artifact.ArtifactService
+	Config          Config
 }
 
-func NewMlflowService(httpClient *http.Client, config Config, gcsService gcs.ArtifactService) *mlflowService {
+func NewMlflowService(httpClient *http.Client, config Config, artifactService artifact.ArtifactService) *mlflowService {
 	return &mlflowService{
-		Api:        httpClient,
-		Config:     config,
-		GcsService: gcsService,
+		Api:             httpClient,
+		Config:          config,
+		ArtifactService: artifactService,
 	}
 }
 
@@ -140,7 +140,7 @@ func (mfs *mlflowService) DeleteRun(idRun string) error {
 	}
 	// the [5:] is to remove the "gs://" on the artifact uri
 	// ex : gs://bucketName/path → bucketName/path
-	err = mfs.GcsService.DeleteArtifact(runDetail.RunData.Info.ArtifactURI[5:])
+	err = mfs.ArtifactService.DeleteArtifact(runDetail.RunData.Info.ArtifactURI[5:])
 	if err != nil {
 		return err
 	}
