@@ -29,7 +29,9 @@ func NewGcsClient(api *storage.Client, cfg Config) *gcsClient {
 
 func (gc *gcsClient) DeleteArtifact(url string) error {
 	// Get bucket name and gcsPrefix
-	gcsBucket, gcsLocation := gc.getGcsBucketAndLocation(url)
+	// the [5:] is to remove the "gs://" on the artifact uri
+	// ex : gs://bucketName/path → bucketName/path
+	gcsBucket, gcsLocation := gc.getGcsBucketAndLocation(url[5:])
 
 	// Sets the name for the bucket.
 	bucket := gc.Api.Bucket(gcsBucket)

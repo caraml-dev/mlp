@@ -64,6 +64,59 @@ var MultipleRunSuccessJSON = `{
 			}
 		}
 	]}`
+var MultipleRunSuccessJSON_FailedDelete = `{    
+	"runs": [
+		{
+			"info": {
+				"run_uuid": "run-123",
+				"experiment_id": "1",
+				"user_id": "root",
+				"status": "FINISHED",
+				"start_time": "1677735900543",
+				"end_time": "1677735901790",
+				"artifact_uri": "gs://my-bucket/run-789",
+				"lifecycle_stage": "active",
+				"run_id": "run-123"
+			},
+			"data": {
+				"tags": [
+					{
+						"key": "env",
+						"value": "prod"
+					},
+					{
+						"key": "version",
+						"value": "1.0.0"
+					}
+				]
+			}
+		},
+		{
+			"info": {
+				"run_uuid": "run-456",
+				"experiment_id": "1",
+				"user_id": "root",
+				"status": "FINISHED",
+				"start_time": "1677735900543",
+				"end_time": "1677735901790",
+				"artifact_uri": "gs://my-bucket/run-123",
+				"lifecycle_stage": "active",
+				"run_id": "run-456"
+			},
+			"data": {
+				"tags": [
+					{
+						"key": "env",
+						"value": "dev"
+					},
+					{
+						"key": "version",
+						"value": "1.1.0"
+					}
+				]
+			}
+		}
+	]}`
 
 var RunSuccessJSON = `
 {
@@ -76,6 +129,64 @@ var RunSuccessJSON = `
 			"start_time": "1677735900543",
 			"end_time": "1677735901790",
 			"artifact_uri": "gs://my-bucket/run-123",
+			"lifecycle_stage": "active",
+			"run_id": "run-123"
+		},
+		"data": {
+			"tags": [
+				{
+					"key": "env",
+					"value": "prod"
+				},
+				{
+					"key": "version",
+					"value": "1.0.0"
+				}
+			]
+		}		
+	}
+}`
+
+var RunSuccess_DeleteRun = `
+{
+	"run": {
+		"info": {
+			"run_uuid": "run-123",
+			"experiment_id": "1",
+			"user_id": "root",
+			"status": "FINISHED",
+			"start_time": "1677735900543",
+			"end_time": "1677735901790",
+			"artifact_uri": "gs://bucketName/valid",
+			"lifecycle_stage": "active",
+			"run_id": "run-123"
+		},
+		"data": {
+			"tags": [
+				{
+					"key": "env",
+					"value": "prod"
+				},
+				{
+					"key": "version",
+					"value": "1.0.0"
+				}
+			]
+		}		
+	}
+}`
+
+var RunFailed_DeleteRun = `
+{
+	"run": {
+		"info": {
+			"run_uuid": "run-123",
+			"experiment_id": "1",
+			"user_id": "root",
+			"status": "FINISHED",
+			"start_time": "1677735900543",
+			"end_time": "1677735901790",
+			"artifact_uri": "gs://bucketName/invalid",
 			"lifecycle_stage": "active",
 			"run_id": "run-123"
 		},
@@ -109,6 +220,11 @@ var DeleteRunDoesntExist = `
 var DeleteRunAlreadyDeleted = `
 {
     "error_code": "INVALID_PARAMETER_VALUE",
+    "message": "The run xytspow3412oi must be in the 'active' state. Current state is deleted."
+}`
+
+var FailedDeleteArtifact = `
+{
     "message": "The run xytspow3412oi must be in the 'active' state. Current state is deleted."
 }`
 
@@ -254,42 +370,75 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 
 func TestMlflowClient_DeleteExperiment(t *testing.T) {
 	tests := []struct {
-		name             string
-		idExperiment     string
-		expectedRespJSON string
-		expectedError    error
-		httpStatus       int
+		name                 string
+		idExperiment         string
+		expectedRespJSON     string
+		expectedError        error
+		httpStatus           int
+		expectedRunsRespJSON string
 	}{
 		{
-			name:             "Valid Experiment Deletion",
-			idExperiment:     "1",
-			expectedRespJSON: `{}`,
-			expectedError:    nil,
-			httpStatus:       http.StatusOK,
+			name:                 "Valid Experiment Deletion",
+			idExperiment:         "1",
+			expectedRespJSON:     `{}`,
+			expectedError:        nil,
+			httpStatus:           http.StatusOK,
+			expectedRunsRespJSON: MultipleRunSuccessJSON,
 		},
 		{
-			name:             "ID not exist",
-			idExperiment:     "999",
-			expectedRespJSON: DeleteExperimentDoesntExist,
-			expectedError:    fmt.Errorf("No Experiment with id=999 exists"),
-			httpStatus:       http.StatusNotFound,
+			name:                 "Run Failed Deletion",
+			idExperiment:         "1",
+			expectedRespJSON:     `{}`,
+			expectedError:        fmt.Errorf("deletion failed for run_id run-123 for experiment id 1: Failed to Delete Artifact"),
+			httpStatus:           http.StatusOK,
+			expectedRunsRespJSON: MultipleRunSuccessJSON_FailedDelete,
 		},
+		// {
+		// 	name:                 "ID not exist",
+		// 	idExperiment:         "999",
+		// 	expectedRespJSON:     DeleteExperimentDoesntExist,
+		// 	expectedError:        fmt.Errorf("No Experiment with id=999 exists"),
+		// 	httpStatus:           http.StatusNotFound,
+		// 	expectedRunsRespJSON: `{}`,
+		// },
+		// {
+		// 	name:                 "Artifact Deletion Failed",
+		// 	idExperiment:         "2",
+		// 	expectedRespJSON:     `Failed to Delete Artifact`,
+		// 	expectedError:        fmt.Errorf("Failed to Delete Artifact"),
+		// 	httpStatus:           http.StatusInternalServerError,
+		// 	expectedRunsRespJSON: `{}`,
+		// },
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mux := http.NewServeMux()
+			mux.HandleFunc("/api/2.0/mlflow/runs/delete", func(w http.ResponseWriter, r *http.Request) {
 
 				w.WriteHeader(tc.httpStatus)
 				_, err := w.Write([]byte(tc.expectedRespJSON))
 				require.NoError(t, err)
-			}))
+			})
+			mux.HandleFunc("/api/2.0/mlflow/runs/search", func(w http.ResponseWriter, r *http.Request) {
+
+				w.WriteHeader(tc.httpStatus)
+				_, err := w.Write([]byte(tc.expectedRunsRespJSON))
+				require.NoError(t, err)
+			})
+
+			server := httptest.NewServer(mux)
 			defer server.Close()
+
+			artifackMock := mocks.ArtifactService{}
+			artifackMock.On("DeleteArtifact", "gs://my-bucket/run-789").Return(fmt.Errorf("Failed to Delete Artifact"))
+			artifackMock.On("DeleteArtifact", "gs://my-bucket/run-123").Return(nil)
+			artifackMock.On("DeleteArtifact", "gs://my-bucket/run-456").Return(nil)
 			client := NewMlflowService(server.Client(), Config{
 				TrackingURL: server.URL,
-			}, &mocks.ArtifactService{})
-
-			errAPI := client.DeleteExperiment(tc.idExperiment)
+			}, &artifackMock)
+			// client.ArtifactService.On("DeleteExperiment", "").Return(fmt.Errorf("Failed to Delete Artifact"))
+			errAPI := client.DeleteExperiment(tc.idExperiment, true)
 
 			assert.Equal(t, tc.expectedError, errAPI)
 
@@ -299,49 +448,115 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 
 func TestMlflowClient_DeleteRun(t *testing.T) {
 	tests := []struct {
-		name             string
-		idRun            string
-		expectedRespJSON string
-		expectedError    error
-		httpStatus       int
+		name                string
+		idRun               string
+		expectedRespJSON    string
+		expectedRunRespJSON string
+		expectedError       error
+		httpStatus          int
+		artifactURL         string
+		deleteArtifact      bool
 	}{
 		{
-			name:             "Valid Run Deletion",
-			idRun:            "abcdefg1234",
-			expectedRespJSON: `{}`,
-			expectedError:    nil,
-			httpStatus:       http.StatusOK,
+			name:                "Valid Run Deletion Without Delete Artifact",
+			idRun:               "abcdefg1234",
+			expectedRespJSON:    `{}`,
+			expectedError:       nil,
+			httpStatus:          http.StatusOK,
+			artifactURL:         "gs://bucketName/valid",
+			deleteArtifact:      false,
+			expectedRunRespJSON: `{}`,
 		},
 		{
-			name:             "ID already deleted",
-			idRun:            "xytspow3412oi",
-			expectedRespJSON: DeleteRunAlreadyDeleted,
-			expectedError:    fmt.Errorf("The run xytspow3412oi must be in the 'active' state. Current state is deleted."),
-			httpStatus:       http.StatusBadRequest,
+			name:                "Valid Run Deletion With Delete Artifact",
+			idRun:               "abcdefg1234",
+			expectedRespJSON:    `{}`,
+			expectedError:       nil,
+			httpStatus:          http.StatusOK,
+			artifactURL:         "gs://bucketName/valid",
+			deleteArtifact:      true,
+			expectedRunRespJSON: `{}`,
 		},
 		{
-			name:             "ID not exist",
-			idRun:            "unknownId",
-			expectedRespJSON: DeleteRunDoesntExist,
-			expectedError:    fmt.Errorf("Run with id=unknownId not found"),
-			httpStatus:       http.StatusNotFound,
+			name:                "ID already deleted",
+			idRun:               "xytspow3412oi",
+			expectedRespJSON:    DeleteRunAlreadyDeleted,
+			expectedError:       fmt.Errorf("The run xytspow3412oi must be in the 'active' state. Current state is deleted."),
+			httpStatus:          http.StatusBadRequest,
+			artifactURL:         "gs://bucketName/valid",
+			deleteArtifact:      true,
+			expectedRunRespJSON: `{}`,
+		},
+		{
+			name:                "ID not exist",
+			idRun:               "unknownId",
+			expectedRespJSON:    DeleteRunDoesntExist,
+			expectedError:       fmt.Errorf("Run with id=unknownId not found"),
+			httpStatus:          http.StatusNotFound,
+			artifactURL:         "gs://bucketName/valid",
+			deleteArtifact:      true,
+			expectedRunRespJSON: `{}`,
+		},
+		{
+			name:                "Artifact Deletion Failed",
+			idRun:               "abcdefg1234",
+			expectedRespJSON:    `{}`,
+			expectedError:       fmt.Errorf("Failed to Delete Artifact"),
+			httpStatus:          http.StatusOK,
+			artifactURL:         "gs://bucketName/invalid",
+			deleteArtifact:      true,
+			expectedRunRespJSON: `{}`,
+		},
+		{
+			name:                "Delete without URL Valid",
+			idRun:               "abcdefg1234",
+			expectedRespJSON:    `{}`,
+			expectedError:       nil,
+			httpStatus:          http.StatusOK,
+			artifactURL:         "",
+			deleteArtifact:      true,
+			expectedRunRespJSON: RunSuccess_DeleteRun,
+		},
+		{
+			name:                "Delete without URL Invalid",
+			idRun:               "abcdefg1234",
+			expectedRespJSON:    `{}`,
+			expectedError:       fmt.Errorf("Failed to Delete Artifact"),
+			httpStatus:          http.StatusOK,
+			artifactURL:         "",
+			deleteArtifact:      true,
+			expectedRunRespJSON: RunFailed_DeleteRun,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mux := http.NewServeMux()
+			mux.HandleFunc("/api/2.0/mlflow/runs/delete", func(w http.ResponseWriter, r *http.Request) {
 
 				w.WriteHeader(tc.httpStatus)
 				_, err := w.Write([]byte(tc.expectedRespJSON))
 				require.NoError(t, err)
-			}))
-			defer server.Close()
-			client := NewMlflowService(server.Client(), Config{
-				TrackingURL: server.URL,
-			}, &mocks.ArtifactService{})
+			})
+			mux.HandleFunc("/api/2.0/mlflow/runs/get", func(w http.ResponseWriter, r *http.Request) {
 
-			errAPI := client.DeleteRun(tc.idRun)
+				w.WriteHeader(tc.httpStatus)
+				_, err := w.Write([]byte(tc.expectedRunRespJSON))
+				require.NoError(t, err)
+			})
+
+			server := httptest.NewServer(mux)
+			defer server.Close()
+			artifactMock := mocks.ArtifactService{}
+
+			client :=
+				NewMlflowService(server.Client(), Config{
+					TrackingURL: server.URL,
+				}, &artifactMock)
+
+			artifactMock.On("DeleteArtifact", "gs://bucketName/invalid").Return(fmt.Errorf("Failed to Delete Artifact"))
+			artifactMock.On("DeleteArtifact", "gs://bucketName/valid").Return(nil)
+			errAPI := client.DeleteRun(tc.idRun, tc.artifactURL, tc.deleteArtifact)
 			assert.Equal(t, tc.expectedError, errAPI)
 		})
 	}

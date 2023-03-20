@@ -142,9 +142,7 @@ func (mfs *mlflowService) DeleteRun(runId, artifactURL string, deleteArtifact bo
 		artifactURL = runDetail.RunData.Info.ArtifactURI
 	}
 	if deleteArtifact {
-		// the [5:] is to remove the "gs://" on the artifact uri
-		// ex : gs://bucketName/path → bucketName/path
-		err = mfs.ArtifactService.DeleteArtifact(artifactURL[5:])
+		err = mfs.ArtifactService.DeleteArtifact(artifactURL)
 		if err != nil {
 			return err
 		}
