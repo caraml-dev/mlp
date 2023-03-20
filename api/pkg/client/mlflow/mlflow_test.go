@@ -393,22 +393,14 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 			httpStatus:           http.StatusOK,
 			expectedRunsRespJSON: MultipleRunSuccessJSON_FailedDelete,
 		},
-		// {
-		// 	name:                 "ID not exist",
-		// 	idExperiment:         "999",
-		// 	expectedRespJSON:     DeleteExperimentDoesntExist,
-		// 	expectedError:        fmt.Errorf("No Experiment with id=999 exists"),
-		// 	httpStatus:           http.StatusNotFound,
-		// 	expectedRunsRespJSON: `{}`,
-		// },
-		// {
-		// 	name:                 "Artifact Deletion Failed",
-		// 	idExperiment:         "2",
-		// 	expectedRespJSON:     `Failed to Delete Artifact`,
-		// 	expectedError:        fmt.Errorf("Failed to Delete Artifact"),
-		// 	httpStatus:           http.StatusInternalServerError,
-		// 	expectedRunsRespJSON: `{}`,
-		// },
+		{
+			name:                 "No related run for Id",
+			idExperiment:         "999",
+			expectedRespJSON:     `{}`,
+			expectedError:        fmt.Errorf("There are no related run for experiment id 999"),
+			httpStatus:           http.StatusOK,
+			expectedRunsRespJSON: `{}`,
+		},
 	}
 
 	for _, tc := range tests {

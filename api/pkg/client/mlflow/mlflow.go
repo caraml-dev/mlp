@@ -103,12 +103,16 @@ func (mfs *mlflowService) searchRunData(runId string) (SearchRunResponse, error)
 
 func (mfs *mlflowService) DeleteExperiment(experimentId string, deleteArtifact bool) error {
 
-	relatedRunId, err := mfs.searchRunsForExperiment(experimentId)
+	relatedRunData, err := mfs.searchRunsForExperiment(experimentId)
 	if err != nil {
 		return err
 	}
+	// Error handling for empty/no run for the experiment
+	if len(relatedRunData.RunsData) == 0 {
+		return fmt.Errorf("There are no related run for experiment id %s", experimentId)
+	}
 	// Error Handling, when a runId failed to delete return error
-	for _, run := range relatedRunId.RunsData {
+	for _, run := range relatedRunData.RunsData {
 		err = mfs.DeleteRun(run.Info.RunId, run.Info.ArtifactURI, deleteArtifact)
 		if err != nil {
 			return fmt.Errorf("deletion failed for run_id %s for experiment id %s: %s", run.Info.RunId, experimentId, err)
