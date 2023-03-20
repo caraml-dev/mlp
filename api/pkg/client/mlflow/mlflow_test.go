@@ -178,7 +178,7 @@ func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 				require.NoError(t, err)
 			}))
 			defer server.Close()
-			client := NewMlflowClient(server.Client(), Config{
+			client := NewMlflowService(server.Client(), Config{
 				TrackingURL: server.URL,
 			}, &mocks.GcsService{})
 
@@ -240,7 +240,7 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 				require.NoError(t, err)
 			}))
 			defer server.Close()
-			client := NewMlflowClient(server.Client(), Config{
+			client := NewMlflowService(server.Client(), Config{
 				TrackingURL: server.URL,
 			}, &mocks.GcsService{})
 
@@ -285,7 +285,7 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 				require.NoError(t, err)
 			}))
 			defer server.Close()
-			client := NewMlflowClient(server.Client(), Config{
+			client := NewMlflowService(server.Client(), Config{
 				TrackingURL: server.URL,
 			}, &mocks.GcsService{})
 
@@ -337,7 +337,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 				require.NoError(t, err)
 			}))
 			defer server.Close()
-			client := NewMlflowClient(server.Client(), Config{
+			client := NewMlflowService(server.Client(), Config{
 				TrackingURL: server.URL,
 			}, &mocks.GcsService{})
 
