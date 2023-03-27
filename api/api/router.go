@@ -98,7 +98,7 @@ func (route Route) HandlerFunc(validate *validator.Validate) http.HandlerFunc {
 
 		response := func() *Response {
 			vars["user"] = r.Header.Get("User-Email")
-			var body interface{} = nil
+			var body interface{}
 
 			if bodyType != nil {
 				body = reflect.New(bodyType).Interface()
