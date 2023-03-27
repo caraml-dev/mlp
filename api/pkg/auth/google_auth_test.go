@@ -43,46 +43,106 @@ func testSetupDummyGoogleCredentials(t *testing.T, dummyCredentials []byte) (res
 	}
 }
 
-func TestInitGoogleClient_NoDefaultCredentials(t *testing.T) {
-	client, err := InitGoogleClient(context.Background(), "test.audience")
-	assert.Error(t, err)
-	assert.Nil(t, client)
+func TestTestInitGoogleClient(t *testing.T) {
+	// Define tests
+	tests := map[string]struct {
+		dummyCredential string
+		err             string
+	}{
+		"failure | no default credentials found": {
+			err: "fsdfas",
+		},
+		"failure | invalid json file": {
+			dummyCredential: `{`,
+			err:             "google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: unexpected end of JSON input",
+		},
+		"failure | json file with invalid credentials": {
+			dummyCredential: `{}`,
+			err:             "google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: missing 'type' field in credentials",
+		},
+		"success | service account": {
+			dummyCredential: `{
+			    "type": "authorized_user",
+			    "project_id": "foo",
+			    "private_key_id": "bar",
+			    "private_key": "baz",
+			    "client_email": "foo@example.com",
+			    "client_id": "bar_client_id",
+			    "auth_uri": "https://oauth2.googleapis.com/auth",
+			    "token_uri": "https://oauth2.googleapis.com/token"
+		}`,
+		},
+		"success | user account": {
+			dummyCredential: `{
+			    "client_id": "dummyclientid.apps.googleusercontent.com",
+			    "client_secret": "dummy-secret",
+			    "quota_project_id": "gods-production",
+			    "refresh_token": "dummy-token",
+			    "type": "authorized_user"
+			}`,
+		},
+	}
+
+	// Run tests
+	for name, data := range tests {
+		t.Run(name, func(t *testing.T) {
+			if data.dummyCredential != "" {
+				reset := testSetupDummyGoogleCredentials(t, []byte(data.dummyCredential))
+				defer reset()
+			}
+
+			client, err := InitGoogleClient(context.Background(), "test.audience")
+			if data.err != "" {
+				assert.EqualError(t, err, data.err)
+				assert.Nil(t, client)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, client)
+			}
+		})
+	}
 }
 
-func TestInitGoogleClient_ServiceAccount(t *testing.T) {
-	reset := testSetupDummyGoogleCredentials(
-		t,
-		[]byte(`{
-  "type": "authorized_user",
-  "project_id": "foo",
-  "private_key_id": "bar",
-  "private_key": "baz",
-  "client_email": "foo@example.com",
-  "client_id": "bar_client_id",
-  "auth_uri": "https://oauth2.googleapis.com/auth",
-  "token_uri": "https://oauth2.googleapis.com/token"
-}`),
-	)
-	defer reset()
-
-	client, err := InitGoogleClient(context.Background(), "test.audience")
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
-}
-
-func TestInitGoogleClient_UserAccount(t *testing.T) {
-	reset := testSetupDummyGoogleCredentials(t,
-		[]byte(`{
-  "client_id": "dummyclientid.apps.googleusercontent.com",
-  "client_secret": "dummy-secret",
-  "quota_project_id": "gods-production",
-  "refresh_token": "dummy-token",
-  "type": "authorized_user"
-}`),
-	)
-	defer reset()
-
-	client, err := InitGoogleClient(context.Background(), "test.audience")
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
-}
+//func TestInitGoogleClient_NoDefaultCredentials(t *testing.T) {
+//	client, err := InitGoogleClient(context.Background(), "test.audience")
+//	assert.Error(t, err)
+//	assert.Nil(t, client)
+//}
+//
+//func TestInitGoogleClient_ServiceAccount(t *testing.T) {
+//	reset := testSetupDummyGoogleCredentials(
+//		t,
+//		[]byte(`{
+//  "type": "authorized_user",
+//  "project_id": "foo",
+//  "private_key_id": "bar",
+//  "private_key": "baz",
+//  "client_email": "foo@example.com",
+//  "client_id": "bar_client_id",
+//  "auth_uri": "https://oauth2.googleapis.com/auth",
+//  "token_uri": "https://oauth2.googleapis.com/token"
+//}`),
+//	)
+//	defer reset()
+//
+//	client, err := InitGoogleClient(context.Background(), "test.audience")
+//	assert.NoError(t, err)
+//	assert.NotNil(t, client)
+//}
+//
+//func TestInitGoogleClient_UserAccount(t *testing.T) {
+//	reset := testSetupDummyGoogleCredentials(t,
+//		[]byte(`{
+//  "client_id": "dummyclientid.apps.googleusercontent.com",
+//  "client_secret": "dummy-secret",
+//  "quota_project_id": "gods-production",
+//  "refresh_token": "dummy-token",
+//  "type": "authorized_user"
+//}`),
+//	)
+//	defer reset()
+//
+//	client, err := InitGoogleClient(context.Background(), "test.audience")
+//	assert.NoError(t, err)
+//	assert.NotNil(t, client)
+//}
