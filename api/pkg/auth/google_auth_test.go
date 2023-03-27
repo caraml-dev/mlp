@@ -50,7 +50,8 @@ func TestTestInitGoogleClient(t *testing.T) {
 		err             string
 	}{
 		"failure | no default credentials found": {
-			err: "fsdfas",
+			err: "google: could not find default credentials. See " +
+				"https://developers.google.com/accounts/docs/application-default-credentials for more information.",
 		},
 		"failure | invalid json file": {
 			dummyCredential: `{`,

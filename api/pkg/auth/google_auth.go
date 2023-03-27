@@ -55,10 +55,6 @@ func InitGoogleClient(ctx context.Context, audience string) (*http.Client, error
 		return nil, err
 	}
 
-	if len(cred.JSON) == 0 {
-		return nil, fmt.Errorf("no default credentials found")
-	}
-
 	var f credentialsFile
 	if err := json.Unmarshal(cred.JSON, &f); err != nil {
 		return nil, err
