@@ -64,6 +64,7 @@ func TestTestInitGoogleClient(t *testing.T) {
 				"environment variable: missing 'type' field in credentials",
 		},
 		"failure | service account not found": {
+			//nolint:lll // the private key is in a string literal and cannot contain arbitrary line breaks
 			dummyCredential: `{
 			    "type": "service_account",
 			    "project_id": "example-project",
@@ -74,7 +75,8 @@ func TestTestInitGoogleClient(t *testing.T) {
 			    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
 			    "token_uri": "https://accounts.google.com/o/oauth2/token"
 			}`,
-			err: "oauth2: cannot fetch token: 400 Bad Request\nResponse: {\"error\":\"invalid_grant\",\"error_description\":\"Invalid grant: account not found\"}",
+			err: "oauth2: cannot fetch token: 400 Bad Request\nResponse: " +
+				"{\"error\":\"invalid_grant\",\"error_description\":\"Invalid grant: account not found\"}",
 		},
 		"failure | invalid credentials": {
 			dummyCredential: `{
@@ -84,7 +86,8 @@ func TestTestInitGoogleClient(t *testing.T) {
 			    "refresh_token": "dummy-token",
 			    "type": "unauthorized_user"
 			}`,
-			err: "google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: unknown credential type: \"unauthorized_user\"",
+			err: "google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: " +
+				"unknown credential type: \"unauthorized_user\"",
 		},
 		"success | user account": {
 			dummyCredential: `{
