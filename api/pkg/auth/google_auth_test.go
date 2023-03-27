@@ -8,31 +8,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// testSetupServiceAccountForGoogleCredentials creates a temporary file containing dummy service account JSON
+// testSetupDummyGoogleCredentials creates a temporary file containing dummy credentials JSON
 // then set the environment variable GOOGLE_APPLICATION_CREDENTIALS to point to the file.
 //
 // This is useful for tests that assume Google Cloud Client libraries can automatically find
 // the service account credentials in any environment.
 //
 // At the end of the test, the returned function can be called to perform cleanup.
-func testSetupServiceAccountForGoogleCredentials(t *testing.T) (reset func()) {
-	serviceAccountKey := []byte(`{
-  "type": "service_account",
-  "project_id": "foo",
-  "private_key_id": "bar",
-  "private_key": "baz",
-  "client_email": "foo@example.com",
-  "client_id": "bar_client_id",
-  "auth_uri": "https://oauth2.googleapis.com/auth",
-  "token_uri": "https://oauth2.googleapis.com/token"
-}`)
-
+func testSetupDummyGoogleCredentials(t *testing.T, dummyCredentials []byte) (reset func()) {
 	file, err := os.CreateTemp("", "dummy-service-account")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = os.WriteFile(file.Name(), serviceAccountKey, 0644)
+	err = os.WriteFile(file.Name(), dummyCredentials, 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,15 +45,44 @@ func testSetupServiceAccountForGoogleCredentials(t *testing.T) (reset func()) {
 
 func TestInitGoogleClient_NoDefaultCredentials(t *testing.T) {
 	client, err := InitGoogleClient(context.Background(), "test.audience")
-	assert.NoError(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, client)
 }
 
 func TestInitGoogleClient_ServiceAccount(t *testing.T) {
-	reset := testSetupServiceAccountForGoogleCredentials(t)
+	reset := testSetupDummyGoogleCredentials(
+		t,
+		[]byte(`{
+  "type": "authorized_user",
+  "project_id": "foo",
+  "private_key_id": "bar",
+  "private_key": "baz",
+  "client_email": "foo@example.com",
+  "client_id": "bar_client_id",
+  "auth_uri": "https://oauth2.googleapis.com/auth",
+  "token_uri": "https://oauth2.googleapis.com/token"
+}`),
+	)
 	defer reset()
 
 	client, err := InitGoogleClient(context.Background(), "test.audience")
 	assert.NoError(t, err)
-	assert.Nil(t, client)
+	assert.NotNil(t, client)
+}
+
+func TestInitGoogleClient_UserAccount(t *testing.T) {
+	reset := testSetupDummyGoogleCredentials(t,
+		[]byte(`{
+  "client_id": "dummyclientid.apps.googleusercontent.com",
+  "client_secret": "dummy-secret",
+  "quota_project_id": "gods-production",
+  "refresh_token": "dummy-token",
+  "type": "authorized_user"
+}`),
+	)
+	defer reset()
+
+	client, err := InitGoogleClient(context.Background(), "test.audience")
+	assert.NoError(t, err)
+	assert.NotNil(t, client)
 }
