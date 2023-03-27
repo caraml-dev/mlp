@@ -54,11 +54,13 @@ func TestTestInitGoogleClient(t *testing.T) {
 		},
 		"failure | invalid json file": {
 			dummyCredential: `{`,
-			err:             "google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: unexpected end of JSON input",
+			err: "google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS " +
+				"environment variable: unexpected end of JSON input",
 		},
 		"failure | json file with invalid credentials": {
 			dummyCredential: `{}`,
-			err:             "google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: missing 'type' field in credentials",
+			err: "google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS " +
+				"environment variable: missing 'type' field in credentials",
 		},
 		"success | service account": {
 			dummyCredential: `{
