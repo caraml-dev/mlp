@@ -55,7 +55,7 @@ func InitGoogleClient(ctx context.Context, audience string) (*http.Client, error
 		return nil, err
 	}
 
-	if len(cred.JSON) < 0 {
+	if len(cred.JSON) == 0 {
 		return nil, fmt.Errorf("no default credentials found")
 	}
 
@@ -66,16 +66,19 @@ func InitGoogleClient(ctx context.Context, audience string) (*http.Client, error
 
 	if f.Type == serviceAccountKey {
 		return idtoken.NewClient(ctx, audience)
-	} else {
-		defaultTokenSource, err := google.DefaultTokenSource(ctx)
-		tokenSource := oauth2.ReuseTokenSource(nil, &idTokenSource{TokenSource: defaultTokenSource})
-
-		var opts []idtoken.ClientOption
-		opts = append(opts, option.WithTokenSource(tokenSource), internaloption.SkipDialSettingsValidation())
-		t, err := htransport.NewTransport(ctx, http.DefaultTransport, opts...)
-		if err != nil {
-			return nil, err
-		}
-		return &http.Client{Transport: t}, nil
 	}
+
+	defaultTokenSource, err := google.DefaultTokenSource(ctx)
+	if err != nil {
+		return nil, err
+	}
+	tokenSource := oauth2.ReuseTokenSource(nil, &idTokenSource{TokenSource: defaultTokenSource})
+
+	var opts []idtoken.ClientOption
+	opts = append(opts, option.WithTokenSource(tokenSource), internaloption.SkipDialSettingsValidation())
+	t, err := htransport.NewTransport(ctx, http.DefaultTransport, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &http.Client{Transport: t}, nil
 }
