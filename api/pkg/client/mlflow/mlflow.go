@@ -10,10 +10,10 @@ import (
 )
 
 type MlflowService interface {
-	searchRunForExperiment(experimentId string) (SearchRunsResponse, error)
+	searchRunsForExperiment(experimentId string) (SearchRunsResponse, error)
 	searchRunData(runId string) (SearchRunResponse, error)
-	DeleteExperiment(experimentId string) error
-	DeleteRun(runId string) error
+	DeleteExperiment(experimentId string, deleteArtifact bool) error
+	DeleteRun(runId, artifactURL string, deleteArtifact bool) error
 }
 
 type mlflowService struct {
@@ -22,7 +22,7 @@ type mlflowService struct {
 	Config          Config
 }
 
-func NewMlflowService(httpClient *http.Client, config Config, artifactService artifact.ArtifactService) *mlflowService {
+func NewMlflowService(httpClient *http.Client, config Config, artifactService artifact.ArtifactService) MlflowService {
 	return &mlflowService{
 		Api:             httpClient,
 		Config:          config,
@@ -123,6 +123,19 @@ func (mfs *mlflowService) DeleteExperiment(experimentId string, deleteArtifact b
 }
 
 func (mfs *mlflowService) DeleteRun(runId, artifactURL string, deleteArtifact bool) error {
+	if artifactURL == "" {
+		runDetail, err := mfs.searchRunData(runId)
+		if err != nil {
+			return err
+		}
+		artifactURL = runDetail.RunData.Info.ArtifactURI
+	}
+	if deleteArtifact {
+		err := mfs.ArtifactService.DeleteArtifact(artifactURL)
+		if err != nil {
+			return err
+		}
+	}
 	// Creating Input Format for Delete run
 	input := DeleteRunRequest{RunId: runId}
 	// HIT Delete Run API
@@ -136,20 +149,6 @@ func (mfs *mlflowService) DeleteRun(runId, artifactURL string, deleteArtifact bo
 	err = mfs.httpCall("POST", delRunURL, jsonInput, nil)
 	if err != nil {
 		return err
-	}
-
-	if artifactURL == "" {
-		runDetail, err := mfs.searchRunData(runId)
-		if err != nil {
-			return err
-		}
-		artifactURL = runDetail.RunData.Info.ArtifactURI
-	}
-	if deleteArtifact {
-		err = mfs.ArtifactService.DeleteArtifact(artifactURL)
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }

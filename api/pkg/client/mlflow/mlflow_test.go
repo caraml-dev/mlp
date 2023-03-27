@@ -211,7 +211,7 @@ var DeleteExperimentDoesntExist = `
     "message": "No Experiment with id=999 exists"
 }`
 
-var DeleteRunDoesntExist = `
+var RunDoesntExist = `
 {
     "error_code": "RESOURCE_DOES_NOT_EXIST",
     "message": "Run with id=unknownId not found"
@@ -314,6 +314,7 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 		expectedRespJSON string
 		expectedResponse SearchRunResponse
 		expectedError    error
+		httpStatus       int
 	}{
 		{
 			name:             "Valid Search",
@@ -337,13 +338,15 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 				},
 			},
 			expectedError: nil,
+			httpStatus:    http.StatusOK,
 		},
 		{
 			name:             "No related runs",
-			idRun:            "xytspow3412oi",
-			expectedRespJSON: `{}`,
+			idRun:            "unknownID",
+			expectedRespJSON: RunDoesntExist,
 			expectedResponse: SearchRunResponse{},
-			expectedError:    nil,
+			expectedError:    fmt.Errorf("Run with id=unknownId not found"),
+			httpStatus:       http.StatusNotFound,
 		},
 	}
 
@@ -351,7 +354,7 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-				w.WriteHeader(http.StatusOK)
+				w.WriteHeader(tc.httpStatus)
 				_, err := w.Write([]byte(tc.expectedRespJSON))
 				require.NoError(t, err)
 			}))
@@ -482,7 +485,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 		{
 			name:                "ID not exist",
 			idRun:               "unknownId",
-			expectedRespJSON:    DeleteRunDoesntExist,
+			expectedRespJSON:    RunDoesntExist,
 			expectedError:       fmt.Errorf("Run with id=unknownId not found"),
 			httpStatus:          http.StatusNotFound,
 			artifactURL:         "gs://bucketName/valid",
