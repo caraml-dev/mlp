@@ -82,7 +82,7 @@ func TestTestInitGoogleClient(t *testing.T) {
 			dummyCredential: `{
 			    "client_id": "dummyclientid.apps.googleusercontent.com",
 			    "client_secret": "dummy-secret",
-			    "quota_project_id": "gods-production",
+			    "quota_project_id": "test-project",
 			    "refresh_token": "dummy-token",
 			    "type": "unauthorized_user"
 			}`,
@@ -93,7 +93,7 @@ func TestTestInitGoogleClient(t *testing.T) {
 			dummyCredential: `{
 			    "client_id": "dummyclientid.apps.googleusercontent.com",
 			    "client_secret": "dummy-secret",
-			    "quota_project_id": "gods-production",
+			    "quota_project_id": "test-project",
 			    "refresh_token": "dummy-token",
 			    "type": "authorized_user"
 			}`,
