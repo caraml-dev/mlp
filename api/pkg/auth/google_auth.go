@@ -14,8 +14,9 @@ import (
 	htransport "google.golang.org/api/transport/http"
 )
 
-// JSON key file types.
 const (
+	defaultCaraMLAudience = "api.caraml"
+	// JSON key file types
 	serviceAccountKey = "service_account"
 )
 
@@ -61,7 +62,7 @@ func InitGoogleClient(ctx context.Context) (*http.Client, error) {
 	}
 
 	if f.Type == serviceAccountKey {
-		return idtoken.NewClient(ctx, "api.caraml")
+		return idtoken.NewClient(ctx, defaultCaraMLAudience)
 	}
 
 	tokenSource := oauth2.ReuseTokenSource(nil, &idTokenSource{TokenSource: cred.TokenSource})
