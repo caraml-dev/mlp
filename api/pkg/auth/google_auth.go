@@ -64,11 +64,7 @@ func InitGoogleClient(ctx context.Context, audience string) (*http.Client, error
 		return idtoken.NewClient(ctx, audience)
 	}
 
-	defaultTokenSource, err := google.DefaultTokenSource(ctx)
-	if err != nil {
-		return nil, err
-	}
-	tokenSource := oauth2.ReuseTokenSource(nil, &idTokenSource{TokenSource: defaultTokenSource})
+	tokenSource := oauth2.ReuseTokenSource(nil, &idTokenSource{TokenSource: cred.TokenSource})
 
 	var opts []idtoken.ClientOption
 	opts = append(opts, option.WithTokenSource(tokenSource), internaloption.SkipDialSettingsValidation())
