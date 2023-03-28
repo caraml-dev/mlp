@@ -10,7 +10,6 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/idtoken"
 	"google.golang.org/api/option"
-	"google.golang.org/api/option/internaloption"
 	htransport "google.golang.org/api/transport/http"
 )
 
@@ -68,7 +67,7 @@ func InitGoogleClient(ctx context.Context) (*http.Client, error) {
 	tokenSource := oauth2.ReuseTokenSource(nil, &idTokenSource{TokenSource: cred.TokenSource})
 
 	var opts []idtoken.ClientOption
-	opts = append(opts, option.WithTokenSource(tokenSource), internaloption.SkipDialSettingsValidation())
+	opts = append(opts, option.WithTokenSource(tokenSource))
 	t, err := htransport.NewTransport(ctx, http.DefaultTransport, opts...)
 	if err != nil {
 		return nil, err
