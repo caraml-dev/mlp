@@ -20,7 +20,7 @@ type ArtifactService interface {
 	DeleteArtifact(url string) error
 }
 
-func NewGcsClient(api *storage.Client, cfg Config) *gcsClient {
+func NewGcsClient(api *storage.Client, cfg Config) ArtifactService {
 	return &gcsClient{
 		Api:    api,
 		Config: cfg,
