@@ -49,7 +49,7 @@ func (s *idTokenSource) Token() (*oauth2.Token, error) {
 
 // InitGoogleClient is a helper method to be used by CaraML components to initialise a Google Client that appends ID
 // tokens to the headers of all outgoing requests with ID tokens, regardless of the type of credentials used
-func InitGoogleClient(ctx context.Context, audience string) (*http.Client, error) {
+func InitGoogleClient(ctx context.Context) (*http.Client, error) {
 	cred, err := google.FindDefaultCredentials(ctx)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func InitGoogleClient(ctx context.Context, audience string) (*http.Client, error
 	}
 
 	if f.Type == serviceAccountKey {
-		return idtoken.NewClient(ctx, audience)
+		return idtoken.NewClient(ctx, "api.caraml")
 	}
 
 	tokenSource := oauth2.ReuseTokenSource(nil, &idTokenSource{TokenSource: cred.TokenSource})

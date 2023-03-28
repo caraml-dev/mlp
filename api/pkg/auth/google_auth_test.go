@@ -108,7 +108,7 @@ func TestTestInitGoogleClient(t *testing.T) {
 				defer reset()
 			}
 
-			client, err := InitGoogleClient(context.Background(), "test.audience")
+			client, err := InitGoogleClient(context.Background())
 			if data.err != "" {
 				assert.EqualError(t, err, data.err)
 				assert.Nil(t, client)
