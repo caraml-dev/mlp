@@ -64,7 +64,7 @@ var MultipleRunSuccessJSON = `{
 			}
 		}
 	]}`
-var MultipleRunSuccessJSON_FailedDelete = `{    
+var MultipleRunSuccessJSONFailedDelete = `{    
 	"runs": [
 		{
 			"info": {
@@ -147,7 +147,7 @@ var RunSuccessJSON = `
 	}
 }`
 
-var RunSuccess_DeleteRun = `
+var RunSuccessDeleteRun = `
 {
 	"run": {
 		"info": {
@@ -176,7 +176,7 @@ var RunSuccess_DeleteRun = `
 	}
 }`
 
-var RunFailed_DeleteRun = `
+var RunFailedDeleteRun = `
 {
 	"run": {
 		"info": {
@@ -244,9 +244,9 @@ func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 				RunsData: []RunResponse{
 					{
 						Info: RunInfo{
-							RunId:          "run-123",
-							ExperimentId:   "1",
-							UserId:         "root",
+							RunID:          "run-123",
+							ExperimentID:   "1",
+							UserID:         "root",
 							LifecycleStage: "active",
 							ArtifactURI:    "gs://my-bucket/run-123",
 						},
@@ -259,9 +259,9 @@ func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 					},
 					{
 						Info: RunInfo{
-							RunId:          "run-456",
-							ExperimentId:   "1",
-							UserId:         "root",
+							RunID:          "run-456",
+							ExperimentID:   "1",
+							UserID:         "root",
 							LifecycleStage: "active",
 							ArtifactURI:    "gs://my-bucket/run-456",
 						},
@@ -323,9 +323,9 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 			expectedResponse: SearchRunResponse{
 				RunData: RunResponse{
 					Info: RunInfo{
-						RunId:          "run-123",
-						ExperimentId:   "1",
-						UserId:         "root",
+						RunID:          "run-123",
+						ExperimentID:   "1",
+						UserID:         "root",
 						LifecycleStage: "active",
 						ArtifactURI:    "gs://my-bucket/run-123",
 					},
@@ -394,7 +394,7 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 			expectedRespJSON:     `{}`,
 			expectedError:        fmt.Errorf("deletion failed for run_id run-123 for experiment id 1: Failed to Delete Artifact"),
 			httpStatus:           http.StatusOK,
-			expectedRunsRespJSON: MultipleRunSuccessJSON_FailedDelete,
+			expectedRunsRespJSON: MultipleRunSuccessJSONFailedDelete,
 		},
 		{
 			name:                 "No related run for Id",
@@ -510,7 +510,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 			httpStatus:          http.StatusOK,
 			artifactURL:         "",
 			deleteArtifact:      true,
-			expectedRunRespJSON: RunSuccess_DeleteRun,
+			expectedRunRespJSON: RunSuccessDeleteRun,
 		},
 		{
 			name:                "Delete without URL Invalid",
@@ -520,7 +520,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 			httpStatus:          http.StatusOK,
 			artifactURL:         "",
 			deleteArtifact:      true,
-			expectedRunRespJSON: RunFailed_DeleteRun,
+			expectedRunRespJSON: RunFailedDeleteRun,
 		},
 	}
 

@@ -9,7 +9,7 @@ import (
 )
 
 type gcsClient struct {
-	Api    *storage.Client
+	API    *storage.Client
 	Config Config
 }
 type Config struct {
@@ -22,7 +22,7 @@ type ArtifactService interface {
 
 func NewGcsClient(api *storage.Client, cfg Config) ArtifactService {
 	return &gcsClient{
-		Api:    api,
+		API:    api,
 		Config: cfg,
 	}
 }
@@ -34,7 +34,7 @@ func (gc *gcsClient) DeleteArtifact(url string) error {
 	gcsBucket, gcsLocation := gc.getGcsBucketAndLocation(url[5:])
 
 	// Sets the name for the bucket.
-	bucket := gc.Api.Bucket(gcsBucket)
+	bucket := gc.API.Bucket(gcsBucket)
 
 	it := bucket.Objects(gc.Config.Ctx, &storage.Query{
 		Prefix: gcsLocation,

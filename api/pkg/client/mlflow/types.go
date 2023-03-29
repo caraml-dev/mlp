@@ -1,11 +1,11 @@
 package mlflow
 
 type DeleteExperimentRequest struct {
-	ExperimentId string `json:"experiment_id" required:"true"`
+	ExperimentID string `json:"experiment_id" required:"true"`
 }
 
 type DeleteRunRequest struct {
-	RunId string `json:"run_id" required:"true"`
+	RunID string `json:"run_id" required:"true"`
 }
 
 type DeleteExperimentErrorResponse struct {
@@ -14,7 +14,7 @@ type DeleteExperimentErrorResponse struct {
 }
 
 type SearchRunsRequest struct {
-	ExperimentId []string `json:"experiment_ids" required:"true"`
+	ExperimentID []string `json:"experiment_ids" required:"true"`
 }
 
 type RunTag struct {
@@ -26,9 +26,9 @@ type RunData struct {
 }
 
 type RunInfo struct {
-	RunId          string `json:"run_id"`
-	ExperimentId   string `json:"experiment_id"`
-	UserId         string `json:"user_id"`
+	RunID          string `json:"run_id"`
+	ExperimentID   string `json:"experiment_id"`
+	UserID         string `json:"user_id"`
 	LifecycleStage string `json:"lifecycle_stage"`
 	ArtifactURI    string `json:"artifact_uri"`
 }
