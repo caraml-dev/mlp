@@ -432,7 +432,7 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 			client := NewMlflowService(server.Client(), Config{
 				TrackingURL: server.URL,
 			}, &artifackMock)
-			// client.ArtifactService.On("DeleteExperiment", "").Return(fmt.Errorf("Failed to Delete Artifact"))
+
 			errAPI := client.DeleteExperiment(tc.idExperiment, true)
 
 			assert.Equal(t, tc.expectedError, errAPI)
