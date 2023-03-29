@@ -31,8 +31,8 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/uber/jaeger-client-go v2.16.0+incompatible
 	go.uber.org/zap v1.17.0
-	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
-	google.golang.org/api v0.75.0
+	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
+	google.golang.org/api v0.106.0
 	gopkg.in/errgo.v2 v2.1.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/client-go v0.26.0
@@ -101,7 +101,7 @@ require (
 	github.com/uber-go/atomic v1.4.0 // indirect
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
 	go.mongodb.org/mongo-driver v1.1.2 // indirect
-	go.opencensus.io v0.23.0 // indirect
+	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
