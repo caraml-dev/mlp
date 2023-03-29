@@ -95,7 +95,10 @@ func InitGoogleClientFromCredentialsFile(ctx context.Context, filepath string) (
 
 // getGoogleClientFromNonServiceAccountCredentials is a helper method to wrap the given non-service account credentials
 // in a Google HTTP client that appends ID tokens to the headers of all outgoing requests
-func getGoogleClientFromNonServiceAccountCredentials(context context.Context, cred *google.Credentials) (*http.Client, error) {
+func getGoogleClientFromNonServiceAccountCredentials(
+	context context.Context,
+	cred *google.Credentials,
+) (*http.Client, error) {
 	tokenSource := oauth2.ReuseTokenSource(nil, &idTokenSource{TokenSource: cred.TokenSource})
 
 	var opts []idtoken.ClientOption
