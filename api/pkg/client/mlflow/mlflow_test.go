@@ -220,12 +220,12 @@ var RunDoesntExist = `
 var DeleteRunAlreadyDeleted = `
 {
     "error_code": "INVALID_PARAMETER_VALUE",
-    "message": "The run xytspow3412oi must be in the 'active' state. Current state is deleted."
+    "message": "The run xytspow3412oi must be in the 'active' state. Current state is deleted"
 }`
 
 var FailedDeleteArtifact = `
 {
-    "message": "The run xytspow3412oi must be in the 'active' state. Current state is deleted."
+    "message": "The run xytspow3412oi must be in the 'active' state. Current state is deleted"
 }`
 
 func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
@@ -389,10 +389,11 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 			expectedRunsRespJSON: MultipleRunSuccessJSON,
 		},
 		{
-			name:                 "Run Failed Deletion",
-			idExperiment:         "1",
-			expectedRespJSON:     `{}`,
-			expectedError:        fmt.Errorf("deletion failed for run_id run-123 for experiment id 1: Failed to Delete Artifact"),
+			name:             "Run Failed Deletion",
+			idExperiment:     "1",
+			expectedRespJSON: `{}`,
+			expectedError: fmt.Errorf("deletion failed for run_id run-123 for experiment id 1: " +
+				"Failed to Delete Artifact"),
 			httpStatus:           http.StatusOK,
 			expectedRunsRespJSON: MultipleRunSuccessJSONFailedDelete,
 		},
@@ -476,7 +477,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 			name:                "ID already deleted",
 			idRun:               "xytspow3412oi",
 			expectedRespJSON:    DeleteRunAlreadyDeleted,
-			expectedError:       fmt.Errorf("The run xytspow3412oi must be in the 'active' state. Current state is deleted."),
+			expectedError:       fmt.Errorf("The run xytspow3412oi must be in the 'active' state. Current state is deleted"),
 			httpStatus:          http.StatusBadRequest,
 			artifactURL:         "gs://bucketName/valid",
 			deleteArtifact:      true,

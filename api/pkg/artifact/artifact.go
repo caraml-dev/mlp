@@ -16,11 +16,11 @@ type Config struct {
 	Ctx context.Context
 }
 
-type ArtifactService interface {
+type Service interface {
 	DeleteArtifact(url string) error
 }
 
-func NewGcsClient(api *storage.Client, cfg Config) ArtifactService {
+func NewGcsClient(api *storage.Client, cfg Config) Service {
 	return &gcsClient{
 		API:    api,
 		Config: cfg,

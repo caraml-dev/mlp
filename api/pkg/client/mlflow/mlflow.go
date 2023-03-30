@@ -9,7 +9,7 @@ import (
 	"github.com/gojek/mlp/api/pkg/artifact"
 )
 
-type MlflowService interface {
+type Service interface {
 	searchRunsForExperiment(ExperimentID string) (SearchRunsResponse, error)
 	searchRunData(RunID string) (SearchRunResponse, error)
 	DeleteExperiment(ExperimentID string, deleteArtifact bool) error
@@ -18,11 +18,11 @@ type MlflowService interface {
 
 type mlflowService struct {
 	API             *http.Client
-	ArtifactService artifact.ArtifactService
+	ArtifactService artifact.Service
 	Config          Config
 }
 
-func NewMlflowService(httpClient *http.Client, config Config, artifactService artifact.ArtifactService) MlflowService {
+func NewMlflowService(httpClient *http.Client, config Config, artifactService artifact.Service) Service {
 	return &mlflowService{
 		API:             httpClient,
 		Config:          config,
