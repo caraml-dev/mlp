@@ -2,6 +2,8 @@ package mlflow
 
 import (
 	"bytes"
+	"cloud.google.com/go/storage"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,8 +14,8 @@ import (
 type Service interface {
 	searchRunsForExperiment(ExperimentID string) (SearchRunsResponse, error)
 	searchRunData(RunID string) (SearchRunResponse, error)
-	DeleteExperiment(ExperimentID string, deleteArtifact bool) error
-	DeleteRun(RunID, artifactURL string, deleteArtifact bool) error
+	DeleteExperiment(ExperimentID string, deleteArtifact bool, ctx context.Context) error
+	DeleteRun(RunID, artifactURL string, deleteArtifact bool, ctx context.Context) error
 }
 
 type mlflowService struct {
@@ -22,12 +24,24 @@ type mlflowService struct {
 	Config          Config
 }
 
-func NewMlflowService(httpClient *http.Client, config Config, artifactService artifact.Service) Service {
+func NewMlflowService(httpClient *http.Client, config Config) (Service, error) {
+	var artifactService artifact.Service
+	if config.ArtifactServiceType == "nop" {
+		artifactService = artifact.NewNopArtifactService()
+	} else if config.ArtifactServiceType == "gcs" {
+		api, err := storage.NewClient(config.ArtifactServiceGcsConfig.Ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed initializing gcs for mlflow delete package")
+		}
+		artifactService = artifact.NewGcsArtifactService(api)
+	} else {
+		return nil, fmt.Errorf("invalid artifact service type")
+	}
 	return &mlflowService{
 		API:             httpClient,
 		Config:          config,
 		ArtifactService: artifactService,
-	}
+	}, nil
 }
 
 func (mfs *mlflowService) httpCall(method string, url string, body []byte, response interface{}) error {
@@ -101,7 +115,7 @@ func (mfs *mlflowService) searchRunData(RunID string) (SearchRunResponse, error)
 	return runResponse, nil
 }
 
-func (mfs *mlflowService) DeleteExperiment(ExperimentID string, deleteArtifact bool) error {
+func (mfs *mlflowService) DeleteExperiment(ExperimentID string, deleteArtifact bool, ctx context.Context) error {
 
 	relatedRunData, err := mfs.searchRunsForExperiment(ExperimentID)
 	if err != nil {
@@ -109,11 +123,11 @@ func (mfs *mlflowService) DeleteExperiment(ExperimentID string, deleteArtifact b
 	}
 	// Error handling for empty/no run for the experiment
 	if len(relatedRunData.RunsData) == 0 {
-		return fmt.Errorf("There are no related run for experiment id %s", ExperimentID)
+		return fmt.Errorf("there are no related run for experiment id %s", ExperimentID)
 	}
 	// Error Handling, when a RunID failed to delete return error
 	for _, run := range relatedRunData.RunsData {
-		err = mfs.DeleteRun(run.Info.RunID, run.Info.ArtifactURI, deleteArtifact)
+		err = mfs.DeleteRun(run.Info.RunID, run.Info.ArtifactURI, deleteArtifact, ctx)
 		if err != nil {
 			return fmt.Errorf("deletion failed for run_id %s for experiment id %s: %s", run.Info.RunID, ExperimentID, err)
 		}
@@ -122,7 +136,7 @@ func (mfs *mlflowService) DeleteExperiment(ExperimentID string, deleteArtifact b
 	return nil
 }
 
-func (mfs *mlflowService) DeleteRun(RunID, artifactURL string, deleteArtifact bool) error {
+func (mfs *mlflowService) DeleteRun(RunID, artifactURL string, deleteArtifact bool, ctx context.Context) error {
 	if artifactURL == "" {
 		runDetail, err := mfs.searchRunData(RunID)
 		if err != nil {
@@ -131,7 +145,7 @@ func (mfs *mlflowService) DeleteRun(RunID, artifactURL string, deleteArtifact bo
 		artifactURL = runDetail.RunData.Info.ArtifactURI
 	}
 	if deleteArtifact {
-		err := mfs.ArtifactService.DeleteArtifact(artifactURL)
+		err := mfs.ArtifactService.DeleteArtifact(artifactURL, ctx)
 		if err != nil {
 			return err
 		}

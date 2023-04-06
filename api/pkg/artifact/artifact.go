@@ -9,25 +9,33 @@ import (
 )
 
 type gcsClient struct {
-	API    *storage.Client
-	Config Config
+	API *storage.Client
 }
+
+type nopArtifact struct{}
+
 type Config struct {
 	Ctx context.Context
 }
 
 type Service interface {
-	DeleteArtifact(url string) error
+	DeleteArtifact(url string, ctx context.Context) error
 }
 
-func NewGcsClient(api *storage.Client, cfg Config) Service {
+func NewGcsArtifactService(api *storage.Client) Service {
 	return &gcsClient{
-		API:    api,
-		Config: cfg,
+		API: api,
 	}
 }
 
-func (gc *gcsClient) DeleteArtifact(url string) error {
+func NewNopArtifactService() Service {
+	return &nopArtifact{}
+}
+
+func (ad *nopArtifact) DeleteArtifact(url string, ctx context.Context) error {
+	return nil
+}
+func (gc *gcsClient) DeleteArtifact(url string, ctx context.Context) error {
 	// Get bucket name and gcsPrefix
 	// the [5:] is to remove the "gs://" on the artifact uri
 	// ex : gs://bucketName/path → bucketName/path
@@ -36,7 +44,7 @@ func (gc *gcsClient) DeleteArtifact(url string) error {
 	// Sets the name for the bucket.
 	bucket := gc.API.Bucket(gcsBucket)
 
-	it := bucket.Objects(gc.Config.Ctx, &storage.Query{
+	it := bucket.Objects(ctx, &storage.Query{
 		Prefix: gcsLocation,
 	})
 	for {
@@ -47,7 +55,7 @@ func (gc *gcsClient) DeleteArtifact(url string) error {
 		if err != nil {
 			return err
 		}
-		if err := bucket.Object(attrs.Name).Delete(gc.Config.Ctx); err != nil {
+		if err := bucket.Object(attrs.Name).Delete(ctx); err != nil {
 			return err
 		}
 	}
