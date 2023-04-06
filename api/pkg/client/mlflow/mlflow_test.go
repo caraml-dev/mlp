@@ -492,13 +492,13 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 			}
 
 			artifactServiceMock.
-				On("DeleteArtifact", "gs://my-bucket/run-789", context.Background()).
+				On("DeleteArtifact", context.Background(), "gs://my-bucket/run-789").
 				Return(fmt.Errorf("failed to Delete Artifact"))
 			artifactServiceMock.
-				On("DeleteArtifact", "gs://my-bucket/run-123", context.Background()).
+				On("DeleteArtifact", context.Background(), "gs://my-bucket/run-123").
 				Return(nil)
 			artifactServiceMock.
-				On("DeleteArtifact", "gs://my-bucket/run-456", context.Background()).
+				On("DeleteArtifact", context.Background(), "gs://my-bucket/run-456").
 				Return(nil)
 
 			errAPI := client.DeleteExperiment(context.Background(), tc.idExperiment, true)
@@ -619,10 +619,10 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 			}
 
 			artifactServiceMock.
-				On("DeleteArtifact", "gs://bucketName/invalid", context.Background()).
+				On("DeleteArtifact", context.Background(), "gs://bucketName/invalid").
 				Return(fmt.Errorf("failed to Delete Artifact"))
 			artifactServiceMock.
-				On("DeleteArtifact", "gs://bucketName/valid", context.Background()).
+				On("DeleteArtifact", context.Background(), "gs://bucketName/valid").
 				Return(nil)
 			errAPI := client.DeleteRun(context.Background(), tc.idRun, tc.artifactURL, tc.deleteArtifact)
 			assert.Equal(t, tc.expectedError, errAPI)
