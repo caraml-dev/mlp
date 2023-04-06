@@ -13,13 +13,13 @@ type Service struct {
 	mock.Mock
 }
 
-// DeleteArtifact provides a mock function with given fields: url, ctx
-func (_m *Service) DeleteArtifact(url string, ctx context.Context) error {
-	ret := _m.Called(url, ctx)
+// DeleteArtifact provides a mock function with given fields: ctx, url
+func (_m *Service) DeleteArtifact(ctx context.Context, url string) error {
+	ret := _m.Called(ctx, url)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, context.Context) error); ok {
-		r0 = rf(url, ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, url)
 	} else {
 		r0 = ret.Error(0)
 	}

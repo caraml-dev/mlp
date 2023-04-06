@@ -19,7 +19,7 @@ type Config struct {
 }
 
 type Service interface {
-	DeleteArtifact(url string, ctx context.Context) error
+	DeleteArtifact(ctx context.Context, url string) error
 }
 
 func NewGcsArtifactService(api *storage.Client) Service {
@@ -32,10 +32,10 @@ func NewNopArtifactService() Service {
 	return &nopArtifact{}
 }
 
-func (ad *nopArtifact) DeleteArtifact(url string, ctx context.Context) error {
+func (ad *nopArtifact) DeleteArtifact(ctx context.Context, url string) error {
 	return nil
 }
-func (gc *gcsClient) DeleteArtifact(url string, ctx context.Context) error {
+func (gc *gcsClient) DeleteArtifact(ctx context.Context, url string) error {
 	// Get bucket name and gcsPrefix
 	// the [5:] is to remove the "gs://" on the artifact uri
 	// ex : gs://bucketName/path → bucketName/path

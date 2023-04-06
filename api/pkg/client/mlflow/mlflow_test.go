@@ -1,13 +1,14 @@
 package mlflow
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
-	"github.com/gojek/mlp/api/pkg/artifact"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"cloud.google.com/go/storage"
+	"github.com/gojek/mlp/api/pkg/artifact"
 
 	"github.com/gojek/mlp/api/pkg/artifact/mocks"
 	"github.com/stretchr/testify/assert"
@@ -265,7 +266,12 @@ func TestNewMlflowService(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			mlflowService, err := NewMlflowService(&httpClient, Config{TrackingURL: "", ArtifactServiceType: tc.artifactType, ArtifactServiceGcsConfig: tc.gcsConfig})
+			mlflowService, err := NewMlflowService(&httpClient, Config{
+				TrackingURL:              "",
+				ArtifactServiceType:      tc.artifactType,
+				ArtifactServiceGcsConfig: tc.gcsConfig,
+			})
+
 			if tc.expectedError != nil {
 				assert.Equal(t, tc.expectedError, err)
 			}
@@ -485,11 +491,17 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 				Config:          Config{TrackingURL: server.URL},
 			}
 
-			artifactServiceMock.On("DeleteArtifact", "gs://my-bucket/run-789", context.Background()).Return(fmt.Errorf("failed to Delete Artifact"))
-			artifactServiceMock.On("DeleteArtifact", "gs://my-bucket/run-123", context.Background()).Return(nil)
-			artifactServiceMock.On("DeleteArtifact", "gs://my-bucket/run-456", context.Background()).Return(nil)
+			artifactServiceMock.
+				On("DeleteArtifact", "gs://my-bucket/run-789", context.Background()).
+				Return(fmt.Errorf("failed to Delete Artifact"))
+			artifactServiceMock.
+				On("DeleteArtifact", "gs://my-bucket/run-123", context.Background()).
+				Return(nil)
+			artifactServiceMock.
+				On("DeleteArtifact", "gs://my-bucket/run-456", context.Background()).
+				Return(nil)
 
-			errAPI := client.DeleteExperiment(tc.idExperiment, true, context.Background())
+			errAPI := client.DeleteExperiment(context.Background(), tc.idExperiment, true)
 
 			assert.Equal(t, tc.expectedError, errAPI)
 
@@ -606,9 +618,13 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 				Config:          Config{TrackingURL: server.URL},
 			}
 
-			artifactServiceMock.On("DeleteArtifact", "gs://bucketName/invalid", context.Background()).Return(fmt.Errorf("failed to Delete Artifact"))
-			artifactServiceMock.On("DeleteArtifact", "gs://bucketName/valid", context.Background()).Return(nil)
-			errAPI := client.DeleteRun(tc.idRun, tc.artifactURL, tc.deleteArtifact, context.Background())
+			artifactServiceMock.
+				On("DeleteArtifact", "gs://bucketName/invalid", context.Background()).
+				Return(fmt.Errorf("failed to Delete Artifact"))
+			artifactServiceMock.
+				On("DeleteArtifact", "gs://bucketName/valid", context.Background()).
+				Return(nil)
+			errAPI := client.DeleteRun(context.Background(), tc.idRun, tc.artifactURL, tc.deleteArtifact)
 			assert.Equal(t, tc.expectedError, errAPI)
 		})
 	}

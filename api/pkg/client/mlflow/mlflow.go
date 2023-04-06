@@ -2,11 +2,12 @@ package mlflow
 
 import (
 	"bytes"
-	"cloud.google.com/go/storage"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"cloud.google.com/go/storage"
 
 	"github.com/gojek/mlp/api/pkg/artifact"
 )
@@ -14,8 +15,8 @@ import (
 type Service interface {
 	searchRunsForExperiment(ExperimentID string) (SearchRunsResponse, error)
 	searchRunData(RunID string) (SearchRunResponse, error)
-	DeleteExperiment(ExperimentID string, deleteArtifact bool, ctx context.Context) error
-	DeleteRun(RunID, artifactURL string, deleteArtifact bool, ctx context.Context) error
+	DeleteExperiment(ctx context.Context, ExperimentID string, deleteArtifact bool) error
+	DeleteRun(ctx context.Context, RunID, artifactURL string, deleteArtifact bool) error
 }
 
 type mlflowService struct {
@@ -115,7 +116,7 @@ func (mfs *mlflowService) searchRunData(RunID string) (SearchRunResponse, error)
 	return runResponse, nil
 }
 
-func (mfs *mlflowService) DeleteExperiment(ExperimentID string, deleteArtifact bool, ctx context.Context) error {
+func (mfs *mlflowService) DeleteExperiment(ctx context.Context, ExperimentID string, deleteArtifact bool) error {
 
 	relatedRunData, err := mfs.searchRunsForExperiment(ExperimentID)
 	if err != nil {
@@ -127,7 +128,7 @@ func (mfs *mlflowService) DeleteExperiment(ExperimentID string, deleteArtifact b
 	}
 	// Error Handling, when a RunID failed to delete return error
 	for _, run := range relatedRunData.RunsData {
-		err = mfs.DeleteRun(run.Info.RunID, run.Info.ArtifactURI, deleteArtifact, ctx)
+		err = mfs.DeleteRun(ctx, run.Info.RunID, run.Info.ArtifactURI, deleteArtifact)
 		if err != nil {
 			return fmt.Errorf("deletion failed for run_id %s for experiment id %s: %s", run.Info.RunID, ExperimentID, err)
 		}
@@ -136,7 +137,7 @@ func (mfs *mlflowService) DeleteExperiment(ExperimentID string, deleteArtifact b
 	return nil
 }
 
-func (mfs *mlflowService) DeleteRun(RunID, artifactURL string, deleteArtifact bool, ctx context.Context) error {
+func (mfs *mlflowService) DeleteRun(ctx context.Context, RunID, artifactURL string, deleteArtifact bool) error {
 	if artifactURL == "" {
 		runDetail, err := mfs.searchRunData(RunID)
 		if err != nil {
@@ -145,7 +146,7 @@ func (mfs *mlflowService) DeleteRun(RunID, artifactURL string, deleteArtifact bo
 		artifactURL = runDetail.RunData.Info.ArtifactURI
 	}
 	if deleteArtifact {
-		err := mfs.ArtifactService.DeleteArtifact(artifactURL, ctx)
+		err := mfs.ArtifactService.DeleteArtifact(ctx, artifactURL)
 		if err != nil {
 			return err
 		}
