@@ -1,7 +1,10 @@
 package mlflow
 
 import (
+	"cloud.google.com/go/storage"
+	"context"
 	"fmt"
+	"github.com/gojek/mlp/api/pkg/artifact"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -205,28 +208,71 @@ var RunFailedDeleteRun = `
 	}
 }`
 
-var DeleteExperimentDoesntExist = `
-{
-    "error_code": "RESOURCE_DOES_NOT_EXIST",
-    "message": "No Experiment with id=999 exists"
-}`
-
 var RunDoesntExist = `
 {
     "error_code": "RESOURCE_DOES_NOT_EXIST",
-    "message": "Run with id=unknownId not found"
+    "message": "run with id=unknownId not found"
 }`
 
 var DeleteRunAlreadyDeleted = `
 {
     "error_code": "INVALID_PARAMETER_VALUE",
-    "message": "The run xytspow3412oi must be in the 'active' state. Current state is deleted"
+    "message": "the run xytspow3412oi must be in the 'active' state. Current state is deleted"
 }`
 
-var FailedDeleteArtifact = `
-{
-    "message": "The run xytspow3412oi must be in the 'active' state. Current state is deleted"
-}`
+func TestNewMlflowService(t *testing.T) {
+	httpClient := http.Client{}
+	gcsConfig := GcsArtifactConfig{Ctx: context.Background()}
+	api, _ := storage.NewClient(gcsConfig.Ctx)
+
+	tests := []struct {
+		name           string
+		artifactType   string
+		gcsConfig      *GcsArtifactConfig
+		expectedError  error
+		expectedResult *mlflowService
+	}{
+		{
+			name:          "Mlflow Service with GCS Artifact",
+			artifactType:  "gcs",
+			gcsConfig:     &gcsConfig,
+			expectedError: nil,
+			expectedResult: &mlflowService{
+				API:             &httpClient,
+				Config:          Config{TrackingURL: "", ArtifactServiceType: "gcs", ArtifactServiceGcsConfig: &gcsConfig},
+				ArtifactService: artifact.NewGcsArtifactService(api),
+			},
+		},
+		{
+			name:          "Mlflow Service with nop Artifact",
+			artifactType:  "nop",
+			gcsConfig:     nil,
+			expectedError: nil,
+			expectedResult: &mlflowService{
+				API:             &httpClient,
+				Config:          Config{TrackingURL: "", ArtifactServiceType: "nop", ArtifactServiceGcsConfig: nil},
+				ArtifactService: artifact.NewNopArtifactService(),
+			},
+		},
+		{
+			name:           "Mlflow Service with other Artifact",
+			artifactType:   "other",
+			gcsConfig:      nil,
+			expectedError:  fmt.Errorf("invalid artifact service type"),
+			expectedResult: &mlflowService{},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mlflowService, err := NewMlflowService(&httpClient, Config{TrackingURL: "", ArtifactServiceType: tc.artifactType, ArtifactServiceGcsConfig: tc.gcsConfig})
+			if tc.expectedError != nil {
+				assert.Equal(t, tc.expectedError, err)
+			}
+			assert.IsType(t, tc.expectedResult, mlflowService)
+		})
+	}
+}
 
 func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 	tests := []struct {
@@ -294,9 +340,12 @@ func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 				require.NoError(t, err)
 			}))
 			defer server.Close()
-			client := NewMlflowService(server.Client(), Config{
-				TrackingURL: server.URL,
-			}, &mocks.ArtifactService{})
+
+			client := mlflowService{
+				API:             server.Client(),
+				ArtifactService: &mocks.Service{},
+				Config:          Config{TrackingURL: server.URL},
+			}
 
 			resp, errAPI := client.searchRunsForExperiment(tc.idExperiment)
 			assert.Equal(t, tc.expectedError, errAPI)
@@ -345,7 +394,7 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 			idRun:            "unknownID",
 			expectedRespJSON: RunDoesntExist,
 			expectedResponse: SearchRunResponse{},
-			expectedError:    fmt.Errorf("Run with id=unknownId not found"),
+			expectedError:    fmt.Errorf("run with id=unknownId not found"),
 			httpStatus:       http.StatusNotFound,
 		},
 	}
@@ -359,9 +408,12 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 				require.NoError(t, err)
 			}))
 			defer server.Close()
-			client := NewMlflowService(server.Client(), Config{
-				TrackingURL: server.URL,
-			}, &mocks.ArtifactService{})
+
+			client := mlflowService{
+				API:             server.Client(),
+				ArtifactService: &mocks.Service{},
+				Config:          Config{TrackingURL: server.URL},
+			}
 
 			resp, errAPI := client.searchRunData(tc.idRun)
 
@@ -393,7 +445,7 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 			idExperiment:     "1",
 			expectedRespJSON: `{}`,
 			expectedError: fmt.Errorf("deletion failed for run_id run-123 for experiment id 1: " +
-				"Failed to Delete Artifact"),
+				"failed to Delete Artifact"),
 			httpStatus:           http.StatusOK,
 			expectedRunsRespJSON: MultipleRunSuccessJSONFailedDelete,
 		},
@@ -401,7 +453,7 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 			name:                 "No related run for Id",
 			idExperiment:         "999",
 			expectedRespJSON:     `{}`,
-			expectedError:        fmt.Errorf("There are no related run for experiment id 999"),
+			expectedError:        fmt.Errorf("there are no related run for experiment id 999"),
 			httpStatus:           http.StatusOK,
 			expectedRunsRespJSON: `{}`,
 		},
@@ -426,15 +478,18 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 			server := httptest.NewServer(mux)
 			defer server.Close()
 
-			artifackMock := mocks.ArtifactService{}
-			artifackMock.On("DeleteArtifact", "gs://my-bucket/run-789").Return(fmt.Errorf("Failed to Delete Artifact"))
-			artifackMock.On("DeleteArtifact", "gs://my-bucket/run-123").Return(nil)
-			artifackMock.On("DeleteArtifact", "gs://my-bucket/run-456").Return(nil)
-			client := NewMlflowService(server.Client(), Config{
-				TrackingURL: server.URL,
-			}, &artifackMock)
+			artifactServiceMock := mocks.Service{}
+			client := mlflowService{
+				API:             server.Client(),
+				ArtifactService: &artifactServiceMock,
+				Config:          Config{TrackingURL: server.URL},
+			}
 
-			errAPI := client.DeleteExperiment(tc.idExperiment, true)
+			artifactServiceMock.On("DeleteArtifact", "gs://my-bucket/run-789", context.Background()).Return(fmt.Errorf("failed to Delete Artifact"))
+			artifactServiceMock.On("DeleteArtifact", "gs://my-bucket/run-123", context.Background()).Return(nil)
+			artifactServiceMock.On("DeleteArtifact", "gs://my-bucket/run-456", context.Background()).Return(nil)
+
+			errAPI := client.DeleteExperiment(tc.idExperiment, true, context.Background())
 
 			assert.Equal(t, tc.expectedError, errAPI)
 
@@ -477,7 +532,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 			name:                "ID already deleted",
 			idRun:               "xytspow3412oi",
 			expectedRespJSON:    DeleteRunAlreadyDeleted,
-			expectedError:       fmt.Errorf("The run xytspow3412oi must be in the 'active' state. Current state is deleted"),
+			expectedError:       fmt.Errorf("the run xytspow3412oi must be in the 'active' state. Current state is deleted"),
 			httpStatus:          http.StatusBadRequest,
 			artifactURL:         "gs://bucketName/valid",
 			deleteArtifact:      true,
@@ -487,7 +542,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 			name:                "ID not exist",
 			idRun:               "unknownId",
 			expectedRespJSON:    RunDoesntExist,
-			expectedError:       fmt.Errorf("Run with id=unknownId not found"),
+			expectedError:       fmt.Errorf("run with id=unknownId not found"),
 			httpStatus:          http.StatusNotFound,
 			artifactURL:         "gs://bucketName/valid",
 			deleteArtifact:      true,
@@ -497,7 +552,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 			name:                "Artifact Deletion Failed",
 			idRun:               "abcdefg1234",
 			expectedRespJSON:    `{}`,
-			expectedError:       fmt.Errorf("Failed to Delete Artifact"),
+			expectedError:       fmt.Errorf("failed to Delete Artifact"),
 			httpStatus:          http.StatusOK,
 			artifactURL:         "gs://bucketName/invalid",
 			deleteArtifact:      true,
@@ -517,7 +572,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 			name:                "Delete without URL Invalid",
 			idRun:               "abcdefg1234",
 			expectedRespJSON:    `{}`,
-			expectedError:       fmt.Errorf("Failed to Delete Artifact"),
+			expectedError:       fmt.Errorf("failed to Delete Artifact"),
 			httpStatus:          http.StatusOK,
 			artifactURL:         "",
 			deleteArtifact:      true,
@@ -543,16 +598,17 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 
 			server := httptest.NewServer(mux)
 			defer server.Close()
-			artifactMock := mocks.ArtifactService{}
 
-			client :=
-				NewMlflowService(server.Client(), Config{
-					TrackingURL: server.URL,
-				}, &artifactMock)
+			artifactServiceMock := mocks.Service{}
+			client := mlflowService{
+				API:             server.Client(),
+				ArtifactService: &artifactServiceMock,
+				Config:          Config{TrackingURL: server.URL},
+			}
 
-			artifactMock.On("DeleteArtifact", "gs://bucketName/invalid").Return(fmt.Errorf("Failed to Delete Artifact"))
-			artifactMock.On("DeleteArtifact", "gs://bucketName/valid").Return(nil)
-			errAPI := client.DeleteRun(tc.idRun, tc.artifactURL, tc.deleteArtifact)
+			artifactServiceMock.On("DeleteArtifact", "gs://bucketName/invalid", context.Background()).Return(fmt.Errorf("failed to Delete Artifact"))
+			artifactServiceMock.On("DeleteArtifact", "gs://bucketName/valid", context.Background()).Return(nil)
+			errAPI := client.DeleteRun(tc.idRun, tc.artifactURL, tc.deleteArtifact, context.Background())
 			assert.Equal(t, tc.expectedError, errAPI)
 		})
 	}
