@@ -28,13 +28,13 @@ type mlflowService struct {
 func NewMlflowService(httpClient *http.Client, config Config) (Service, error) {
 	var artifactService artifact.Service
 	if config.ArtifactServiceType == "nop" {
-		artifactService = artifact.NewNopArtifactService()
+		artifactService = artifact.NewNopArtifactClient()
 	} else if config.ArtifactServiceType == "gcs" {
 		api, err := storage.NewClient(config.ArtifactServiceGcsConfig.Ctx)
 		if err != nil {
 			return &mlflowService{}, fmt.Errorf("failed initializing gcs for mlflow delete package")
 		}
-		artifactService = artifact.NewGcsArtifactService(api)
+		artifactService = artifact.NewGcsArtifactClient(api)
 	} else {
 		return &mlflowService{}, fmt.Errorf("invalid artifact service type")
 	}

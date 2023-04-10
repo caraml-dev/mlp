@@ -239,9 +239,11 @@ func TestNewMlflowService(t *testing.T) {
 			gcsConfig:     &gcsConfig,
 			expectedError: nil,
 			expectedResult: &mlflowService{
-				API:             &httpClient,
-				Config:          Config{TrackingURL: "", ArtifactServiceType: "gcs", ArtifactServiceGcsConfig: &gcsConfig},
-				ArtifactService: artifact.NewGcsArtifactService(api),
+				API:    &httpClient,
+				Config: Config{TrackingURL: "", ArtifactServiceType: "gcs", ArtifactServiceGcsConfig: &gcsConfig},
+				ArtifactService: &artifact.GcsArtifactClient{
+					API: api,
+				},
 			},
 		},
 		{
@@ -252,7 +254,7 @@ func TestNewMlflowService(t *testing.T) {
 			expectedResult: &mlflowService{
 				API:             &httpClient,
 				Config:          Config{TrackingURL: "", ArtifactServiceType: "nop", ArtifactServiceGcsConfig: nil},
-				ArtifactService: artifact.NewNopArtifactService(),
+				ArtifactService: &artifact.NopArtifactClient{},
 			},
 		},
 		{

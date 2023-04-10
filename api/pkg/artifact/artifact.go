@@ -8,34 +8,30 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-type gcsClient struct {
+type GcsArtifactClient struct {
 	API *storage.Client
 }
 
-type nopArtifact struct{}
+type NopArtifactClient struct{}
 
-type Config struct {
-	Ctx context.Context
+func NewGcsArtifactClient(api *storage.Client) Service {
+	return &GcsArtifactClient{
+		API: api,
+	}
+}
+
+func NewNopArtifactClient() Service {
+	return &NopArtifactClient{}
 }
 
 type Service interface {
 	DeleteArtifact(ctx context.Context, url string) error
 }
 
-func NewGcsArtifactService(api *storage.Client) Service {
-	return &gcsClient{
-		API: api,
-	}
-}
-
-func NewNopArtifactService() Service {
-	return &nopArtifact{}
-}
-
-func (ad *nopArtifact) DeleteArtifact(ctx context.Context, url string) error {
+func (ad *NopArtifactClient) DeleteArtifact(ctx context.Context, url string) error {
 	return nil
 }
-func (gc *gcsClient) DeleteArtifact(ctx context.Context, url string) error {
+func (gc *GcsArtifactClient) DeleteArtifact(ctx context.Context, url string) error {
 	// Get bucket name and gcsPrefix
 	// the [5:] is to remove the "gs://" on the artifact uri
 	// ex : gs://bucketName/path → bucketName/path
@@ -62,7 +58,7 @@ func (gc *gcsClient) DeleteArtifact(ctx context.Context, url string) error {
 	return nil
 }
 
-func (gc *gcsClient) getGcsBucketAndLocation(str string) (string, string) {
+func (gc *GcsArtifactClient) getGcsBucketAndLocation(str string) (string, string) {
 	// Split string using delimiter
 	// ex : bucketName/path/path1/item → (bucketName , path/path1/item)
 	splitStr := strings.SplitN(str, "/", 2)
