@@ -1,7 +1,5 @@
 package mlflow
 
-import "context"
-
 type DeleteExperimentRequest struct {
 	ExperimentID string `json:"experiment_id" required:"true"`
 }
@@ -46,11 +44,6 @@ type SearchRunResponse struct {
 }
 
 type Config struct {
-	TrackingURL              string
-	ArtifactServiceType      string
-	ArtifactServiceGcsConfig *GcsArtifactConfig // if ArtifactServiceType = gcs
-}
-
-type GcsArtifactConfig struct {
-	Ctx context.Context
+	TrackingURL         string
+	ArtifactServiceType string
 }

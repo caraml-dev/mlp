@@ -223,24 +223,22 @@ var DeleteRunAlreadyDeleted = `
 
 func TestNewMlflowService(t *testing.T) {
 	httpClient := http.Client{}
-	gcsConfig := GcsArtifactConfig{Ctx: context.Background()}
-	api, _ := storage.NewClient(gcsConfig.Ctx)
+	ctx := context.Background()
+	api, _ := storage.NewClient(ctx)
 
 	tests := []struct {
 		name           string
 		artifactType   string
-		gcsConfig      *GcsArtifactConfig
 		expectedError  error
 		expectedResult *mlflowService
 	}{
 		{
 			name:          "Mlflow Service with GCS Artifact",
 			artifactType:  "gcs",
-			gcsConfig:     &gcsConfig,
 			expectedError: nil,
 			expectedResult: &mlflowService{
 				API:    &httpClient,
-				Config: Config{TrackingURL: "", ArtifactServiceType: "gcs", ArtifactServiceGcsConfig: &gcsConfig},
+				Config: Config{TrackingURL: "", ArtifactServiceType: "gcs"},
 				ArtifactService: &artifact.GcsArtifactClient{
 					API: api,
 				},
@@ -249,18 +247,16 @@ func TestNewMlflowService(t *testing.T) {
 		{
 			name:          "Mlflow Service with nop Artifact",
 			artifactType:  "nop",
-			gcsConfig:     nil,
 			expectedError: nil,
 			expectedResult: &mlflowService{
 				API:             &httpClient,
-				Config:          Config{TrackingURL: "", ArtifactServiceType: "nop", ArtifactServiceGcsConfig: nil},
+				Config:          Config{TrackingURL: "", ArtifactServiceType: "nop"},
 				ArtifactService: &artifact.NopArtifactClient{},
 			},
 		},
 		{
 			name:           "Mlflow Service with other Artifact",
 			artifactType:   "other",
-			gcsConfig:      nil,
 			expectedError:  fmt.Errorf("invalid artifact service type"),
 			expectedResult: &mlflowService{},
 		},
@@ -269,9 +265,8 @@ func TestNewMlflowService(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mlflowService, err := NewMlflowService(&httpClient, Config{
-				TrackingURL:              "",
-				ArtifactServiceType:      tc.artifactType,
-				ArtifactServiceGcsConfig: tc.gcsConfig,
+				TrackingURL:         "",
+				ArtifactServiceType: tc.artifactType,
 			})
 
 			if tc.expectedError != nil {

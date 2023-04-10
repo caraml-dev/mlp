@@ -30,7 +30,7 @@ func NewMlflowService(httpClient *http.Client, config Config) (Service, error) {
 	if config.ArtifactServiceType == "nop" {
 		artifactService = artifact.NewNopArtifactClient()
 	} else if config.ArtifactServiceType == "gcs" {
-		api, err := storage.NewClient(config.ArtifactServiceGcsConfig.Ctx)
+		api, err := storage.NewClient(context.Background())
 		if err != nil {
 			return &mlflowService{}, fmt.Errorf("failed initializing gcs for mlflow delete package")
 		}
