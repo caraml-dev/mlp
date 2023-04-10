@@ -8,35 +8,24 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-type gcsClient struct {
-	API    *storage.Client
-	Config Config
-}
-type Config struct {
-	Ctx context.Context
-}
-
 type Service interface {
-	DeleteArtifact(url string) error
+	DeleteArtifact(ctx context.Context, url string) error
 }
 
-func NewGcsClient(api *storage.Client, cfg Config) Service {
-	return &gcsClient{
-		API:    api,
-		Config: cfg,
-	}
+type GcsArtifactClient struct {
+	API *storage.Client
 }
 
-func (gc *gcsClient) DeleteArtifact(url string) error {
+func (gac *GcsArtifactClient) DeleteArtifact(ctx context.Context, url string) error {
 	// Get bucket name and gcsPrefix
 	// the [5:] is to remove the "gs://" on the artifact uri
 	// ex : gs://bucketName/path → bucketName/path
-	gcsBucket, gcsLocation := gc.getGcsBucketAndLocation(url[5:])
+	gcsBucket, gcsLocation := gac.getGcsBucketAndLocation(url[5:])
 
 	// Sets the name for the bucket.
-	bucket := gc.API.Bucket(gcsBucket)
+	bucket := gac.API.Bucket(gcsBucket)
 
-	it := bucket.Objects(gc.Config.Ctx, &storage.Query{
+	it := bucket.Objects(ctx, &storage.Query{
 		Prefix: gcsLocation,
 	})
 	for {
@@ -47,16 +36,32 @@ func (gc *gcsClient) DeleteArtifact(url string) error {
 		if err != nil {
 			return err
 		}
-		if err := bucket.Object(attrs.Name).Delete(gc.Config.Ctx); err != nil {
+		if err := bucket.Object(attrs.Name).Delete(ctx); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (gc *gcsClient) getGcsBucketAndLocation(str string) (string, string) {
+func (gac *GcsArtifactClient) getGcsBucketAndLocation(str string) (string, string) {
 	// Split string using delimiter
 	// ex : bucketName/path/path1/item → (bucketName , path/path1/item)
 	splitStr := strings.SplitN(str, "/", 2)
 	return splitStr[0], splitStr[1]
+}
+
+func NewGcsArtifactClient(api *storage.Client) Service {
+	return &GcsArtifactClient{
+		API: api,
+	}
+}
+
+type NopArtifactClient struct{}
+
+func (nac *NopArtifactClient) DeleteArtifact(ctx context.Context, url string) error {
+	return nil
+}
+
+func NewNopArtifactClient() Service {
+	return &NopArtifactClient{}
 }

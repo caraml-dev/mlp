@@ -44,5 +44,6 @@ type SearchRunResponse struct {
 }
 
 type Config struct {
-	TrackingURL string
+	TrackingURL         string
+	ArtifactServiceType string
 }
