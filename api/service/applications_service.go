@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/jinzhu/gorm"
 
-	"github.com/gojek/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/models"
 )
 
 type ApplicationService interface {

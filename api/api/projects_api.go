@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gojek/mlp/api/log"
-	"github.com/gojek/mlp/api/models"
-	"github.com/gojek/mlp/api/pkg/authz/enforcer"
+	"github.com/caraml-dev/mlp/api/log"
+	"github.com/caraml-dev/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	"github.com/jinzhu/gorm"
 )
 

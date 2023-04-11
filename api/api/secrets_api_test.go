@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/gojek/mlp/api/models"
-	"github.com/gojek/mlp/api/service/mocks"
+	"github.com/caraml-dev/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/service/mocks"
 )
 
 func TestCreateSecret(t *testing.T) {

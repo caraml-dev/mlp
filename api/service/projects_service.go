@@ -6,9 +6,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/gojek/mlp/api/models"
-	"github.com/gojek/mlp/api/pkg/authz/enforcer"
-	"github.com/gojek/mlp/api/storage"
+	"github.com/caraml-dev/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
+	"github.com/caraml-dev/mlp/api/storage"
 )
 
 type ProjectsService interface {

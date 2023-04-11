@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/oauth2/google"
 
-	"github.com/gojek/mlp/api/client"
+	"github.com/caraml-dev/mlp/api/client"
 )
 
 func main() {

@@ -20,9 +20,9 @@ MLP uses Google Sign-in to authenticate the user to access the API and UI. You c
 
 We recommend using the Git command-line interface to download the source code for the MLP project:
 
-1. Create `github.com/gojek` directory in your `$GOPATH` by running: `mkdir -p $GOPATH/src/github.com/gojek` from your terminal.
-2. Run `cd $GOPATH/src/github.com/gojek` to go to the newly created gojek directory.
-3. Run `git clone git@github.com/gojek/mlp.git mlp` to downloads MLP repository to a new `mlp` directory.
+1. Create `github.com/caraml-dev` directory in your `$GOPATH` by running: `mkdir -p $GOPATH/src/github.com/caraml-dev` from your terminal.
+2. Run `cd $GOPATH/src/github.com/caraml-dev` to go to the newly created caraml-dev directory.
+3. Run `git clone git@github.com/caraml-dev/mlp.git mlp` to downloads MLP repository to a new `mlp` directory.
 4. Open the `mlp` directory using your favorite code editor.
 
 ## Build MLP

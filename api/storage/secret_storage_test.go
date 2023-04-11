@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gojek/mlp/api/it/database"
-	"github.com/gojek/mlp/api/models"
-	"github.com/gojek/mlp/api/util"
+	"github.com/caraml-dev/mlp/api/it/database"
+	"github.com/caraml-dev/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/util"
 )
 
 const (

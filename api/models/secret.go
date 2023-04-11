@@ -1,6 +1,6 @@
 package models
 
-import "github.com/gojek/mlp/api/util"
+import "github.com/caraml-dev/mlp/api/util"
 
 type Secret struct {
 	ID        ID     `json:"id"`

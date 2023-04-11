@@ -6,9 +6,9 @@ Machine Learning Platform (MLP) is a unified set of products for developing and 
 
 MLP Products are systems and services that are specifically built to solve one or multiple stages of the machine learning life cycle's problems. Currently, we have published the following MLP products:
 
-* [**Feast**](https://github.com/gojek/feast) - For managing and serving machine learning features.
-* [**Merlin**](https://github.com/gojek/merlin) - For deploying, serving, and monitoring machine learning models.
-* [**Turing**](https://github.com/gojek/turing) - For designing, deploying, and evaluating machine learning experiments.
+* [**Feast**](https://github.com/caraml-dev/caraml-store) - For managing and serving machine learning features.
+* [**Merlin**](https://github.com/caraml-dev/merlin) - For deploying, serving, and monitoring machine learning models.
+* [**Turing**](https://github.com/caraml-dev/turing) - For designing, deploying, and evaluating machine learning experiments.
 
 ## Architecture overview
 
@@ -39,9 +39,9 @@ MLP will now be reachable at <http://localhost:8080>.
 To build and run MLP from the source code, you need to have [Go](https://golang.org/doc/install), [Node.js](https://nodejs.org/), and [Yarn](https://yarnpkg.com/) installed. You will also need a running Postgresql database. MLP uses Docker to make the task of setting up databases a little easier. You can run `make local-db` to starting up a Postgres Docker container.
 
 ```shell script
-mkdir -p $GOPATH/src/github.com/gojek
-cd $GOPATH/src/github.com/gojek
-git clone git@github.com/gojek/mlp.git mlp
+mkdir -p $GOPATH/src/github.com/caraml-dev
+cd $GOPATH/src/github.com/caraml-dev
+git clone git@github.com/caraml-dev/mlp.git mlp
 cd mlp
 make local-db
 make

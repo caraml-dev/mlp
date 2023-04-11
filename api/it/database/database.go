@@ -15,7 +15,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jinzhu/gorm"
 
-	"github.com/gojek/mlp/api/log"
+	"github.com/caraml-dev/mlp/api/log"
 )
 
 func connectionString(db string) string {

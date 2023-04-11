@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gojek/mlp/api/pkg/authz/enforcer"
+	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 )
 
 func NewAuthorizer(enforcer enforcer.Enforcer) *Authorizer {

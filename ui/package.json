@@ -4,7 +4,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gojek/mlp.git"
+    "url": "git+https://github.com/caraml-dev/mlp.git"
   },
   "license": "Apache-2.0",
   "workspaces": {

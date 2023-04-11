@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"cloud.google.com/go/storage"
-	"github.com/gojek/mlp/api/pkg/artifact"
+	"github.com/caraml-dev/mlp/api/pkg/artifact"
 
-	"github.com/gojek/mlp/api/pkg/artifact/mocks"
+	"github.com/caraml-dev/mlp/api/pkg/artifact/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

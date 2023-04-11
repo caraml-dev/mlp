@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gojek/mlp/api/pkg/authz/enforcer/types"
+	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer/types"
 )
 
 // These tests are run with real keto instance running on localhost:4466

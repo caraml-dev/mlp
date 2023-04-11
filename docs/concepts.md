@@ -34,9 +34,9 @@ MLP Products share the following design principles:
 
 Currently, we have published the following MLP Products:
 
-* [**Feast**](https://github.com/gojek/feast) - For managing and serving machine learning features.
-* [**Merlin**](https://github.com/gojek/merlin) - For deploying, serving, and monitoring machine learning models.
-* [**Turing**](https://github.com/gojek/turing) - For designing, deploying, and evaluating machine learning experiments.
+* [**Feast**](https://github.com/caraml-dev/caraml-store) - For managing and serving machine learning features.
+* [**Merlin**](https://github.com/caraml-dev/merlin) - For deploying, serving, and monitoring machine learning models.
+* [**Turing**](https://github.com/caraml-dev/turing) - For designing, deploying, and evaluating machine learning experiments.
 
 ## ML Project
 
