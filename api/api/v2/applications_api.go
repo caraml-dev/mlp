@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/gojek/mlp/api/api"
-	"github.com/gojek/mlp/api/models/v2"
+	"github.com/caraml-dev/mlp/api/api"
+	"github.com/caraml-dev/mlp/api/models/v2"
 )
 
 type ApplicationsController struct {

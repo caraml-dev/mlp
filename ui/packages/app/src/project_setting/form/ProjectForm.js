@@ -9,7 +9,7 @@ import {
   EuiButton,
   EuiForm
 } from "@elastic/eui";
-import { addToast, EuiComboBoxSelect, useMlpApi } from "@gojek/mlp-ui";
+import { addToast, EuiComboBoxSelect, useMlpApi } from "@caraml-dev/ui-lib";
 import { ProjectFormContext } from "./context";
 import { EmailTextArea } from "./EmailTextArea";
 import { Labels } from "./Labels";

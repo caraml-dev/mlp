@@ -1,10 +1,10 @@
 {
-  "name": "@gojek/mlp-ui",
+  "name": "@caraml-dev/ui-lib",
   "version": "1.6.1",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gojek/mlp.git"
+    "url": "git+https://github.com/caraml-dev/mlp.git"
   },
   "license": "Apache-2.0",
   "workspaces": {
@@ -15,7 +15,7 @@
   },
   "scripts": {
     "app": "yarn workspace mlp-ui",
-    "lib": "yarn workspace @gojek/mlp-ui",
+    "lib": "yarn workspace @caraml-dev/ui-lib",
     "format": "yarn prettier --write",
     "prettier": "prettier \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "lint": "yarn workspaces run lint",
@@ -27,7 +27,7 @@
     "version:lib": "yarn app version",
     "prepare": "cd ../ && husky install ui/.husky",
     "set-version-from-git:package": "run-p \"version:* --new-version {1} --no-git-tag-version\" --",
-    "set-version-from-git:depenency": "run-s \"app add @gojek/mlp-ui@{1}\" --",
+    "set-version-from-git:depenency": "run-s \"app add @caraml-dev/ui-lib@{1}\" --",
     "set-version-from-git": "run-s \"set-version-from-git:* $(yarn --silent version-from-git)\"",
     "version-from-git": "../scripts/vertagen/vertagen.sh"
   },

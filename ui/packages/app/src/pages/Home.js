@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { PagePlaceholder, ProjectsContext } from "@gojek/mlp-ui";
+import { PagePlaceholder, ProjectsContext } from "@caraml-dev/ui-lib";
 import { Navigate } from "react-router-dom";
 
 const Home = () => {

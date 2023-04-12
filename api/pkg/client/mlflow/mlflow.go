@@ -9,7 +9,7 @@ import (
 
 	"cloud.google.com/go/storage"
 
-	"github.com/gojek/mlp/api/pkg/artifact"
+	"github.com/caraml-dev/mlp/api/pkg/artifact"
 )
 
 type Service interface {

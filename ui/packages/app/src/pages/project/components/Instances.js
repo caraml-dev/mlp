@@ -4,7 +4,7 @@ import { Panel } from "./Panel";
 import { FeastJobsTable } from "./FeastJobsTable";
 import { MerlinDeploymentsTable } from "./MerlinDeploymentsTable";
 import { TuringRoutersTable } from "./TuringRoutersTable";
-import { ApplicationsContext } from "@gojek/mlp-ui";
+import { ApplicationsContext } from "@caraml-dev/ui-lib";
 
 const Title = ({ title, href }) => {
   return (

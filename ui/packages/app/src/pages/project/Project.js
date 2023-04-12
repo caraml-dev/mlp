@@ -6,7 +6,7 @@ import {
   EuiSpacer,
   EuiPageTemplate
 } from "@elastic/eui";
-import { ApplicationsContext, ProjectsContext } from "@gojek/mlp-ui";
+import { ApplicationsContext, ProjectsContext } from "@caraml-dev/ui-lib";
 import { Instances } from "./components/Instances";
 import { ProjectSummary } from "./components/ProjectSummary";
 import { Resources } from "./components/Resources";

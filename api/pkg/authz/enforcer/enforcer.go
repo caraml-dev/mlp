@@ -13,8 +13,8 @@ import (
 	"github.com/ory/keto-client-go/client/engines"
 	"github.com/ory/keto-client-go/models"
 
-	"github.com/gojek/mlp/api/pkg/authz/enforcer/types"
-	"github.com/gojek/mlp/api/util"
+	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer/types"
+	"github.com/caraml-dev/mlp/api/util"
 )
 
 const (

@@ -1,5 +1,5 @@
 import React from "react";
-import { useMlpApi } from "@gojek/mlp-ui";
+import { useMlpApi } from "@caraml-dev/ui-lib";
 import { EuiCallOut, EuiLoadingChart, EuiTextAlign } from "@elastic/eui";
 import SecretListTable from "./secret/SecretListTable";
 import { useParams } from "react-router-dom";

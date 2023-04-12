@@ -12,7 +12,7 @@ import { Panel } from "./Panel";
 import { FeastResources } from "./FeastResources";
 import { MerlinModels } from "./MerlinModels";
 import { TuringRouters } from "./TuringRouters";
-import { useToggle } from "@gojek/mlp-ui";
+import { useToggle } from "@caraml-dev/ui-lib";
 
 export const Resources = ({ apps, project, models, routers }) => {
   const [isPopoverOpen, togglePopover] = useToggle(false);

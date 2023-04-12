@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	models "github.com/gojek/mlp/api/models"
+	models "github.com/caraml-dev/mlp/api/models"
 	mock "github.com/stretchr/testify/mock"
 )
 

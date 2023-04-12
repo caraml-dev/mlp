@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/caraml-dev/mlp/api/models/v2"
 	"github.com/go-playground/validator/v10"
-	"github.com/gojek/mlp/api/models/v2"
 	"github.com/iancoleman/strcase"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"

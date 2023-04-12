@@ -1,4 +1,4 @@
-module github.com/gojek/mlp
+module github.com/caraml-dev/mlp
 
 go 1.18
 

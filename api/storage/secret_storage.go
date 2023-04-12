@@ -5,8 +5,8 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/gojek/mlp/api/models"
-	"github.com/gojek/mlp/api/util"
+	"github.com/caraml-dev/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/util"
 )
 
 type SecretStorage interface {

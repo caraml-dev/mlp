@@ -4,7 +4,7 @@ export
 UI_PATH := ui
 UI_BUILD_PATH := ${UI_PATH}/build
 API_PATH := api
-API_ALL_PACKAGES := $(shell cd ${API_PATH} && go list ./... | grep -v github.com/gojek/mlp/client | grep -v mocks)
+API_ALL_PACKAGES := $(shell cd ${API_PATH} && go list ./... | grep -v github.com/caraml-dev/mlp/client | grep -v mocks)
 BIN_NAME := $(if ${APP_NAME},${APP_NAME},mlp)
 
 all: setup init-dep lint test clean build run

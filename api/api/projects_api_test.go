@@ -15,10 +15,10 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gojek/mlp/api/it/database"
-	"github.com/gojek/mlp/api/models"
-	"github.com/gojek/mlp/api/service"
-	"github.com/gojek/mlp/api/storage"
+	"github.com/caraml-dev/mlp/api/it/database"
+	"github.com/caraml-dev/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/service"
+	"github.com/caraml-dev/mlp/api/storage"
 )
 
 const (

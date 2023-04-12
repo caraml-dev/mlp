@@ -106,13 +106,13 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 105px; margin-left: 201px;">
                         <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
                             <div style="display: inline-block; font-size: 10px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                @gojek/mlp-ui library
+                                @caraml-dev/ui-lib library
                             </div>
                         </div>
                     </div>
                 </foreignObject>
                 <text x="260" y="108" fill="#000000" font-family="Helvetica" font-size="10px" text-anchor="middle">
-                    @gojek/mlp-ui library
+                    @caraml-dev/ui-lib library
                 </text>
             </switch>
         </g>
@@ -142,13 +142,13 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 245px; margin-left: 201px;">
                         <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
                             <div style="display: inline-block; font-size: 10px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                @gojek/mlp-ui library
+                                @caraml-dev/ui-lib library
                             </div>
                         </div>
                     </div>
                 </foreignObject>
                 <text x="260" y="248" fill="#000000" font-family="Helvetica" font-size="10px" text-anchor="middle">
-                    @gojek/mlp-ui library
+                    @caraml-dev/ui-lib library
                 </text>
             </switch>
         </g>

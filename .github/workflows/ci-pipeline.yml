@@ -374,7 +374,7 @@ jobs:
         working-directory: ui
         run: yarn install
 
-      - name: Publish @gojek/mlp-ui library
+      - name: Publish @caraml-dev/ui-lib library
         working-directory: ui
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

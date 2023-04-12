@@ -14,7 +14,7 @@ import (
 	// enable postgres dialect
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
-	"github.com/gojek/mlp/api/config"
+	"github.com/caraml-dev/mlp/api/config"
 )
 
 // InitDB initialises a database connection as well as runs the migration scripts.

@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gojek/mlp/api/models"
-	"github.com/gojek/mlp/api/storage/mocks"
+	"github.com/caraml-dev/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/storage/mocks"
 )
 
 func TestFindByIdAndProjectId(t *testing.T) {

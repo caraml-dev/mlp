@@ -5,7 +5,7 @@ import {
   Header,
   PrivateRoute,
   ProjectsContextProvider
-} from "@gojek/mlp-ui";
+} from "@caraml-dev/ui-lib";
 import config from "./config";
 import urlJoin from "proper-url-join";
 import { Outlet, useNavigate } from "react-router-dom";

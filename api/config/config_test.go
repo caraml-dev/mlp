@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gojek/mlp/api/config"
-	"github.com/gojek/mlp/api/models/v2"
+	"github.com/caraml-dev/mlp/api/config"
+	"github.com/caraml-dev/mlp/api/models/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -162,7 +162,7 @@ func TestLoad(t *testing.T) {
 				Docs: []config.Documentation{
 					{
 						Label: "Merlin User Guide",
-						Href:  "https://github.com/gojek/merlin/blob/main/docs/getting-started/README.md",
+						Href:  "https://github.com/caraml-dev/merlin/blob/main/docs/getting-started/README.md",
 					},
 				},
 				Mlflow: &config.MlflowConfig{

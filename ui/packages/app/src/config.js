@@ -16,10 +16,10 @@ const config = {
   DOC_LINKS: getEnv("REACT_APP_DOC_LINKS") || [
     {
       href:
-        "https://github.com/gojek/merlin/blob/main/docs/getting-started/README.md",
+        "https://github.com/caraml-dev/merlin/blob/main/docs/getting-started/README.md",
       label: "Merlin User Guide"
     },
-    { href: "https://github.com/gojek/turing", label: "Turing User Guide" },
+    { href: "https://github.com/caraml-dev/turing", label: "Turing User Guide" },
     {
       href: "https://docs.feast.dev/user-guide/overview",
       label: "Feast User Guide"

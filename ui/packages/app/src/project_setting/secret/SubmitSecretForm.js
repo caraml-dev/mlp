@@ -15,7 +15,7 @@ import {
   EuiSpacer,
   EuiPanel
 } from "@elastic/eui";
-import { addToast, useMlpApi } from "@gojek/mlp-ui";
+import { addToast, useMlpApi } from "@caraml-dev/ui-lib";
 import {
   validateSecretKey,
   validateSecretName
