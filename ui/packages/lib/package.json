@@ -1,5 +1,5 @@
 {
-  "name": "@gojek/mlp-ui",
+  "name": "@caraml-dev/ui-lib",
   "version": "1.7.0",
   "license": "Apache-2.0",
   "main": "dist/index.js",

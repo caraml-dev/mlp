@@ -96,8 +96,6 @@ The script runs Postgresql Docker container.
 
 To build a Docker image, run:
 
-```shell script
-build-docker
+```sh
+make build-image
 ```
-
-The resulting image will be tagges as `gojektech/mlp:dev`.

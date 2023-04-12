@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useMlpApi } from "@gojek/mlp-ui";
+import { useMlpApi } from "@caraml-dev/ui-lib";
 import { EuiConfirmModal, EuiOverlayMask } from "@elastic/eui";
 
 const DeleteSecretModal = ({ projectId, secret, closeModal, fetchUpdates }) => {

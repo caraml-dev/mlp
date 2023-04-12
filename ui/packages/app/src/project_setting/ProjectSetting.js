@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { EuiSideNav, EuiIcon, EuiPageTemplate } from "@elastic/eui";
-import { slugify } from "@gojek/mlp-ui/src/utils";
+import { slugify } from "@caraml-dev/ui-lib/src/utils";
 import UserRoleSetting from "./UserRoleSetting";
 import SecretSetting from "./SecretSetting";
 import {

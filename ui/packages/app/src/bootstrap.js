@@ -8,7 +8,7 @@ import { BrowserRouter } from "react-router-dom";
 
 // Styles
 import "@elastic/eui/dist/eui_theme_light.css";
-import "@gojek/mlp-ui/dist/index.css";
+import "@caraml-dev/ui-lib/dist/index.css";
 
 Sentry.init(sentryConfig);
 

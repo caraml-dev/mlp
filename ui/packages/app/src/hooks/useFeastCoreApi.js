@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { ApplicationsContext, AuthContext, useApi } from "@gojek/mlp-ui";
+import { ApplicationsContext, AuthContext, useApi } from "@caraml-dev/ui-lib";
 import config from "../config";
 
 export const useFeastCoreApi = (

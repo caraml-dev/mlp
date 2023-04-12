@@ -15,7 +15,7 @@ import {
   EuiToolTip
 } from "@elastic/eui";
 import { validateEmail } from "../../validation/validation";
-import { addToast, useMlpApi } from "@gojek/mlp-ui";
+import { addToast, useMlpApi } from "@caraml-dev/ui-lib";
 import UserRoleSelection from "./UserRoleSelection";
 import { ROLE_OPTIONS } from "./UserRoleListTable";
 

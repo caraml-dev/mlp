@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import UserRoleListTable from "./user_role/UserRoleListTable";
-import { ProjectsContext } from "@gojek/mlp-ui";
+import { ProjectsContext } from "@caraml-dev/ui-lib";
 import { EuiLoadingChart, EuiTextAlign } from "@elastic/eui";
 
 const UserRoleSetting = () => {

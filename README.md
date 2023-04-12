@@ -14,7 +14,7 @@ MLP Products are systems and services that are specifically built to solve one o
 
 ![Architecture overview](./docs/diagrams/architecture_overview.drawio.svg)
 
-The MLP Server provides REST API used across MLP Products. It exposes a shared concepts such as [ML Project](./docs/concepts.md#ml-project). This repository also hosts [Go](./api/pkg) and React ([@gojek/mlp-ui](./ui/packages/lib)) libraries used to build a common MLP functionailty.
+The MLP Server provides REST API used across MLP Products. It exposes a shared concepts such as [ML Project](./docs/concepts.md#ml-project). This repository also hosts [Go](./api/pkg) and React ([@caraml-dev/ui-lib](./ui/packages/lib)) libraries used to build a common MLP functionailty.
 
 ## Getting started
 

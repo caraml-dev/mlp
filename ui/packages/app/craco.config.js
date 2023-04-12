@@ -43,9 +43,9 @@ module.exports = {
               singleton: true,
               requiredVersion: deps["@emotion/react"]
             },
-            "@gojek/mlp-ui": {
+            "@caraml-dev/ui-lib": {
               singleton: true,
-              requiredVersion: deps["@gojek/mlp-ui"]
+              requiredVersion: deps["@caraml-dev/ui-lib"]
             },
             react: {
               shareScope: "default",
