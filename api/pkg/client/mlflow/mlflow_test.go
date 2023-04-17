@@ -3,10 +3,11 @@ package mlflow
 import (
 	"context"
 	"fmt"
-	"github.com/caraml-dev/mlp/api/pkg/client/mlflow/types"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/caraml-dev/mlp/api/pkg/client/mlflow/types"
 
 	"cloud.google.com/go/storage"
 	"github.com/caraml-dev/mlp/api/pkg/artifact"

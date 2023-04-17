@@ -5,8 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/caraml-dev/mlp/api/pkg/client/mlflow/types"
 	"net/http"
+
+	"github.com/caraml-dev/mlp/api/pkg/client/mlflow/types"
 
 	"cloud.google.com/go/storage"
 
