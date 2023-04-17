@@ -5,7 +5,6 @@ package mocks
 import (
 	context "context"
 
-	mlflow "github.com/caraml-dev/mlp/api/pkg/client/mlflow"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -40,54 +39,6 @@ func (_m *Service) DeleteRun(ctx context.Context, RunID string, artifactURL stri
 	}
 
 	return r0
-}
-
-// searchRunData provides a mock function with given fields: RunID
-func (_m *Service) searchRunData(RunID string) (mlflow.SearchRunResponse, error) {
-	ret := _m.Called(RunID)
-
-	var r0 mlflow.SearchRunResponse
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (mlflow.SearchRunResponse, error)); ok {
-		return rf(RunID)
-	}
-	if rf, ok := ret.Get(0).(func(string) mlflow.SearchRunResponse); ok {
-		r0 = rf(RunID)
-	} else {
-		r0 = ret.Get(0).(mlflow.SearchRunResponse)
-	}
-
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(RunID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// searchRunsForExperiment provides a mock function with given fields: ExperimentID
-func (_m *Service) searchRunsForExperiment(ExperimentID string) (mlflow.SearchRunsResponse, error) {
-	ret := _m.Called(ExperimentID)
-
-	var r0 mlflow.SearchRunsResponse
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (mlflow.SearchRunsResponse, error)); ok {
-		return rf(ExperimentID)
-	}
-	if rf, ok := ret.Get(0).(func(string) mlflow.SearchRunsResponse); ok {
-		r0 = rf(ExperimentID)
-	} else {
-		r0 = ret.Get(0).(mlflow.SearchRunsResponse)
-	}
-
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(ExperimentID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 type mockConstructorTestingTNewService interface {

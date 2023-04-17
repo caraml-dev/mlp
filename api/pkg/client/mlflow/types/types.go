@@ -1,4 +1,4 @@
-package mlflow
+package types
 
 type DeleteExperimentRequest struct {
 	ExperimentID string `json:"experiment_id" required:"true"`
