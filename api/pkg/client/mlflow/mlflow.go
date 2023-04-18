@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/caraml-dev/mlp/api/pkg/client/mlflow/types"
-
 	"cloud.google.com/go/storage"
 
 	"github.com/caraml-dev/mlp/api/pkg/artifact"
@@ -22,10 +20,10 @@ type Service interface {
 type mlflowService struct {
 	API             *http.Client
 	ArtifactService artifact.Service
-	Config          types.Config
+	Config          Config
 }
 
-func NewMlflowService(httpClient *http.Client, config types.Config) (Service, error) {
+func NewMlflowService(httpClient *http.Client, config Config) (Service, error) {
 	var artifactService artifact.Service
 	if config.ArtifactServiceType == "nop" {
 		artifactService = artifact.NewNopArtifactClient()
@@ -68,7 +66,7 @@ func (mfs *mlflowService) httpCall(method string, url string, body []byte, respo
 
 	if resp.StatusCode != http.StatusOK {
 		// Convert response body to Error Message struct
-		var errMessage types.DeleteExperimentErrorResponse
+		var errMessage DeleteExperimentErrorResponse
 		if err := json.NewDecoder(resp.Body).Decode(&errMessage); err != nil {
 			return err
 		}
@@ -84,13 +82,13 @@ func (mfs *mlflowService) httpCall(method string, url string, body []byte, respo
 	return nil
 }
 
-func (mfs *mlflowService) searchRunsForExperiment(ExperimentID string) (types.SearchRunsResponse, error) {
+func (mfs *mlflowService) searchRunsForExperiment(ExperimentID string) (SearchRunsResponse, error) {
 	// Search related runs for an experiment id
-	var responseObject types.SearchRunsResponse
+	var responseObject SearchRunsResponse
 
 	searchRunsURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/search", mfs.Config.TrackingURL)
 
-	input := types.SearchRunsRequest{ExperimentID: []string{ExperimentID}}
+	input := SearchRunsRequest{ExperimentID: []string{ExperimentID}}
 	jsonInput, err := json.Marshal(input)
 	if err != nil {
 		return responseObject, err
@@ -104,9 +102,9 @@ func (mfs *mlflowService) searchRunsForExperiment(ExperimentID string) (types.Se
 	return responseObject, nil
 }
 
-func (mfs *mlflowService) searchRunData(RunID string) (types.SearchRunResponse, error) {
+func (mfs *mlflowService) searchRunData(RunID string) (SearchRunResponse, error) {
 	// Creating Output Format for Run Detail
-	var runResponse types.SearchRunResponse
+	var runResponse SearchRunResponse
 	getRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/get?run_id=%s", mfs.Config.TrackingURL, RunID)
 
 	err := mfs.httpCall("GET", getRunURL, nil, &runResponse)
@@ -152,7 +150,7 @@ func (mfs *mlflowService) DeleteRun(ctx context.Context, RunID, artifactURL stri
 		}
 	}
 	// Creating Input Format for Delete run
-	input := types.DeleteRunRequest{RunID: RunID}
+	input := DeleteRunRequest{RunID: RunID}
 	// HIT Delete Run API
 	delRunURL := fmt.Sprintf("%s/api/2.0/mlflow/runs/delete", mfs.Config.TrackingURL)
 

@@ -7,8 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/caraml-dev/mlp/api/pkg/client/mlflow/types"
-
 	"cloud.google.com/go/storage"
 	"github.com/caraml-dev/mlp/api/pkg/artifact"
 
@@ -240,7 +238,7 @@ func TestNewMlflowService(t *testing.T) {
 			expectedError: nil,
 			expectedResult: &mlflowService{
 				API:    &httpClient,
-				Config: types.Config{TrackingURL: "", ArtifactServiceType: "gcs"},
+				Config: Config{TrackingURL: "", ArtifactServiceType: "gcs"},
 				ArtifactService: &artifact.GcsArtifactClient{
 					API: api,
 				},
@@ -252,7 +250,7 @@ func TestNewMlflowService(t *testing.T) {
 			expectedError: nil,
 			expectedResult: &mlflowService{
 				API:             &httpClient,
-				Config:          types.Config{TrackingURL: "", ArtifactServiceType: "nop"},
+				Config:          Config{TrackingURL: "", ArtifactServiceType: "nop"},
 				ArtifactService: &artifact.NopArtifactClient{},
 			},
 		},
@@ -266,7 +264,7 @@ func TestNewMlflowService(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			mlflowService, err := NewMlflowService(&httpClient, types.Config{
+			mlflowService, err := NewMlflowService(&httpClient, Config{
 				TrackingURL:         "",
 				ArtifactServiceType: tc.artifactType,
 			})
@@ -284,40 +282,40 @@ func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 		name             string
 		idExperiment     string
 		expectedRespJSON string
-		expectedResponse types.SearchRunsResponse
+		expectedResponse SearchRunsResponse
 		expectedError    error
 	}{
 		{
 			name:             "Valid Search",
 			idExperiment:     "1",
 			expectedRespJSON: MultipleRunSuccessJSON,
-			expectedResponse: types.SearchRunsResponse{
-				RunsData: []types.RunResponse{
+			expectedResponse: SearchRunsResponse{
+				RunsData: []RunResponse{
 					{
-						Info: types.RunInfo{
+						Info: RunInfo{
 							RunID:          "run-123",
 							ExperimentID:   "1",
 							UserID:         "root",
 							LifecycleStage: "active",
 							ArtifactURI:    "gs://my-bucket/run-123",
 						},
-						Data: types.RunData{
-							Tags: []types.RunTag{
+						Data: RunData{
+							Tags: []RunTag{
 								{Key: "env", Value: "prod"},
 								{Key: "version", Value: "1.0.0"},
 							},
 						},
 					},
 					{
-						Info: types.RunInfo{
+						Info: RunInfo{
 							RunID:          "run-456",
 							ExperimentID:   "1",
 							UserID:         "root",
 							LifecycleStage: "active",
 							ArtifactURI:    "gs://my-bucket/run-456",
 						},
-						Data: types.RunData{
-							Tags: []types.RunTag{
+						Data: RunData{
+							Tags: []RunTag{
 								{Key: "env", Value: "dev"},
 								{Key: "version", Value: "1.1.0"},
 							},
@@ -331,7 +329,7 @@ func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 			name:             "No related runs",
 			idExperiment:     "999",
 			expectedRespJSON: `{}`,
-			expectedResponse: types.SearchRunsResponse{},
+			expectedResponse: SearchRunsResponse{},
 			expectedError:    nil,
 		},
 	}
@@ -349,7 +347,7 @@ func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 			client := mlflowService{
 				API:             server.Client(),
 				ArtifactService: &mocks.Service{},
-				Config:          types.Config{TrackingURL: server.URL},
+				Config:          Config{TrackingURL: server.URL},
 			}
 
 			resp, errAPI := client.searchRunsForExperiment(tc.idExperiment)
@@ -366,7 +364,7 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 		name             string
 		idRun            string
 		expectedRespJSON string
-		expectedResponse types.SearchRunResponse
+		expectedResponse SearchRunResponse
 		expectedError    error
 		httpStatus       int
 	}{
@@ -374,17 +372,17 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 			name:             "Valid Search",
 			idRun:            "abcdefg1234",
 			expectedRespJSON: RunSuccessJSON,
-			expectedResponse: types.SearchRunResponse{
-				RunData: types.RunResponse{
-					Info: types.RunInfo{
+			expectedResponse: SearchRunResponse{
+				RunData: RunResponse{
+					Info: RunInfo{
 						RunID:          "run-123",
 						ExperimentID:   "1",
 						UserID:         "root",
 						LifecycleStage: "active",
 						ArtifactURI:    "gs://my-bucket/run-123",
 					},
-					Data: types.RunData{
-						Tags: []types.RunTag{
+					Data: RunData{
+						Tags: []RunTag{
 							{Key: "env", Value: "prod"},
 							{Key: "version", Value: "1.0.0"},
 						},
@@ -398,7 +396,7 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 			name:             "No related runs",
 			idRun:            "unknownID",
 			expectedRespJSON: RunDoesntExist,
-			expectedResponse: types.SearchRunResponse{},
+			expectedResponse: SearchRunResponse{},
 			expectedError:    fmt.Errorf("run with id=unknownId not found"),
 			httpStatus:       http.StatusNotFound,
 		},
@@ -417,7 +415,7 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 			client := mlflowService{
 				API:             server.Client(),
 				ArtifactService: &mocks.Service{},
-				Config:          types.Config{TrackingURL: server.URL},
+				Config:          Config{TrackingURL: server.URL},
 			}
 
 			resp, errAPI := client.searchRunData(tc.idRun)
@@ -487,7 +485,7 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 			client := mlflowService{
 				API:             server.Client(),
 				ArtifactService: &artifactServiceMock,
-				Config:          types.Config{TrackingURL: server.URL},
+				Config:          Config{TrackingURL: server.URL},
 			}
 
 			artifactServiceMock.
@@ -614,7 +612,7 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 			client := mlflowService{
 				API:             server.Client(),
 				ArtifactService: &artifactServiceMock,
-				Config:          types.Config{TrackingURL: server.URL},
+				Config:          Config{TrackingURL: server.URL},
 			}
 
 			artifactServiceMock.
