@@ -13,8 +13,6 @@ import (
 )
 
 type Service interface {
-	searchRunsForExperiment(ExperimentID string) (SearchRunsResponse, error)
-	searchRunData(RunID string) (SearchRunResponse, error)
 	DeleteExperiment(ctx context.Context, ExperimentID string, deleteArtifact bool) error
 	DeleteRun(ctx context.Context, RunID, artifactURL string, deleteArtifact bool) error
 }
