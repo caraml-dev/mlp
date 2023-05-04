@@ -3,10 +3,9 @@ package service
 import (
 	"fmt"
 
-	"github.com/jinzhu/gorm"
-
 	"github.com/caraml-dev/mlp/api/models"
-	"github.com/caraml-dev/mlp/api/storage"
+	"github.com/caraml-dev/mlp/api/repository"
+	"github.com/jinzhu/gorm"
 )
 
 type SecretService interface {
@@ -16,14 +15,14 @@ type SecretService interface {
 	Delete(secretID models.ID, projectID models.ID) error
 }
 
-func NewSecretService(secretStorage storage.SecretStorage) SecretService {
+func NewSecretService(secretStorage repository.SecretRepository) SecretService {
 	return &secretService{
 		secretStorage: secretStorage,
 	}
 }
 
 type secretService struct {
-	secretStorage storage.SecretStorage
+	secretStorage repository.SecretRepository
 }
 
 func (ss *secretService) ListSecret(projectID models.ID) ([]*models.Secret, error) {

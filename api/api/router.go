@@ -10,8 +10,8 @@ import (
 	"github.com/caraml-dev/mlp/api/middleware"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	"github.com/caraml-dev/mlp/api/pkg/instrumentation/newrelic"
+	"github.com/caraml-dev/mlp/api/repository"
 	"github.com/caraml-dev/mlp/api/service"
-	"github.com/caraml-dev/mlp/api/storage"
 	"github.com/caraml-dev/mlp/api/validation"
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
@@ -51,7 +51,7 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 
 	projectsService, err := service.NewProjectsService(
 		cfg.Mlflow.TrackingURL,
-		storage.NewProjectStorage(db),
+		repository.NewProjectRepository(db),
 		authEnforcer,
 		cfg.Authorization.Enabled)
 
@@ -59,7 +59,7 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		return nil, fmt.Errorf("failed to initialize projects service: %v", err)
 	}
 
-	secretService := service.NewSecretService(storage.NewSecretStorage(db, cfg.EncryptionKey))
+	secretService := service.NewSecretService(repository.NewSecretRepository(db, cfg.EncryptionKey))
 
 	return &AppContext{
 		ApplicationService:   applicationService,

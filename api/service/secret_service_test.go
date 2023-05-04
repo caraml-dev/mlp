@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/caraml-dev/mlp/api/models"
-	"github.com/caraml-dev/mlp/api/storage/mocks"
+	"github.com/caraml-dev/mlp/api/repository/mocks"
 )
 
 func TestFindByIdAndProjectId(t *testing.T) {
@@ -60,7 +60,7 @@ func TestFindByIdAndProjectId(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			secretStorage := &mocks.SecretStorage{}
+			secretStorage := &mocks.SecretRepository{}
 			secretStorage.On("GetAsPlainText", models.ID(1), models.ID(1)).Return(tC.secretFromDB, tC.errorFetchFromDb)
 			secretService := NewSecretService(secretStorage)
 			result, err := secretService.FindByIDAndProjectID(1, 1)
@@ -104,7 +104,7 @@ func TestSave(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			secretStorage := &mocks.SecretStorage{}
+			secretStorage := &mocks.SecretRepository{}
 			secretStorage.On("Save", tC.secret).Return(tC.secret, tC.errorFromDB)
 			secretService := NewSecretService(secretStorage)
 			result, err := secretService.Save(tC.secret)
@@ -144,7 +144,7 @@ func TestDelete(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			secretStorage := &mocks.SecretStorage{}
+			secretStorage := &mocks.SecretRepository{}
 			secretStorage.On("Delete", tC.secretID, tC.projectID).Return(tC.errorFromDB)
 			secretService := &secretService{
 				secretStorage: secretStorage,
@@ -176,7 +176,7 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	secretStorage := &mocks.SecretStorage{}
+	secretStorage := &mocks.SecretRepository{}
 	secretStorage.On("List", projectID).Return(secrets, nil)
 	secretService := &secretService{
 		secretStorage: secretStorage,
