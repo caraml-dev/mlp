@@ -30,24 +30,6 @@ services:
     command:
       - serve
 
-  keto-db:
-    image: bitnami/postgresql:14.5.0
-    environment:
-      - POSTGRESQL_USERNAME=keto
-      - POSTGRESQL_PASSWORD=keto
-      - POSTGRESQL_DATABASE=keto
-
-  keto-db-migrations:
-    depends_on:
-      - keto-db
-    image: oryd/keto:v0.4
-    environment:
-      - DSN=postgres://keto:keto@keto-db:5432/keto?sslmode=disable
-    command:
-      - migrate
-      - sql
-      - -e
-
   swagger-ui:
     image: swaggerapi/swagger-ui:v3.23.5
     ports:
