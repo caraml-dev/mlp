@@ -53,8 +53,8 @@ type VaultConfig struct {
 	Role string `json:"role"`
 	// Vault kv version
 	KVVersion string `json: "kv_version"`
-	// MounthPath is the path of the secret storage in Vault
-	MounthPath string `json: "mounth_path"`
+	// MountPath is the path of the secret storage in Vault
+	MountPath string `json: "mount_path"`
 	// AuthMethod is the authentication method to be used when communicating with Vault
 	AuthMethod AuthMethod `json: "auth_method"`
 	// GCPAuthType is the GCP authentication type to be used when communicating with Vault, the value can be either "iam" or "gce"
