@@ -28,7 +28,8 @@ type SecretStorage struct {
 }
 
 type SecretStorageConfig struct {
-	// VaultConfig is the configuration of the Vault secret storage. This field is populated when the type is "vault"
+	// VaultConfig is the configuration of the Vault secret storage.
+	// This field is populated when the type is "vault"
 	VaultConfig *VaultConfig `json:"vault_config,omitempty"`
 }
 
@@ -55,7 +56,8 @@ type VaultConfig struct {
 	MountPath string `json:"mount_path"`
 	// AuthMethod is the authentication method to be used when communicating with Vault
 	AuthMethod AuthMethod `json:"auth_method"`
-	// GCPAuthType is the GCP authentication type to be used when communicating with Vault, the value can be either "iam" or "gce"
+	// GCPAuthType is the GCP authentication type to be used when communicating with Vault.
+	// The value can be either "iam" or "gce"
 	GCPAuthType *GCPAuthType `json:"gcp_auth_type,omitempty"`
 }
 
@@ -82,10 +84,13 @@ const (
 	// VaultSecretStorageType secret storage stores secret in a Vault instance
 	VaultSecretStorageType SecretStorageType = "vault"
 
-	// Use gcp authentication method to communicate with Vault https://developer.hashicorp.com/vault/docs/auth/gcp
+	// Use gcp authentication method to communicate with Vault
+	// https://developer.hashicorp.com/vault/docs/auth/gcp
 	GCPAuthMethod AuthMethod = "gcp"
-	// Use gce authentication method to communicate with Vault https://developer.hashicorp.com/vault/docs/auth/gcp#gce-login
+	// Use gce authentication method to communicate with Vault
+	// https://developer.hashicorp.com/vault/docs/auth/gcp#gce-login
 	GCEGCPAuthType GCPAuthType = "gce"
-	// Use iam authentication method to communicate with Vault https://developer.hashicorp.com/vault/docs/auth/gcp#iam-login
+	// Use iam authentication method to communicate with Vault
+	// https://developer.hashicorp.com/vault/docs/auth/gcp#iam-login
 	IAMGCPAuthType GCPAuthType = "iam"
 )
