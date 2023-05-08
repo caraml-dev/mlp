@@ -39,6 +39,10 @@ func (suite *SecretStorageTestSuite) SetupSuite() {
 		MLFlowTrackingURL: "http://mlflow:5000",
 	}
 	suite.testProject, err = projectRepo.Save(project)
+	if err != nil {
+		suite.Fail(err.Error(), "Failed to create project")
+		return
+	}
 
 	suite.ssRepository = NewSecretStorageRepository(db)
 	suite.cleanupFn = cleanupFn
@@ -52,7 +56,6 @@ func (suite *SecretStorageTestSuite) SetupSuite() {
 		Config: models.SecretStorageConfig{
 			VaultConfig: &models.VaultConfig{
 				URL:         "http://vault:8200",
-				KVVersion:   "2",
 				AuthMethod:  models.GCPAuthMethod,
 				GCPAuthType: &gce,
 			},
@@ -71,7 +74,6 @@ func (suite *SecretStorageTestSuite) SetupSuite() {
 		Config: models.SecretStorageConfig{
 			VaultConfig: &models.VaultConfig{
 				URL:         "http://vault:8200",
-				KVVersion:   "2",
 				AuthMethod:  models.GCPAuthMethod,
 				GCPAuthType: &gce,
 			},
@@ -115,7 +117,6 @@ func (suite *SecretStorageTestSuite) TestSave() {
 					Config: models.SecretStorageConfig{
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
-							KVVersion:   "2",
 							AuthMethod:  models.GCPAuthMethod,
 							GCPAuthType: &gce,
 						},
@@ -129,7 +130,6 @@ func (suite *SecretStorageTestSuite) TestSave() {
 				Config: models.SecretStorageConfig{
 					VaultConfig: &models.VaultConfig{
 						URL:         "http://vault:8200",
-						KVVersion:   "2",
 						AuthMethod:  models.GCPAuthMethod,
 						GCPAuthType: &gce,
 					},
@@ -148,7 +148,6 @@ func (suite *SecretStorageTestSuite) TestSave() {
 					Config: models.SecretStorageConfig{
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
-							KVVersion:   "2",
 							AuthMethod:  models.GCPAuthMethod,
 							GCPAuthType: &gce,
 						},
@@ -164,7 +163,6 @@ func (suite *SecretStorageTestSuite) TestSave() {
 				Config: models.SecretStorageConfig{
 					VaultConfig: &models.VaultConfig{
 						URL:         "http://vault:8200",
-						KVVersion:   "2",
 						AuthMethod:  models.GCPAuthMethod,
 						GCPAuthType: &gce,
 					},
@@ -350,7 +348,6 @@ func (suite *SecretStorageTestSuite) TestDelete() {
 					Config: models.SecretStorageConfig{
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
-							KVVersion:   "2",
 							AuthMethod:  models.GCPAuthMethod,
 							GCPAuthType: &gce,
 						},
