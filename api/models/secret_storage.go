@@ -51,8 +51,6 @@ type VaultConfig struct {
 	URL string `json:"url"`
 	// Role to be used when communicating with Vault
 	Role string `json:"role"`
-	// Vault kv version
-	KVVersion string `json: "kv_version"`
 	// MountPath is the path of the secret storage in Vault
 	MountPath string `json: "mount_path"`
 	// AuthMethod is the authentication method to be used when communicating with Vault
