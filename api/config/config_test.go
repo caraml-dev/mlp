@@ -6,7 +6,8 @@ import (
 	"testing"
 
 	"github.com/caraml-dev/mlp/api/config"
-	"github.com/caraml-dev/mlp/api/models/v2"
+	"github.com/caraml-dev/mlp/api/models"
+	modelsv2 "github.com/caraml-dev/mlp/api/models/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -73,6 +74,19 @@ func TestLoad(t *testing.T) {
 					StaticPath: "ui/build",
 					IndexPath:  "index.html",
 				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret/data",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
+				},
 			},
 		},
 		"config-1.yaml + env variables | success": {
@@ -108,6 +122,19 @@ func TestLoad(t *testing.T) {
 					StaticPath: "ui/build",
 					IndexPath:  "index.html",
 				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret/data",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
+				},
 			},
 		},
 		"config-1.yaml + config-2.yaml + env variables | success": {
@@ -126,15 +153,15 @@ func TestLoad(t *testing.T) {
 				Environment:   "dev",
 				OauthClientID: "oauth-client-id",
 				SentryDSN:     "1234",
-				Applications: []models.Application{
+				Applications: []modelsv2.Application{
 					{
 						Name:        "Turing",
 						Description: "ML Experimentation System",
 						Homepage:    "/turing",
-						Configuration: &models.ApplicationConfig{
+						Configuration: &modelsv2.ApplicationConfig{
 							API:      "/api/turing/v1",
 							IconName: "graphApp",
-							Navigation: []models.NavigationMenuItem{
+							Navigation: []modelsv2.NavigationMenuItem{
 								{
 									Label:       "Routers",
 									Destination: "/routers",
@@ -179,6 +206,19 @@ func TestLoad(t *testing.T) {
 
 					ClockworkUIHomepage: "http://clockwork.dev",
 					KubeflowUIHomepage:  "http://kubeflow.org",
+				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret/data",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
 				},
 			},
 		},
@@ -230,6 +270,19 @@ func TestValidate(t *testing.T) {
 				Mlflow: &config.MlflowConfig{
 					TrackingURL: "http://mlflow.tracking",
 				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret/data",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
+				},
 			},
 		},
 		"extended | success": {
@@ -255,6 +308,19 @@ func TestValidate(t *testing.T) {
 				},
 				Streams: map[string][]string{
 					"my-stream": {"my-team"},
+				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret/data",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
 				},
 			},
 		},
@@ -286,6 +352,19 @@ func TestValidate(t *testing.T) {
 				},
 				Mlflow: &config.MlflowConfig{
 					TrackingURL: "http://mlflow.tracking",
+				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret/data",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
 				},
 			},
 			error: errors.New(

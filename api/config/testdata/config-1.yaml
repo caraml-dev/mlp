@@ -8,3 +8,14 @@ streams:
   SecondStream:
     - MyTeam
   EmptyStream: []
+
+defaultSecretStorage:
+  name: default-secret-storage
+  type: vault
+  config:
+    vaultConfig:
+      url: http://vault:8200
+      role: my-role
+      mountPath: secret/data
+      authMethod: gcp
+      gcpAuthType: gce

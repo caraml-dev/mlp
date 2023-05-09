@@ -22,3 +22,14 @@ authorization:
 ui:
   clockworkUIHomepage: http://clockwork.dev
   kubeflowUIHomepage: http://kubeflow.org
+
+defaultSecretStorage:
+  name: default-secret-storage
+  type: vault
+  config:
+    vaultConfig:
+      url: http://vault:8200
+      role: my-role
+      mountPath: secret/data
+      authMethod: gcp
+      gcpAuthType: gce
