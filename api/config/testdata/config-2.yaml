@@ -30,6 +30,7 @@ defaultSecretStorage:
     vaultConfig:
       url: http://vault:8200
       role: my-role
-      mountPath: secret/data
+      mountPath: secret
+      pathPrefix: caraml-secret/{{ .project }}/
       authMethod: gcp
       gcpAuthType: gce

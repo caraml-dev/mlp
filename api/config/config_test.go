@@ -81,7 +81,8 @@ func TestLoad(t *testing.T) {
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
 							Role:        "my-role",
-							MountPath:   "secret/data",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
 							AuthMethod:  models.GCPAuthMethod,
 							GCPAuthType: models.GCEGCPAuthType,
 						},
@@ -129,7 +130,8 @@ func TestLoad(t *testing.T) {
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
 							Role:        "my-role",
-							MountPath:   "secret/data",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
 							AuthMethod:  models.GCPAuthMethod,
 							GCPAuthType: models.GCEGCPAuthType,
 						},
@@ -214,7 +216,8 @@ func TestLoad(t *testing.T) {
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
 							Role:        "my-role",
-							MountPath:   "secret/data",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
 							AuthMethod:  models.GCPAuthMethod,
 							GCPAuthType: models.GCEGCPAuthType,
 						},
@@ -277,7 +280,8 @@ func TestValidate(t *testing.T) {
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
 							Role:        "my-role",
-							MountPath:   "secret/data",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
 							AuthMethod:  models.GCPAuthMethod,
 							GCPAuthType: models.GCEGCPAuthType,
 						},
@@ -316,7 +320,8 @@ func TestValidate(t *testing.T) {
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
 							Role:        "my-role",
-							MountPath:   "secret/data",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
 							AuthMethod:  models.GCPAuthMethod,
 							GCPAuthType: models.GCEGCPAuthType,
 						},
@@ -360,7 +365,8 @@ func TestValidate(t *testing.T) {
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
 							Role:        "my-role",
-							MountPath:   "secret/data",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
 							AuthMethod:  models.GCPAuthMethod,
 							GCPAuthType: models.GCEGCPAuthType,
 						},

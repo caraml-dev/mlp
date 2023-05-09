@@ -60,13 +60,13 @@ func (c *Config) ListenAddress() string {
 
 // DefaultSecretStorageModel returns the default secret storage model from the given config.
 // The returned secret storage model is a globally-scoped secret storage.
-func (c *Config) DefaultSecretStorageModel() (*models.SecretStorage, error) {
+func (c *Config) DefaultSecretStorageModel() *models.SecretStorage {
 	return &models.SecretStorage{
 		Name:   c.DefaultSecretStorage.Name,
 		Type:   models.SecretStorageType(c.DefaultSecretStorage.Type),
 		Scope:  models.GlobalSecretStorageScope,
 		Config: c.DefaultSecretStorage.Config,
-	}, nil
+	}
 }
 
 type Streams map[string][]string
