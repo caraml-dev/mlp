@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"text/template"
 
+	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
 	mlperror "github.com/caraml-dev/mlp/api/pkg/errors"
 	vault "github.com/hashicorp/vault/api"
@@ -16,8 +17,10 @@ type vaultSecretStorageClient struct {
 	secretPathTemplate *template.Template
 	vaultClient        *vault.Client
 	vaultConfig        *models.VaultConfig
+	authHelper         authHelper
 }
 
+// NewVaultSecretStorageClient creates a new secret storage client backed by Vault
 func NewVaultSecretStorageClient(ss *models.SecretStorage) (SecretStorageClient, error) {
 	tmpl, err := template.New("secret_path").Parse(ss.Config.VaultConfig.PathPrefix)
 	if err != nil {
@@ -38,9 +41,22 @@ func NewVaultSecretStorageClient(ss *models.SecretStorage) (SecretStorageClient,
 		vaultClient:        vaultClient,
 	}
 
-	// TODO: call auth method based on ss.Config.VaultConfig.AuthMethod
-	// TODO: refresh token periodically
-	err = cli.login()
+	// Authenticate to Vault
+	switch ss.Config.VaultConfig.AuthMethod {
+	case models.TokenAuthMethod:
+		vaultClient.SetToken(ss.Config.VaultConfig.Token)
+	case models.GCPAuthMethod:
+		cli.authHelper = newGcpAuthHelper(ss.Config.VaultConfig)
+		_, err := cli.authHelper.login(vaultClient)
+		if err != nil {
+			return nil, fmt.Errorf("failed to login to vault: %w", err)
+		}
+		// run token renewal in background
+		go cli.renewToken()
+	default:
+		return nil, fmt.Errorf("unknown auth method: %s", ss.Config.VaultConfig.AuthMethod)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to login to vault: %w", err)
 	}
@@ -73,6 +89,7 @@ func (v *vaultSecretStorageClient) Get(name string, project string) (string, err
 	return secretData.(string), nil
 }
 
+// Set creates or updates a CaraML secret of a project in Vault
 func (v *vaultSecretStorageClient) Set(name string, secretValue string, project string) error {
 	secretPath, err := v.secretPath(project)
 	if err != nil {
@@ -96,6 +113,7 @@ func (v *vaultSecretStorageClient) Set(name string, secretValue string, project 
 	return err
 }
 
+// List lists all CaraML secrets of a project in Vault
 func (v *vaultSecretStorageClient) List(project string) (map[string]string, error) {
 	secretPath, err := v.secretPath(project)
 	if err != nil {
@@ -118,6 +136,7 @@ func (v *vaultSecretStorageClient) List(project string) (map[string]string, erro
 	return secretMap, nil
 }
 
+// Delete deletes a CaraML secret of a project in Vault
 func (v *vaultSecretStorageClient) Delete(name string, project string) error {
 	secretPath, err := v.secretPath(project)
 	if err != nil {
@@ -138,6 +157,7 @@ func (v *vaultSecretStorageClient) Delete(name string, project string) error {
 	return err
 }
 
+// secretPath returns the secret path for a project
 func (v *vaultSecretStorageClient) secretPath(project string) (string, error) {
 	var tpl bytes.Buffer
 	data := struct {
@@ -154,8 +174,60 @@ func (v *vaultSecretStorageClient) secretPath(project string) (string, error) {
 	return tpl.String(), nil
 }
 
-func (v *vaultSecretStorageClient) login() error {
-	// TODO: properly authenticate to Vault
-	v.vaultClient.SetToken(v.vaultConfig.Token)
-	return nil
+// renewToken renews the Vault token periodically or attempt to do login if the token is not renewable
+// adapted from https://github.com/hashicorp/vault-examples/blob/main/examples/token-renewal/go/example.go
+func (v *vaultSecretStorageClient) renewToken() {
+	for {
+		vaultLoginResp, err := v.authHelper.login(v.vaultClient)
+		if err != nil {
+			log.Errorf("unable to authenticate to Vault: %v", err)
+			continue
+		}
+		tokenErr := v.manageTokenLifecycle(vaultLoginResp)
+		if tokenErr != nil {
+			log.Errorf("unable to start managing token lifecycle: %v", tokenErr)
+			continue
+		}
+	}
+}
+
+// Starts token lifecycle management. Returns only fatal errors as errors,
+// otherwise returns nil, so we can attempt login again.
+func (v *vaultSecretStorageClient) manageTokenLifecycle(token *vault.Secret) error {
+	renew := token.Auth.Renewable // You may notice a different top-level field called Renewable. That one is used for dynamic secrets renewal, not token renewal.
+	if !renew {
+		log.Infof("Token is not configured to be renewable. Re-attempting login.")
+		return nil
+	}
+
+	watcher, err := v.vaultClient.NewLifetimeWatcher(&vault.LifetimeWatcherInput{
+		Secret: token,
+	})
+	if err != nil {
+		return fmt.Errorf("unable to initialize new lifetime watcher for renewing auth token: %w", err)
+	}
+
+	go watcher.Start()
+	defer watcher.Stop()
+
+	for {
+		select {
+		// `DoneCh` will return if renewal fails, or if the remaining lease
+		// duration is under a built-in threshold and either renewing is not
+		// extending it or renewing is disabled. In any case, the caller
+		// needs to attempt to log in again.
+		case err := <-watcher.DoneCh():
+			if err != nil {
+				log.Infof("Failed to renew token: %v. Re-attempting login.", err)
+				return nil
+			}
+			// This occurs once the token has reached max TTL.
+			log.Infof("Token can no longer be renewed. Re-attempting login.")
+			return nil
+
+		// Successfully completed renewal
+		case renewal := <-watcher.RenewCh():
+			log.Infof("Successfully renewed: %#v", renewal)
+		}
+	}
 }
