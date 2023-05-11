@@ -54,11 +54,17 @@ type VaultConfig struct {
 	Role string `json:"role"`
 	// MountPath is the path of the secret storage in Vault
 	MountPath string `json:"mount_path"`
+	// PathPrefix is the prefix of the path of the secret in Vault
+	PathPrefix string `json:"path_prefix"`
 	// AuthMethod is the authentication method to be used when communicating with Vault
 	AuthMethod AuthMethod `json:"auth_method"`
 	// GCPAuthType is the GCP authentication type to be used when communicating with Vault.
 	// The value can be either "iam" or "gce"
-	GCPAuthType *GCPAuthType `json:"gcp_auth_type,omitempty"`
+	GCPAuthType GCPAuthType `json:"gcp_auth_type,omitempty"`
+	// Token is the token to be used when communicating with Vault
+	// This field is only used when the auth method is "token"
+	// Only use this method when Vault is running in dev mode
+	Token string `json:"token,omitempty"`
 }
 
 // SecretStorageScope is the scope of the secret storage
@@ -93,4 +99,8 @@ const (
 	// Use iam authentication method to communicate with Vault
 	// https://developer.hashicorp.com/vault/docs/auth/gcp#iam-login
 	IAMGCPAuthType GCPAuthType = "iam"
+
+	// Use token authentication method to communicate with Vault
+	// Only use this method when Vault is running in dev mode
+	TokenAuthMethod AuthMethod = "token"
 )

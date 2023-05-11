@@ -2,11 +2,21 @@ package models
 
 import "github.com/caraml-dev/mlp/api/util"
 
+// Secret represents user defined secret
 type Secret struct {
-	ID        ID     `json:"id"`
-	ProjectID ID     `json:"project_id"`
-	Name      string `json:"name"`
-	Data      string `json:"data"`
+	// ID is the unique identifier of the secret
+	ID ID `json:"id"`
+	// ProjectID is the unique identifier of the project
+	ProjectID ID `json:"project_id"`
+	// Name is the name of the secret
+	Name string `json:"name"`
+	// Data is secret value
+	Data string `json:"data"`
+	// SecretStorageID is the unique identifier of the secret storage for storing the secret
+	SecretStorageID *ID `json:"secret_storage_id,omitempty"`
+	// SecretStorage is the secret storage for storing the secret
+	SecretStorage *SecretStorage `json:"-"`
+	// CreatedUpdated is the timestamp of the secret creation and update
 	CreatedUpdated
 }
 
