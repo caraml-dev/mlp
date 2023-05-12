@@ -89,7 +89,7 @@ func (suite *SecretStorageTestSuite) SetupSuite() {
 	}
 }
 
-func (suite *SecretStorageTestSuite) TearDownAllSuite() {
+func (suite *SecretStorageTestSuite) TearDownSuite() {
 	suite.cleanupFn()
 }
 
