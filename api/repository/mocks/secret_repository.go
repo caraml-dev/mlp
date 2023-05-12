@@ -12,13 +12,13 @@ type SecretRepository struct {
 	mock.Mock
 }
 
-// Delete provides a mock function with given fields: id, projectID
-func (_m *SecretRepository) Delete(id models.ID, projectID models.ID) error {
-	ret := _m.Called(id, projectID)
+// Delete provides a mock function with given fields: id
+func (_m *SecretRepository) Delete(id models.ID) error {
+	ret := _m.Called(id)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(models.ID, models.ID) error); ok {
-		r0 = rf(id, projectID)
+	if rf, ok := ret.Get(0).(func(models.ID) error); ok {
+		r0 = rf(id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -26,13 +26,13 @@ func (_m *SecretRepository) Delete(id models.ID, projectID models.ID) error {
 	return r0
 }
 
-// GetAsPlainText provides a mock function with given fields: id, projectID
-func (_m *SecretRepository) GetAsPlainText(id models.ID, projectID models.ID) (*models.Secret, error) {
-	ret := _m.Called(id, projectID)
+// Get provides a mock function with given fields: id
+func (_m *SecretRepository) Get(id models.ID) (*models.Secret, error) {
+	ret := _m.Called(id)
 
 	var r0 *models.Secret
-	if rf, ok := ret.Get(0).(func(models.ID, models.ID) *models.Secret); ok {
-		r0 = rf(id, projectID)
+	if rf, ok := ret.Get(0).(func(models.ID) *models.Secret); ok {
+		r0 = rf(id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Secret)
@@ -40,31 +40,8 @@ func (_m *SecretRepository) GetAsPlainText(id models.ID, projectID models.ID) (*
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.ID, models.ID) error); ok {
-		r1 = rf(id, projectID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetByNameAsPlainText provides a mock function with given fields: name, projectID
-func (_m *SecretRepository) GetByNameAsPlainText(name string, projectID models.ID) (*models.Secret, error) {
-	ret := _m.Called(name, projectID)
-
-	var r0 *models.Secret
-	if rf, ok := ret.Get(0).(func(string, models.ID) *models.Secret); ok {
-		r0 = rf(name, projectID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Secret)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string, models.ID) error); ok {
-		r1 = rf(name, projectID)
+	if rf, ok := ret.Get(1).(func(models.ID) error); ok {
+		r1 = rf(id)
 	} else {
 		r1 = ret.Error(1)
 	}
