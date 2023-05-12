@@ -3,7 +3,6 @@
 package repository
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/caraml-dev/mlp/api/it/database"
@@ -12,18 +11,16 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-var gce = models.GCEGCPAuthType
-
 type SecretStorageTestSuite struct {
 	suite.Suite
 
 	ssRepository SecretStorageRepository
 	cleanupFn    func()
 
-	testProject               *models.Project
-	projectSecretStorage      *models.SecretStorage
-	globalSecretStorage       *models.SecretStorage
-	InternalSecretStorageType *models.SecretStorage
+	project               *models.Project
+	projectSecretStorage  *models.SecretStorage
+	globalSecretStorage   *models.SecretStorage
+	internalSecretStorage *models.SecretStorage
 }
 
 func (suite *SecretStorageTestSuite) SetupSuite() {
@@ -38,7 +35,7 @@ func (suite *SecretStorageTestSuite) SetupSuite() {
 		Name:              "test-project",
 		MLFlowTrackingURL: "http://mlflow:5000",
 	}
-	suite.testProject, err = projectRepo.Save(project)
+	suite.project, err = projectRepo.Save(project)
 	if err != nil {
 		suite.Fail(err.Error(), "Failed to create project")
 		return
@@ -50,14 +47,14 @@ func (suite *SecretStorageTestSuite) SetupSuite() {
 	suite.projectSecretStorage, err = suite.ssRepository.Save(&models.SecretStorage{
 		Name:      "project-secret-storage",
 		Type:      models.VaultSecretStorageType,
-		ProjectID: &suite.testProject.ID,
-		Project:   suite.testProject,
+		ProjectID: &suite.project.ID,
+		Project:   suite.project,
 		Scope:     models.ProjectSecretStorageScope,
 		Config: models.SecretStorageConfig{
 			VaultConfig: &models.VaultConfig{
 				URL:         "http://vault:8200",
 				AuthMethod:  models.GCPAuthMethod,
-				GCPAuthType: &gce,
+				GCPAuthType: models.GCEGCPAuthType,
 			},
 		},
 	})
@@ -75,7 +72,7 @@ func (suite *SecretStorageTestSuite) SetupSuite() {
 			VaultConfig: &models.VaultConfig{
 				URL:         "http://vault:8200",
 				AuthMethod:  models.GCPAuthMethod,
-				GCPAuthType: &gce,
+				GCPAuthType: models.GCEGCPAuthType,
 			},
 		},
 	})
@@ -85,7 +82,7 @@ func (suite *SecretStorageTestSuite) SetupSuite() {
 		return
 	}
 
-	suite.InternalSecretStorageType, err = suite.ssRepository.GetGlobal("internal")
+	suite.internalSecretStorage, err = suite.ssRepository.GetGlobal("internal")
 	if err != nil {
 		suite.Fail(err.Error(), "Failed to get internal secret storage")
 		return
@@ -93,7 +90,6 @@ func (suite *SecretStorageTestSuite) SetupSuite() {
 }
 
 func (suite *SecretStorageTestSuite) TearDownAllSuite() {
-	fmt.Println("TearDownAllSuite")
 	suite.cleanupFn()
 }
 
@@ -118,7 +114,7 @@ func (suite *SecretStorageTestSuite) TestSave() {
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
 							AuthMethod:  models.GCPAuthMethod,
-							GCPAuthType: &gce,
+							GCPAuthType: models.GCEGCPAuthType,
 						},
 					},
 				},
@@ -131,7 +127,7 @@ func (suite *SecretStorageTestSuite) TestSave() {
 					VaultConfig: &models.VaultConfig{
 						URL:         "http://vault:8200",
 						AuthMethod:  models.GCPAuthMethod,
-						GCPAuthType: &gce,
+						GCPAuthType: models.GCEGCPAuthType,
 					},
 				},
 			},
@@ -142,14 +138,14 @@ func (suite *SecretStorageTestSuite) TestSave() {
 				secretStorage: &models.SecretStorage{
 					Name:      "project-vault-secret-storage",
 					Type:      models.VaultSecretStorageType,
-					ProjectID: &suite.testProject.ID,
-					Project:   suite.testProject,
+					ProjectID: &suite.project.ID,
+					Project:   suite.project,
 					Scope:     models.ProjectSecretStorageScope,
 					Config: models.SecretStorageConfig{
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
 							AuthMethod:  models.GCPAuthMethod,
-							GCPAuthType: &gce,
+							GCPAuthType: models.GCEGCPAuthType,
 						},
 					},
 				},
@@ -158,13 +154,13 @@ func (suite *SecretStorageTestSuite) TestSave() {
 				Name:      "project-vault-secret-storage",
 				Type:      models.VaultSecretStorageType,
 				Scope:     models.ProjectSecretStorageScope,
-				ProjectID: &suite.testProject.ID,
-				Project:   suite.testProject,
+				ProjectID: &suite.project.ID,
+				Project:   suite.project,
 				Config: models.SecretStorageConfig{
 					VaultConfig: &models.VaultConfig{
 						URL:         "http://vault:8200",
 						AuthMethod:  models.GCPAuthMethod,
-						GCPAuthType: &gce,
+						GCPAuthType: models.GCEGCPAuthType,
 					},
 				},
 			},
@@ -186,8 +182,7 @@ func (suite *SecretStorageTestSuite) TestSave() {
 
 func (suite *SecretStorageTestSuite) TestGet() {
 	type args struct {
-		name    string
-		project string
+		ID models.ID
 	}
 	tests := []struct {
 		name             string
@@ -198,22 +193,20 @@ func (suite *SecretStorageTestSuite) TestGet() {
 		{
 			name: "success: get existing project-scoped secret storage",
 			args: args{
-				name:    suite.projectSecretStorage.Name,
-				project: suite.testProject.Name,
+				ID: suite.projectSecretStorage.ID,
 			},
 			want: suite.projectSecretStorage,
 		},
 		{
 			name: "failed: not found",
 			args: args{
-				name:    "my-storage",
-				project: suite.testProject.Name,
+				ID: 100,
 			},
 			wantErrorMessage: "record not found",
 		},
 	}
 	for _, tt := range tests {
-		got, err := suite.ssRepository.Get(tt.args.name, tt.args.project)
+		got, err := suite.ssRepository.Get(tt.args.ID)
 
 		if tt.wantErrorMessage != "" {
 			suite.Assert().EqualError(err, tt.wantErrorMessage)
@@ -226,7 +219,7 @@ func (suite *SecretStorageTestSuite) TestGet() {
 
 func (suite *SecretStorageTestSuite) TestList() {
 	type args struct {
-		project string
+		projectID models.ID
 	}
 	tests := []struct {
 		name             string
@@ -237,20 +230,20 @@ func (suite *SecretStorageTestSuite) TestList() {
 		{
 			name: "success: list existing project-scoped secret storage",
 			args: args{
-				project: suite.testProject.Name,
+				projectID: suite.project.ID,
 			},
 			want: []*models.SecretStorage{suite.projectSecretStorage},
 		},
 		{
 			name: "no project-scoped secret storage",
 			args: args{
-				project: "my-project",
+				projectID: 10,
 			},
 			want: []*models.SecretStorage{},
 		},
 	}
 	for _, tt := range tests {
-		got, err := suite.ssRepository.List(tt.args.project)
+		got, err := suite.ssRepository.List(tt.args.projectID)
 
 		if tt.wantErrorMessage != "" {
 			suite.Assert().EqualError(err, tt.wantErrorMessage)
@@ -265,28 +258,15 @@ func (suite *SecretStorageTestSuite) TestList() {
 }
 
 func (suite *SecretStorageTestSuite) TestListGlobal() {
-	tests := []struct {
-		name             string
-		want             []*models.SecretStorage
-		wantErrorMessage string
-	}{
-		{
-			name: "success: list existing global-scoped secret storage",
-			want: []*models.SecretStorage{suite.InternalSecretStorageType, suite.globalSecretStorage},
-		},
+	got, err := suite.ssRepository.ListGlobal()
+	suite.Assert().NoError(err)
+	exps := []*models.SecretStorage{
+		suite.internalSecretStorage, suite.globalSecretStorage,
 	}
-	for _, tt := range tests {
-		got, err := suite.ssRepository.ListGlobal()
 
-		if tt.wantErrorMessage != "" {
-			suite.Assert().EqualError(err, tt.wantErrorMessage)
-			return
-		}
-
-		suite.Assert().Len(got, len(tt.want))
-		for i, s := range got {
-			assertEqualSecretStorage(suite.T(), tt.want[i], s)
-		}
+	suite.Assert().Len(got, len(exps))
+	for i, exp := range exps {
+		assertEqualSecretStorage(suite.T(), exp, got[i])
 	}
 }
 
@@ -342,14 +322,14 @@ func (suite *SecretStorageTestSuite) TestDelete() {
 				secretStorage: &models.SecretStorage{
 					Name:      "project-vault-secret-storage",
 					Type:      models.VaultSecretStorageType,
-					ProjectID: &suite.testProject.ID,
-					Project:   suite.testProject,
+					ProjectID: &suite.project.ID,
+					Project:   suite.project,
 					Scope:     models.ProjectSecretStorageScope,
 					Config: models.SecretStorageConfig{
 						VaultConfig: &models.VaultConfig{
 							URL:         "http://vault:8200",
 							AuthMethod:  models.GCPAuthMethod,
-							GCPAuthType: &gce,
+							GCPAuthType: models.GCEGCPAuthType,
 						},
 					},
 				},
@@ -367,12 +347,25 @@ func (suite *SecretStorageTestSuite) TestDelete() {
 
 			assertEqualSecretStorage(suite.T(), tt.args.secretStorage, got)
 
-			err = suite.ssRepository.Delete(got)
+			err = suite.ssRepository.Delete(got.ID)
 			suite.Assert().NoError(err)
 
-			_, err = suite.ssRepository.Get(got.Name, got.Project.Name)
+			_, err = suite.ssRepository.Get(got.ID)
 			suite.Assert().EqualError(err, "record not found")
 		})
+	}
+}
+
+func (suite *SecretStorageTestSuite) TestListAll() {
+	got, err := suite.ssRepository.ListAll()
+	suite.Assert().NoError(err)
+	exps := []*models.SecretStorage{
+		suite.internalSecretStorage, suite.projectSecretStorage, suite.globalSecretStorage,
+	}
+
+	suite.Assert().Len(got, len(exps))
+	for i, exp := range exps {
+		assertEqualSecretStorage(suite.T(), exp, got[i])
 	}
 }
 

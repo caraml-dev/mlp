@@ -7,18 +7,20 @@ import (
 
 // SecretStorageRepository is an interface for interacting with "secret_storages" table in DB
 type SecretStorageRepository interface {
-	// Get returns a Secret Storage with a name within a project
-	Get(name string, project string) (*models.SecretStorage, error)
+	// Get returns a Secret Storage with given ID
+	Get(id models.ID) (*models.SecretStorage, error)
 	// List lists all Secret Storage within a project
-	List(project string) ([]*models.SecretStorage, error)
+	List(projectID models.ID) ([]*models.SecretStorage, error)
+	// Save creates or updates a Secret Storage
+	Save(secretStorage *models.SecretStorage) (*models.SecretStorage, error)
+	// Delete deletes a Secret Storage
+	Delete(id models.ID) error
+	// ListAll lists all Secret Storage
+	ListAll() ([]*models.SecretStorage, error)
 	// GetGlobal return a global Secret Storage with a name
 	GetGlobal(name string) (*models.SecretStorage, error)
 	// ListGlobal lists all global Secret Storage
 	ListGlobal() ([]*models.SecretStorage, error)
-	// Save creates or updates a Secret Storage
-	Save(secretStorage *models.SecretStorage) (*models.SecretStorage, error)
-	// Delete deletes a Secret Storage
-	Delete(secretStorage *models.SecretStorage) error
 }
 
 type secretStorageRepository struct {
@@ -33,28 +35,43 @@ func NewSecretStorageRepository(db *gorm.DB) SecretStorageRepository {
 }
 
 // Get returns a Secret Storage with a name within a project
-func (r *secretStorageRepository) Get(name string, project string) (*models.SecretStorage, error) {
+func (r *secretStorageRepository) Get(id models.ID) (*models.SecretStorage, error) {
 	var ss models.SecretStorage
 
-	err := r.db.Table("secret_storages").
-		Preload("Project").
-		Joins("JOIN projects ON secret_storages.project_id = projects.id").
-		Where("projects.name = ? AND secret_storages.name = ?", project, name).
+	err := r.db.Preload("Project").
+		Where("id = ?", id).
 		First(&ss).Error
 
 	return &ss, err
 }
 
 // List lists all Secret Storage within a project
-func (r *secretStorageRepository) List(project string) ([]*models.SecretStorage, error) {
+func (r *secretStorageRepository) List(projectID models.ID) ([]*models.SecretStorage, error) {
 	var ss []*models.SecretStorage
 
-	err := r.db.Table("secret_storages").
-		Preload("Project").
-		Joins("JOIN projects ON secret_storages.project_id = projects.id").
-		Where("projects.name = ?", project).
+	err := r.db.Preload("Project").
+		Where("project_id = ?", projectID).
 		Find(&ss).Error
 
+	return ss, err
+}
+
+// Save creates or updates a Secret Storage
+func (r *secretStorageRepository) Save(secretStorage *models.SecretStorage) (*models.SecretStorage, error) {
+	err := r.db.Save(secretStorage).Error
+	return secretStorage, err
+}
+
+// Delete deletes a Secret Storage
+func (r *secretStorageRepository) Delete(id models.ID) error {
+	return r.db.Where("id = ?", id).Delete(models.SecretStorage{}).Error
+}
+
+// ListAll lists all Secret Storage
+func (r *secretStorageRepository) ListAll() ([]*models.SecretStorage, error) {
+	var ss []*models.SecretStorage
+
+	err := r.db.Preload("Project").Find(&ss).Error
 	return ss, err
 }
 
@@ -72,15 +89,4 @@ func (r *secretStorageRepository) ListGlobal() ([]*models.SecretStorage, error) 
 
 	err := r.db.Where("scope = ?", models.GlobalSecretStorageScope).Find(&ss).Error
 	return ss, err
-}
-
-// Save creates or updates a Secret Storage
-func (r *secretStorageRepository) Save(secretStorage *models.SecretStorage) (*models.SecretStorage, error) {
-	err := r.db.Save(secretStorage).Error
-	return secretStorage, err
-}
-
-// Delete deletes a Secret Storage
-func (r *secretStorageRepository) Delete(secretStorage *models.SecretStorage) error {
-	return r.db.Delete(secretStorage).Error
 }
