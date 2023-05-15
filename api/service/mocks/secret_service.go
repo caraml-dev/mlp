@@ -26,31 +26,8 @@ func (_m *SecretService) Delete(secretID models.ID, projectID models.ID) error {
 	return r0
 }
 
-// FindByIDAndProjectID provides a mock function with given fields: secretID, projectID
-func (_m *SecretService) FindByIDAndProjectID(secretID models.ID, projectID models.ID) (*models.Secret, error) {
-	ret := _m.Called(secretID, projectID)
-
-	var r0 *models.Secret
-	if rf, ok := ret.Get(0).(func(models.ID, models.ID) *models.Secret); ok {
-		r0 = rf(secretID, projectID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Secret)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(models.ID, models.ID) error); ok {
-		r1 = rf(secretID, projectID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ListSecret provides a mock function with given fields: projectID
-func (_m *SecretService) ListSecret(projectID models.ID) ([]*models.Secret, error) {
+// List provides a mock function with given fields: projectID
+func (_m *SecretService) List(projectID models.ID) ([]*models.Secret, error) {
 	ret := _m.Called(projectID)
 
 	var r0 []*models.Secret
