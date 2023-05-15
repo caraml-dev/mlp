@@ -6,10 +6,126 @@ import (
 	"github.com/caraml-dev/mlp/api/pkg/secretstorage"
 	ssmocks "github.com/caraml-dev/mlp/api/pkg/secretstorage/mocks"
 	"github.com/caraml-dev/mlp/api/repository/mocks"
+	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
+
+func TestSecretService_FindByID(t *testing.T) {
+	internalSecretStorage := &models.SecretStorage{
+		ID:   1,
+		Name: "internal-secret-storage",
+		Type: models.InternalSecretStorageType,
+	}
+
+	vaultSecretStorage := &models.SecretStorage{
+		ID:   2,
+		Name: "vault-secret-storage",
+		Type: models.VaultSecretStorageType,
+	}
+
+	project := &models.Project{
+		ID:   models.ID(1),
+		Name: "project",
+	}
+
+	type args struct {
+		secretID models.ID
+	}
+
+	tests := []struct {
+		name                             string
+		args                             args
+		existingSecret                   *models.Secret
+		errorFromSecretRepository        error
+		errorFromSecretStorageRepository error
+		errorFromSecretStorageClient     error
+		expectedError                    string
+	}{
+		{
+			name: "success: get existing internal secret",
+			args: args{
+				secretID: models.ID(1),
+			},
+			existingSecret: &models.Secret{
+				ID:              models.ID(1),
+				ProjectID:       project.ID,
+				Name:            "name",
+				Data:            "plainData",
+				SecretStorageID: &internalSecretStorage.ID,
+				SecretStorage:   internalSecretStorage,
+			},
+		},
+		{
+			name: "success: get existing external secret",
+			args: args{
+				secretID: models.ID(1),
+			},
+			existingSecret: &models.Secret{
+				ID:              models.ID(1),
+				ProjectID:       project.ID,
+				Name:            "name",
+				Data:            "plainData",
+				SecretStorageID: &vaultSecretStorage.ID,
+				SecretStorage:   vaultSecretStorage,
+			},
+		},
+		{
+			name: "error: secret not found",
+			args: args{
+				secretID: models.ID(1),
+			},
+			existingSecret:            nil,
+			errorFromSecretRepository: gorm.ErrRecordNotFound,
+			expectedError:             "error when fetching secret with id: 1, error: record not found",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			projectRepository := &mocks.ProjectRepository{}
+			if tt.existingSecret != nil {
+				projectRepository.On("Get", tt.existingSecret.ProjectID).Return(project, nil)
+			}
+
+			ssClientRegistry, err := secretstorage.NewRegistry([]*models.SecretStorage{})
+			require.NoError(t, err)
+
+			ssClient := &ssmocks.SecretStorageClient{}
+			if tt.existingSecret != nil {
+				ssClient.On("Get", tt.existingSecret.Name, project.Name).Return(tt.existingSecret.Data, tt.errorFromSecretStorageClient)
+			}
+			ssClientRegistry.Set(internalSecretStorage.ID, ssClient)
+			ssClientRegistry.Set(vaultSecretStorage.ID, ssClient)
+
+			storageRepository := &mocks.SecretStorageRepository{}
+			storageRepository.On("Get", internalSecretStorage.ID).Return(internalSecretStorage, tt.errorFromSecretStorageRepository)
+			storageRepository.On("Get", vaultSecretStorage.ID).Return(vaultSecretStorage, tt.errorFromSecretStorageRepository)
+
+			secretRepository := &mocks.SecretRepository{}
+			secretRepository.On("Get", tt.args.secretID).Return(tt.existingSecret, tt.errorFromSecretRepository)
+
+			secretService := NewSecretService(secretRepository, storageRepository, projectRepository, ssClientRegistry, vaultSecretStorage)
+			result, err := secretService.FindByID(tt.args.secretID)
+			if tt.expectedError != "" {
+				assert.EqualError(t, err, tt.expectedError)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.existingSecret.ID, result.ID)
+			assert.Equal(t, tt.existingSecret.Name, result.Name)
+			assert.Equal(t, tt.existingSecret.ProjectID, result.ProjectID)
+			assert.Equal(t, tt.existingSecret.Data, result.Data)
+			if tt.existingSecret.SecretStorageID != nil {
+				assert.Equal(t, *tt.existingSecret.SecretStorageID, *result.SecretStorageID)
+			} else {
+				assert.Equal(t, vaultSecretStorage.ID, *result.SecretStorageID)
+			}
+			require.NoError(t, err)
+		})
+	}
+}
 
 func TestSecretService_Create(t *testing.T) {
 	internalSecretStorage := &models.SecretStorage{
