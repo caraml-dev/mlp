@@ -97,10 +97,9 @@ func TestLoad(t *testing.T) {
 				"DATABASE__PASSWORD": "secret",
 			},
 			expected: &config.Config{
-				APIHost:       "http://localhost:8080",
-				Port:          8080,
-				EncryptionKey: "test-key",
-				Environment:   "dev",
+				APIHost:     "http://localhost:8080",
+				Port:        8080,
+				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled: false,
 				},
@@ -151,7 +150,6 @@ func TestLoad(t *testing.T) {
 			expected: &config.Config{
 				APIHost:       "http://localhost:8080",
 				Port:          8080,
-				EncryptionKey: "test-key",
 				Environment:   "dev",
 				OauthClientID: "oauth-client-id",
 				SentryDSN:     "1234",
@@ -255,10 +253,9 @@ func TestValidate(t *testing.T) {
 	}{
 		"minimal | success": {
 			config: &config.Config{
-				APIHost:       "/v1",
-				Port:          8080,
-				Environment:   "dev",
-				EncryptionKey: "secret-key",
+				APIHost:     "/v1",
+				Port:        8080,
+				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled: false,
 				},
@@ -291,10 +288,9 @@ func TestValidate(t *testing.T) {
 		},
 		"extended | success": {
 			config: &config.Config{
-				APIHost:       "/v1",
-				Port:          8080,
-				Environment:   "dev",
-				EncryptionKey: "secret-key",
+				APIHost:     "/v1",
+				Port:        8080,
+				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled:       true,
 					KetoServerURL: "http://keto.mlp",
@@ -333,17 +329,15 @@ func TestValidate(t *testing.T) {
 			config: config.NewDefaultConfig(),
 			error: errors.New(
 				"failed to validate configuration: " +
-					"Key: 'Config.EncryptionKey' Error:Field validation for 'EncryptionKey' failed on the 'required' tag\n" +
 					"Key: 'Config.Database.User' Error:Field validation for 'User' failed on the 'required' tag\n" +
 					"Key: 'Config.Database.Password' Error:Field validation for 'Password' failed on the 'required' tag",
 			),
 		},
 		"missing auth server | failure": {
 			config: &config.Config{
-				APIHost:       "/v1",
-				Port:          8080,
-				Environment:   "dev",
-				EncryptionKey: "secret-key",
+				APIHost:     "/v1",
+				Port:        8080,
+				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled: true,
 				},
