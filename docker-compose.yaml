@@ -4,6 +4,7 @@ services:
     depends_on:
       - postgres
       - keto
+      - vault
     build: .
     image: gojecktech/mlp:dev
     ports:
@@ -29,6 +30,17 @@ services:
       - DSN=memory
     command:
       - serve
+
+  vault:
+    image: hashicorp/vault
+    ports:
+      - 8200:8200
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=root
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    entrypoint: vault server -dev
 
   swagger-ui:
     image: swaggerapi/swagger-ui:v3.23.5

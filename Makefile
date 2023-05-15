@@ -66,7 +66,7 @@ test-api: init-dep-api
 	@cd ${API_PATH} && go tool cover -func cover.out
 
 .PHONY: it-test-api-local
-it-test-api-local: local-db start-keto
+it-test-api-local: local-db start-keto start-vault
 	@echo "> API integration testing locally..."
 	@cd ${API_PATH} && go test -race -short -cover -coverprofile cover.out -tags integration ${API_ALL_PACKAGES}
 	@cd ${API_PATH} && go tool cover -func cover.out
@@ -145,6 +145,9 @@ generate-client:
 	@swagger-codegen generate -i static/swagger.yaml -l go -o client -DpackageName=client
 	@goimports -l -w client
 
+.PHONY: local-env
+local-env: local-db start-keto start-vault
+
 .PHONY: local-db
 local-db:
 	@echo "> Starting up DB ..."
@@ -154,6 +157,11 @@ local-db:
 start-keto:
 	@echo "> Starting up keto server ..."
 	@docker-compose up -d keto
+
+.PHONY: start-vault
+start-vault:
+	@echo "> Starting up vault server ..."
+	@docker-compose up -d vault
 
 .PHONY: stop-docker
 stop-docker:
