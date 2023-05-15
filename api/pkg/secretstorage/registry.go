@@ -31,21 +31,15 @@ func NewRegistry(secretStorages []*models.SecretStorage) (*Registry, error) {
 	}, nil
 }
 
-func (r *Registry) Register(id models.ID, client SecretStorageClient) {
+func (r *Registry) Set(secretStorageID models.ID, client SecretStorageClient) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
-	r.registry[id] = client
+	r.registry[secretStorageID] = client
 }
 
-func (r *Registry) Get(id models.ID) (SecretStorageClient, bool) {
+func (r *Registry) Get(secretStorageID models.ID) (SecretStorageClient, bool) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
-	sc, ok := r.registry[id]
+	sc, ok := r.registry[secretStorageID]
 	return sc, ok
-}
-
-func (r *Registry) Update(id models.ID, client SecretStorageClient) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-	r.registry[id] = client
 }
