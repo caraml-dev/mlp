@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/jinzhu/copier"
 	"net/http"
 
 	"github.com/caraml-dev/mlp/api/log"
@@ -12,6 +13,26 @@ import (
 
 type SecretsController struct {
 	*AppContext
+}
+
+func (c *SecretsController) GetSecret(r *http.Request, vars map[string]string, _ interface{}) *Response {
+	projectID, _ := models.ParseID(vars["project_id"])
+	secretID, _ := models.ParseID(vars["secret_id"])
+	if projectID <= 0 || secretID <= 0 {
+		log.Warnf("ID: %d or project_id not valid", secretID, projectID)
+		return BadRequest("project_id and secret_id is not valid")
+	}
+
+	secret, err := c.SecretService.FindByID(secretID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return NotFound(fmt.Sprintf("Secret with given `secret_id: %d` not found", secretID))
+		}
+
+		return InternalServerError(err.Error())
+	}
+
+	return Ok(secret)
 }
 
 func (c *SecretsController) CreateSecret(r *http.Request, vars map[string]string, body interface{}) *Response {
@@ -51,7 +72,7 @@ func (c *SecretsController) CreateSecret(r *http.Request, vars map[string]string
 }
 
 func (c *SecretsController) UpdateSecret(r *http.Request, vars map[string]string, body interface{}) *Response {
-	secret, ok := body.(*models.Secret)
+	updateRequest, ok := body.(*models.Secret)
 	if !ok {
 		return BadRequest("Invalid request body")
 	}
@@ -62,7 +83,7 @@ func (c *SecretsController) UpdateSecret(r *http.Request, vars map[string]string
 		return BadRequest("project_id and secret_id is not valid")
 	}
 
-	_, err := c.SecretService.FindByID(secretID)
+	secret, err := c.SecretService.FindByID(secretID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return NotFound(fmt.Sprintf("Secret with given `secret_id: %d` not found", secretID))
@@ -72,15 +93,21 @@ func (c *SecretsController) UpdateSecret(r *http.Request, vars map[string]string
 	}
 
 	// check that the secret storage id exists if users specify it
-	if secret.SecretStorageID != nil {
-		_, err := c.SecretStorageService.FindByID(*secret.SecretStorageID)
+	if updateRequest.SecretStorageID != nil {
+		_, err := c.SecretStorageService.FindByID(*updateRequest.SecretStorageID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return NotFound(fmt.Sprintf("Secret storage with given `secret_storage_id: %d` not found", *secret.SecretStorageID))
+				return NotFound(fmt.Sprintf("Secret storage with given `secret_storage_id: %d` not found", *updateRequest.SecretStorageID))
 			}
 
 			return InternalServerError(err.Error())
 		}
+	}
+
+	err = copier.CopyWithOption(secret, updateRequest, copier.Option{IgnoreEmpty: true})
+	if err != nil {
+		log.Errorf("Failed copy secret with %v", err)
+		return InternalServerError(err.Error())
 	}
 
 	updatedSecret, err := c.SecretService.Update(secret)
@@ -130,6 +157,13 @@ func (c *SecretsController) Routes() []Route {
 			nil,
 			c.ListSecret,
 			"ListSecret",
+		},
+		{
+			http.MethodGet,
+			"/projects/{project_id:[0-9]+}/secrets/{secret_id:[0-9]+}",
+			nil,
+			c.GetSecret,
+			"GetSecret",
 		},
 		{
 			http.MethodPost,

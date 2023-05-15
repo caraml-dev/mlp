@@ -29,7 +29,8 @@ func NewSecretRepository(db *gorm.DB) SecretRepository {
 
 // List lists all secret within the given project ID.
 func (ss *secretRepository) List(projectID models.ID) (secrets []*models.Secret, err error) {
-	err = ss.db.Where("project_id = ?", projectID).Find(&secrets).Error
+	err = ss.db.Preload("SecretStorage").Preload("Project").
+		Where("project_id = ?", projectID).Find(&secrets).Error
 	return
 }
 
@@ -49,7 +50,8 @@ func (ss *secretRepository) Delete(id models.ID) error {
 // Get return a secret given the secret id
 func (ss *secretRepository) Get(id models.ID) (*models.Secret, error) {
 	var secret models.Secret
-	if err := ss.db.Where("id = ?", id).First(&secret).Error; err != nil {
+	if err := ss.db.Preload("SecretStorage").Preload("Project").
+		Where("id = ?", id).First(&secret).Error; err != nil {
 		return nil, err
 	}
 

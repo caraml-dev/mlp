@@ -51,6 +51,7 @@ func TestSecretService_FindByID(t *testing.T) {
 			existingSecret: &models.Secret{
 				ID:              models.ID(1),
 				ProjectID:       project.ID,
+				Project:         project,
 				Name:            "name",
 				Data:            "plainData",
 				SecretStorageID: &internalSecretStorage.ID,
@@ -65,6 +66,7 @@ func TestSecretService_FindByID(t *testing.T) {
 			existingSecret: &models.Secret{
 				ID:              models.ID(1),
 				ProjectID:       project.ID,
+				Project:         project,
 				Name:            "name",
 				Data:            "plainData",
 				SecretStorageID: &vaultSecretStorage.ID,
@@ -191,18 +193,7 @@ func TestSecretService_Create(t *testing.T) {
 				Data:      "plainData",
 			},
 			errorFromSecretRepository: fmt.Errorf("db is down"),
-			expectedError:             "db is down",
-		},
-		{
-			name: "error: should raise error when failed save to db",
-			secret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "name",
-				Data:      "plainData",
-			},
-			errorFromSecretRepository: fmt.Errorf("db is down"),
-			expectedError:             "db is down",
+			expectedError:             "error when saving secret in database, error: db is down",
 		},
 		{
 			name: "error: should raise error when failed to store secret",
@@ -272,31 +263,81 @@ func TestSecretService_Create(t *testing.T) {
 }
 
 func TestSecretService_Delete(t *testing.T) {
+	internalSecretStorage := &models.SecretStorage{
+		ID:   1,
+		Name: "internal-secret-storage",
+		Type: models.InternalSecretStorageType,
+	}
+
+	vaultSecretStorage := &models.SecretStorage{
+		ID:   2,
+		Name: "vault-secret-storage",
+		Type: models.VaultSecretStorageType,
+	}
+
+	project := &models.Project{
+		ID:   models.ID(1),
+		Name: "project",
+	}
+
 	tests := []struct {
-		name                      string
-		secretID                  models.ID
-		errorFromSecretRepository error
-		expectedError             string
+		name                         string
+		secretID                     models.ID
+		existingSecret               *models.Secret
+		errorFromSecretRepository    error
+		errorFromSecretStorageClient error
+		expectedError                string
 	}{
 		{
-			name:     "error: should success",
+			name:     "success: delete internal secret",
 			secretID: models.ID(1),
+			existingSecret: &models.Secret{
+				ID:              models.ID(1),
+				Name:            "my-secret",
+				ProjectID:       project.ID,
+				Project:         project,
+				SecretStorageID: &internalSecretStorage.ID,
+				SecretStorage:   internalSecretStorage,
+			},
+		},
+		{
+			name:     "success: delete external secret",
+			secretID: models.ID(1),
+			existingSecret: &models.Secret{
+				ID:              models.ID(1),
+				Name:            "my-secret",
+				ProjectID:       project.ID,
+				Project:         project,
+				SecretStorageID: &vaultSecretStorage.ID,
+				SecretStorage:   vaultSecretStorage,
+			},
 		},
 		{
 			name:                      "error: should return error when failed to delete secret",
 			secretID:                  models.ID(1),
 			errorFromSecretRepository: fmt.Errorf("db is down"),
-			expectedError:             "error when deleting secret with id: 1, error: db is down",
+			expectedError:             "error when fetching secret with id: 1, error: db is down",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			secretRepository := &mocks.SecretRepository{}
+			secretRepository.On("Get", tt.secretID).Return(tt.existingSecret, tt.errorFromSecretRepository)
 			secretRepository.On("Delete", tt.secretID).Return(tt.errorFromSecretRepository)
-			secretService := &secretService{
-				secretRepository: secretRepository,
+
+			ssClientRegistry, err := secretstorage.NewRegistry([]*models.SecretStorage{})
+			require.NoError(t, err)
+			ssClient := &ssmocks.SecretStorageClient{}
+
+			if tt.existingSecret != nil {
+				ssClient.On("Delete", tt.existingSecret.Name, project.Name).Return(tt.errorFromSecretStorageClient)
 			}
-			err := secretService.Delete(tt.secretID)
+			ssClientRegistry.Set(internalSecretStorage.ID, ssClient)
+			ssClientRegistry.Set(vaultSecretStorage.ID, ssClient)
+
+			secretService := NewSecretService(secretRepository, nil, nil, ssClientRegistry, vaultSecretStorage)
+
+			err = secretService.Delete(tt.secretID)
 			if tt.expectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -328,6 +369,7 @@ func TestSecretService_List(t *testing.T) {
 		{
 			ID:              models.ID(1),
 			ProjectID:       project.ID,
+			Project:         project,
 			SecretStorageID: &internalSecretStorage.ID,
 			SecretStorage:   internalSecretStorage,
 			Name:            "name1",
@@ -336,6 +378,7 @@ func TestSecretService_List(t *testing.T) {
 		{
 			ID:              models.ID(2),
 			ProjectID:       project.ID,
+			Project:         project,
 			SecretStorageID: &vaultSecretStorage.ID,
 			SecretStorage:   vaultSecretStorage,
 			Name:            "name2",
@@ -344,6 +387,7 @@ func TestSecretService_List(t *testing.T) {
 		{
 			ID:              models.ID(3),
 			ProjectID:       project.ID,
+			Project:         project,
 			SecretStorageID: &vaultSecretStorage.ID,
 			SecretStorage:   vaultSecretStorage,
 			Name:            "name3",
@@ -400,6 +444,7 @@ func TestSecretService_Update(t *testing.T) {
 	existingSecret := &models.Secret{
 		ID:              models.ID(1),
 		ProjectID:       project.ID,
+		Project:         project,
 		SecretStorageID: &internalSecretStorage.ID,
 		SecretStorage:   internalSecretStorage,
 		Name:            "name1",
@@ -422,6 +467,7 @@ func TestSecretService_Update(t *testing.T) {
 				secret: &models.Secret{
 					ID:              existingSecret.ID,
 					ProjectID:       project.ID,
+					Project:         project,
 					SecretStorageID: &internalSecretStorage.ID,
 					SecretStorage:   internalSecretStorage,
 					Name:            "name1",
@@ -431,6 +477,7 @@ func TestSecretService_Update(t *testing.T) {
 			want: &models.Secret{
 				ID:              existingSecret.ID,
 				ProjectID:       project.ID,
+				Project:         project,
 				SecretStorageID: &internalSecretStorage.ID,
 				SecretStorage:   internalSecretStorage,
 				Name:            "name1",
@@ -443,6 +490,7 @@ func TestSecretService_Update(t *testing.T) {
 				secret: &models.Secret{
 					ID:              existingSecret.ID,
 					ProjectID:       project.ID,
+					Project:         project,
 					SecretStorageID: &vaultSecretStorage.ID,
 					SecretStorage:   vaultSecretStorage,
 					Name:            "name1",
@@ -451,6 +499,7 @@ func TestSecretService_Update(t *testing.T) {
 			want: &models.Secret{
 				ID:              existingSecret.ID,
 				ProjectID:       project.ID,
+				Project:         project,
 				SecretStorageID: &vaultSecretStorage.ID,
 				SecretStorage:   vaultSecretStorage,
 				Name:            "name1",
@@ -463,6 +512,7 @@ func TestSecretService_Update(t *testing.T) {
 				secret: &models.Secret{
 					ID:              existingSecret.ID,
 					ProjectID:       project.ID,
+					Project:         project,
 					SecretStorageID: &vaultSecretStorage.ID,
 					SecretStorage:   vaultSecretStorage,
 					Name:            "name1",
@@ -472,6 +522,7 @@ func TestSecretService_Update(t *testing.T) {
 			want: &models.Secret{
 				ID:              existingSecret.ID,
 				ProjectID:       project.ID,
+				Project:         project,
 				SecretStorageID: &vaultSecretStorage.ID,
 				SecretStorage:   vaultSecretStorage,
 				Name:            "name1",

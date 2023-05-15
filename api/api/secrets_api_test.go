@@ -1,524 +1,540 @@
+//go:build integration
+
 package api
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
-	"net/http"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-
+	"github.com/caraml-dev/mlp/api/config"
+	"github.com/caraml-dev/mlp/api/it/database"
 	"github.com/caraml-dev/mlp/api/models"
-	"github.com/caraml-dev/mlp/api/service/mocks"
+	"github.com/gavv/httpexpect/v2"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
 )
 
-func TestCreateSecret(t *testing.T) {
-	secretStorage := &models.SecretStorage{
-		ID:   models.ID(1),
-		Name: "test-storage",
-		Type: models.VaultSecretStorageType,
+type SecretAPITestSuite struct {
+	suite.Suite
+	cleanupFn func()
+	route     http.Handler
+
+	internalSecretStorage *models.SecretStorage
+	defaultSecretStorage  *models.SecretStorage
+	project               *models.Project
+	existingSecrets       []*models.Secret
+}
+
+func (s *SecretAPITestSuite) SetupTest() {
+	db, cleanupFn, err := database.CreateTestDatabase()
+	s.Require().NoError(err, "Failed to connect to test database")
+	s.cleanupFn = cleanupFn
+
+	appCtx, err := NewAppContext(db, &config.Config{
+		Port: 0,
+		Authorization: &config.AuthorizationConfig{
+			Enabled: false,
+		},
+		Mlflow: &config.MlflowConfig{
+			TrackingURL: "http://mlflow:5000",
+		},
+		DefaultSecretStorage: &config.SecretStorage{
+			Name: "vault",
+			Type: string(models.VaultSecretStorageType),
+			Config: models.SecretStorageConfig{
+				VaultConfig: &models.VaultConfig{
+					URL:        "http://localhost:8200",
+					Role:       "my-role",
+					MountPath:  "secret",
+					PathPrefix: fmt.Sprintf("secret-api-test/%d/{{ .Project }}", time.Now().Unix()),
+					AuthMethod: models.TokenAuthMethod,
+					Token:      "root",
+				},
+			},
+		},
+	})
+	s.Require().NoError(err, "Failed to create app context")
+
+	s.internalSecretStorage, err = appCtx.SecretStorageService.FindByID(1)
+	s.Require().NoError(err, "Failed to find internal secret storage")
+
+	s.defaultSecretStorage = appCtx.DefaultSecretStorage
+
+	s.project, err = appCtx.ProjectsService.CreateProject(&models.Project{
+		Name: "test-project",
+	})
+	s.Require().NoError(err, "Failed to create project")
+
+	controller := &SecretsController{
+		AppContext: appCtx,
+	}
+
+	s.existingSecrets = make([]*models.Secret, 0)
+	for i := 0; i < 5; i++ {
+		secretStorageID := s.defaultSecretStorage.ID
+		if i < 2 {
+			secretStorageID = s.internalSecretStorage.ID
+		}
+
+		secret, err := appCtx.SecretService.Create(&models.Secret{
+			ProjectID:       s.project.ID,
+			SecretStorageID: &secretStorageID,
+			Name:            fmt.Sprintf("secret-%d", i),
+			Data:            fmt.Sprintf("secret-data-%d", i),
+		})
+		s.Require().NoError(err, "Failed to create secret")
+		s.existingSecrets = append(s.existingSecrets, secret)
+	}
+
+	controllers := []Controller{controller}
+	r := NewRouter(appCtx, controllers)
+
+	route := mux.NewRouter()
+	route.PathPrefix(basePath).Handler(
+		http.StripPrefix(
+			strings.TrimSuffix(basePath, "/"),
+			r,
+		),
+	)
+
+	s.route = route
+}
+
+func (s *SecretAPITestSuite) TearDownTest() {
+	s.cleanupFn()
+}
+
+func (s *SecretAPITestSuite) TestGetSecret() {
+	type args struct {
+		path string
 	}
 
 	tests := []struct {
-		name               string
-		vars               map[string]string
-		existingProject    *models.Project
-		errFetchingProject error
-		body               interface{}
-		savedSecret        *models.Secret
-		errSaveSecret      error
-		expectedResponse   *Response
+		name string
+		args args
+		want *Response
 	}{
 		{
-			name: "Should success",
-			vars: map[string]string{
-				"project_id": "1",
+			name: "success: get internal secret",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets/%d", s.project.ID, s.existingSecrets[0].ID),
 			},
-			body: &models.Secret{
-				Name: "name",
-				Data: `{"id": 3}`,
-			},
-			expectedResponse: &Response{
-				code: 201,
-				data: &models.Secret{
-					ID:        models.ID(1),
-					ProjectID: models.ID(1),
-					Name:      "name",
-					Data:      `{"id": 3}`,
-				},
-			},
-			existingProject: &models.Project{
-				ID:   models.ID(1),
-				Name: "project",
-			},
-			savedSecret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "name",
-				Data:      `{"id": 3}`,
+			want: &Response{
+				code: http.StatusOK,
+				data: s.existingSecrets[0],
 			},
 		},
 		{
-			name: "Should success, create in non default secret storage",
-			vars: map[string]string{
-				"project_id": "1",
+			name: "success: get external secret",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets/%d", s.project.ID, s.existingSecrets[2].ID),
 			},
-			body: &models.Secret{
-				Name:            "name",
-				Data:            `{"id": 3}`,
-				SecretStorageID: &secretStorage.ID,
-			},
-			expectedResponse: &Response{
-				code: 201,
-				data: &models.Secret{
-					ID:              models.ID(1),
-					ProjectID:       models.ID(1),
-					Name:            "name",
-					Data:            `{"id": 3}`,
-					SecretStorageID: &secretStorage.ID,
-					SecretStorage:   secretStorage,
-				},
-			},
-			existingProject: &models.Project{
-				ID:   models.ID(1),
-				Name: "project",
-			},
-			savedSecret: &models.Secret{
-				ID:              models.ID(1),
-				ProjectID:       models.ID(1),
-				Name:            "name",
-				Data:            `{"id": 3}`,
-				SecretStorageID: &secretStorage.ID,
-				SecretStorage:   secretStorage,
+			want: &Response{
+				code: http.StatusOK,
+				data: s.existingSecrets[2],
 			},
 		},
 		{
-			name: "Should return not found if project is not exist",
-			vars: map[string]string{
-				"project_id": "1",
+			name: "error: secret not found",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets/%d", 123, 123),
 			},
-			body: &models.Secret{
-				Name: "name",
-				Data: `{"id": 3}`,
+			want: &Response{
+				code: http.StatusNotFound,
+				data: ErrorMessage{"Secret with given `secret_id: 123` not found"},
 			},
-			expectedResponse: &Response{
-				code: 404,
-				data: ErrorMessage{"Project with given `project_id: 1` not found"},
-			},
-			errFetchingProject: fmt.Errorf("project not found"),
-		},
-		{
-			name: "Should got bad request when body is not complete",
-			vars: map[string]string{
-				"project_id": "1",
-			},
-			body: &models.Secret{
-				Name: "name",
-			},
-
-			expectedResponse: &Response{
-				code: 400,
-				data: ErrorMessage{"Invalid request body"},
-			},
-			existingProject: &models.Project{
-				ID:   models.ID(1),
-				Name: "project",
-			},
-		},
-		{
-			name: "Should return internal server error when failed save secret",
-			vars: map[string]string{
-				"project_id": "1",
-			},
-			body: &models.Secret{
-				Name: "name",
-				Data: `{"id": 3}`,
-			},
-			expectedResponse: &Response{
-				code: 500,
-				data: ErrorMessage{"db is down"},
-			},
-			existingProject: &models.Project{
-				ID:   models.ID(1),
-				Name: "project",
-			},
-			errSaveSecret: fmt.Errorf("db is down"),
 		},
 	}
-	for _, tC := range tests {
-		t.Run(tC.name, func(t *testing.T) {
-			projectService := &mocks.ProjectsService{}
-			projectService.On("FindByID", models.ID(1)).Return(tC.existingProject, tC.errFetchingProject)
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
 
-			secretService := &mocks.SecretService{}
-			secretService.On("Create", mock.Anything).Return(tC.savedSecret, tC.errSaveSecret)
+			server := httptest.NewServer(s.route)
+			defer server.Close()
 
-			secretStorageService := &mocks.SecretStorageService{}
-			secretStorageService.On("FindByID", secretStorage.ID).Return(secretStorage, nil)
+			e := httpexpect.Default(s.T(), server.URL)
 
-			controller := &SecretsController{
-				AppContext: &AppContext{
-					SecretService:        secretService,
-					ProjectsService:      projectService,
-					SecretStorageService: secretStorageService,
-				},
+			jsonObj := e.GET(tt.args.path).
+				Expect().
+				Status(tt.want.code).
+				JSON().Object()
+
+			if tt.want.code >= http.StatusOK && tt.want.code < http.StatusMultipleChoices {
+				var secret models.Secret
+				jsonObj.Decode(&secret)
+				assertSecretEquals(s.T(), tt.want.data.(*models.Secret), &secret)
+			} else {
+				var err ErrorMessage
+				jsonObj.Decode(&err)
+				s.Equal(tt.want.data, err)
 			}
-
-			res := controller.CreateSecret(&http.Request{}, tC.vars, tC.body)
-			assert.Equal(t, tC.expectedResponse, res)
 		})
 	}
 }
 
-func TestUpdateSecret(t *testing.T) {
-	testCases := []struct {
-		name              string
-		vars              map[string]string
-		body              interface{}
-		existingSecret    *models.Secret
-		errFetchingSecret error
-		updatedSecret     *models.Secret
-		errUpdatingSecret error
-		expectedResponse  *Response
+func (s *SecretAPITestSuite) TestCreateSecret() {
+	type args struct {
+		path string
+		body interface{}
+	}
+
+	nonExistingSecretStorageID := models.ID(123)
+
+	tests := []struct {
+		name string
+		args args
+		want *Response
 	}{
 		{
-			name: "Should responded 204",
-			vars: map[string]string{
-				"project_id": "1",
-				"secret_id":  "1",
+			name: "success: create secret in default secret storage",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets", s.project.ID),
+				body: &models.Secret{
+					Name: "external-secrete",
+					Data: "secret-value",
+				},
 			},
-			body: &models.Secret{
-				Name: "name",
-				Data: `{"id": 3}`,
-			},
-			existingSecret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "no-name",
-				Data:      `{"id": 2}`,
-			},
-			updatedSecret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "name",
-				Data:      `{"id": 3}`,
-			},
-			expectedResponse: &Response{
-				code: 200,
+			want: &Response{
+				code: http.StatusCreated,
 				data: &models.Secret{
-					ID:        models.ID(1),
-					ProjectID: models.ID(1),
-					Name:      "name",
-					Data:      `{"id": 3}`,
+					ID:              models.ID(6),
+					SecretStorageID: &s.defaultSecretStorage.ID,
+					ProjectID:       s.project.ID,
+					Name:            "external-secrete",
+					Data:            "secret-value",
 				},
 			},
 		},
 		{
-			name: "Should responded 204 even body is partially there",
-			vars: map[string]string{
-				"project_id": "1",
-				"secret_id":  "1",
+			name: "success: create secret in internal secret storage",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets", s.project.ID),
+				body: &models.Secret{
+					Name:            "internal-secret",
+					Data:            "secret-value",
+					SecretStorageID: &s.internalSecretStorage.ID,
+				},
 			},
-			body: &models.Secret{
-				Name: "name",
-			},
-			existingSecret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "no-name",
-				Data:      `{"id": 2}`,
-			},
-			updatedSecret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "name",
-				Data:      `{"id": 3}`,
-			},
-			expectedResponse: &Response{
-				code: 200,
+			want: &Response{
+				code: http.StatusCreated,
 				data: &models.Secret{
-					ID:        models.ID(1),
-					ProjectID: models.ID(1),
-					Name:      "name",
-					Data:      `{"id": 3}`,
+					ID:              models.ID(7),
+					SecretStorageID: &s.internalSecretStorage.ID,
+					ProjectID:       s.project.ID,
+					Name:            "internal-secret",
+					Data:            "secret-value",
 				},
 			},
 		},
 		{
-			name: "Should responded 400 when project_id and secret_id is not integer",
-			vars: map[string]string{
-				"project_id": "abc",
-				"secret_id":  "def",
+			name: "error: should return not found if project is not exist",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets", 123),
+				body: &models.Secret{
+					Name: "internal-secret",
+					Data: "secret-value",
+				},
 			},
-			body: &models.Secret{
-				Name: "name",
-			},
-			existingSecret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "no-name",
-				Data:      `{"id": 2}`,
-			},
-			updatedSecret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "name",
-				Data:      `{"id": 3}`,
-			},
-			expectedResponse: &Response{
-				code: 400,
-				data: ErrorMessage{"project_id and secret_id is not valid"},
+			want: &Response{
+				code: http.StatusNotFound,
+				data: ErrorMessage{"Project with given `project_id: 123` not found"},
 			},
 		},
 		{
-			name: "Should responded 400 when body is invalid",
-			vars: map[string]string{
-				"project_id": "1",
-				"secret_id":  "1",
+			name: "error: should return not found if secret storage is not exist",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets", s.project.ID),
+				body: &models.Secret{
+					Name:            "internal-secret",
+					Data:            "secret-value",
+					SecretStorageID: &nonExistingSecretStorageID,
+				},
 			},
-			body: "body",
-			existingSecret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "no-name",
-				Data:      `{"id": 2}`,
+			want: &Response{
+				code: http.StatusNotFound,
+				data: ErrorMessage{"Secret storage with given `secret_storage_id: 123` not found"},
 			},
-			updatedSecret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "name",
-				Data:      `{"id": 3}`,
+		},
+		{
+			name: "error: should got bad request when body is not complete",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets", s.project.ID),
+				body: &models.Secret{
+					Name: "internal-secret",
+				},
 			},
-			expectedResponse: &Response{
-				code: 400,
+			want: &Response{
+				code: http.StatusBadRequest,
 				data: ErrorMessage{"Invalid request body"},
 			},
 		},
 		{
-			name: "Should responded 404 when secret not found",
-			vars: map[string]string{
-				"project_id": "1",
-				"secret_id":  "1",
+			name: "error: should return secret already exist for same name",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets", s.project.ID),
+				body: &models.Secret{
+					Name: "external-secrete",
+					Data: "secret-value",
+				},
 			},
-			body: &models.Secret{
-				Name: "name",
-			},
-			existingSecret:    nil,
-			errFetchingSecret: gorm.ErrRecordNotFound,
-			expectedResponse: &Response{
-				code: 404,
-				data: ErrorMessage{"Secret with given `secret_id: 1` not found"},
-			},
-		},
-		{
-			name: "Should responded 500 when error fetching secret",
-			vars: map[string]string{
-				"project_id": "1",
-				"secret_id":  "1",
-			},
-			body: &models.Secret{
-				Name: "name",
-			},
-			errFetchingSecret: fmt.Errorf("db is down"),
-			expectedResponse: &Response{
-				code: 500,
-				data: ErrorMessage{"db is down"},
-			},
-		},
-		{
-			name: "Should responded 500 when error fetching secret",
-			vars: map[string]string{
-				"project_id": "1",
-				"secret_id":  "1",
-			},
-			body: &models.Secret{
-				Name: "name",
-			},
-			existingSecret: &models.Secret{
-				ID:        models.ID(1),
-				ProjectID: models.ID(1),
-				Name:      "no-name",
-				Data:      `{"id": 2}`,
-			},
-			errUpdatingSecret: fmt.Errorf("db is down"),
-			expectedResponse: &Response{
-				code: 500,
-				data: ErrorMessage{"db is down"},
+			want: &Response{
+				code: http.StatusInternalServerError,
+				data: ErrorMessage{"error when saving secret in database, error: pq: duplicate key value violates unique constraint \"secrets_project_id_name_key\""},
 			},
 		},
 	}
-	for _, tC := range testCases {
-		t.Run(tC.name, func(t *testing.T) {
-			secretService := &mocks.SecretService{}
-			secretService.On("FindByID", models.ID(1)).Return(tC.existingSecret, tC.errFetchingSecret)
-			secretService.On("Update", mock.Anything).Return(tC.updatedSecret, tC.errUpdatingSecret)
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
 
-			controller := &SecretsController{
-				AppContext: &AppContext{
-					SecretService: secretService,
-				},
+			server := httptest.NewServer(s.route)
+			defer server.Close()
+
+			e := httpexpect.Default(s.T(), server.URL)
+
+			jsonObj := e.POST(tt.args.path).
+				WithJSON(tt.args.body).
+				Expect().
+				Status(tt.want.code).
+				JSON().Object()
+
+			if tt.want.code >= http.StatusOK && tt.want.code < http.StatusMultipleChoices {
+				var secret models.Secret
+				jsonObj.Decode(&secret)
+				assertSecretEquals(s.T(), tt.want.data.(*models.Secret), &secret)
+			} else {
+				var err ErrorMessage
+				jsonObj.Decode(&err)
+				s.Equal(tt.want.data, err)
 			}
-
-			res := controller.UpdateSecret(&http.Request{}, tC.vars, tC.body)
-			assert.Equal(t, tC.expectedResponse, res)
 		})
 	}
 }
 
-func TestDeleteSecret(t *testing.T) {
-	testCases := []struct {
-		name              string
-		vars              map[string]string
-		errDeletingSecret error
-		expectedResponse  *Response
+func (s *SecretAPITestSuite) TestUpdateSecret() {
+	type args struct {
+		path string
+		body interface{}
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want *Response
 	}{
 		{
-			name: "Should responsed 204",
-			vars: map[string]string{
-				"project_id": "1",
-				"secret_id":  "1",
+			name: "success: update secret value",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets/%d", s.project.ID, s.existingSecrets[2].ID),
+				body: &models.Secret{
+					Name: s.existingSecrets[2].Name,
+					Data: "new-value",
+				},
 			},
-			expectedResponse: &Response{
-				code: 204,
-				data: nil,
-			},
-		},
-		{
-			name: "Should responsed 400 if project_id or secret_id is invalid",
-			vars: map[string]string{
-				"project_id": "def",
-				"secret_id":  "ghi",
-			},
-			expectedResponse: &Response{
-				code: 400,
-				data: ErrorMessage{"project_id and secret_id is not valid"},
+			want: &Response{
+				code: http.StatusOK,
+				data: &models.Secret{
+					ID:              s.existingSecrets[2].ID,
+					SecretStorageID: s.existingSecrets[2].SecretStorageID,
+					ProjectID:       s.project.ID,
+					Name:            s.existingSecrets[2].Name,
+					Data:            "new-value",
+				},
 			},
 		},
 		{
-			name: "Should responsed 500",
-			vars: map[string]string{
-				"project_id": "1",
-				"secret_id":  "1",
+			name: "success: migrate secret",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets/%d", s.project.ID, s.existingSecrets[0].ID),
+				body: &models.Secret{
+					SecretStorageID: &s.defaultSecretStorage.ID,
+				},
 			},
-			errDeletingSecret: fmt.Errorf("db is down"),
-			expectedResponse: &Response{
-				code: 500,
-				data: ErrorMessage{"db is down"},
+			want: &Response{
+				code: http.StatusOK,
+				data: &models.Secret{
+					ID:              s.existingSecrets[0].ID,
+					SecretStorageID: &s.defaultSecretStorage.ID,
+					ProjectID:       s.project.ID,
+					Name:            s.existingSecrets[0].Name,
+					Data:            s.existingSecrets[0].Data,
+				},
+			},
+		},
+		{
+			name: "success: migrate secret and update value",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets/%d", s.project.ID, s.existingSecrets[1].ID),
+				body: &models.Secret{
+					Name:            "secret-1",
+					Data:            "new-value",
+					SecretStorageID: &s.defaultSecretStorage.ID,
+				},
+			},
+			want: &Response{
+				code: http.StatusOK,
+				data: &models.Secret{
+					ID:              s.existingSecrets[1].ID,
+					SecretStorageID: &s.defaultSecretStorage.ID,
+					ProjectID:       s.project.ID,
+					Name:            "secret-1",
+					Data:            "new-value",
+				},
 			},
 		},
 	}
-	for _, tC := range testCases {
-		t.Run(tC.name, func(t *testing.T) {
-			secretService := &mocks.SecretService{}
-			secretService.On("Delete", models.ID(1)).Return(tC.errDeletingSecret)
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
 
-			controller := &SecretsController{
-				AppContext: &AppContext{
-					SecretService: secretService,
-				},
+			server := httptest.NewServer(s.route)
+			defer server.Close()
+
+			e := httpexpect.Default(s.T(), server.URL)
+
+			jsonObj := e.PATCH(tt.args.path).
+				WithJSON(tt.args.body).
+				Expect().
+				Status(tt.want.code).
+				JSON().Object()
+
+			if tt.want.code >= http.StatusOK && tt.want.code < http.StatusMultipleChoices {
+				var secret models.Secret
+				jsonObj.Decode(&secret)
+				assertSecretEquals(s.T(), tt.want.data.(*models.Secret), &secret)
+			} else {
+				var err ErrorMessage
+				jsonObj.Decode(&err)
+				s.Equal(tt.want.data, err)
 			}
-			res := controller.DeleteSecret(&http.Request{}, tC.vars, nil)
-			assert.Equal(t, tC.expectedResponse, res)
 		})
 	}
 }
 
-func TestListSecret(t *testing.T) {
-	testCases := []struct {
-		name               string
-		vars               map[string]string
-		existingProject    *models.Project
-		errFetchingProject error
-		secrets            []*models.Secret
-		errSaveSecret      error
-		expectedResponse   *Response
+func (s *SecretAPITestSuite) TestDeleteSecret() {
+	type args struct {
+		path string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want *Response
 	}{
 		{
-			name: "Should success",
-			vars: map[string]string{
-				"project_id": "1",
+			name: "success: delete internal secret",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets/%d", s.project.ID, s.existingSecrets[0].ID),
 			},
-			expectedResponse: &Response{
-				code: 200,
-				data: []*models.Secret{
-					{
-						ID:        models.ID(1),
-						ProjectID: models.ID(1),
-						Name:      "name-1",
-						Data:      "encryptedData",
-					},
-					{
-						ID:        models.ID(2),
-						ProjectID: models.ID(1),
-						Name:      "name-2",
-						Data:      "encryptedData",
-					},
-				},
-			},
-			existingProject: &models.Project{
-				ID:   models.ID(1),
-				Name: "project",
-			},
-			secrets: []*models.Secret{
-				{
-					ID:        models.ID(1),
-					ProjectID: models.ID(1),
-					Name:      "name-1",
-					Data:      "encryptedData",
-				},
-				{
-					ID:        models.ID(2),
-					ProjectID: models.ID(1),
-					Name:      "name-2",
-					Data:      "encryptedData",
-				},
+			want: &Response{
+				code: http.StatusNoContent,
 			},
 		},
 		{
-			name: "Should return not found if project is not exist",
-			vars: map[string]string{
-				"project_id": "1",
+			name: "success: delete external secret",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets/%d", s.project.ID, s.existingSecrets[2].ID),
 			},
-			expectedResponse: &Response{
-				code: 404,
-				data: ErrorMessage{"Project with given `project_id: 1` not found"},
+			want: &Response{
+				code: http.StatusNoContent,
 			},
-			errFetchingProject: fmt.Errorf("project not found"),
 		},
 		{
-			name: "Should return internal server error when listing secrets",
-			vars: map[string]string{
-				"project_id": "1",
+			name: "success: secret not found",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets/%d", 123, 123),
 			},
-			expectedResponse: &Response{
-				code: 500,
-				data: ErrorMessage{"db is down"},
+			want: &Response{
+				code: http.StatusNoContent,
 			},
-			existingProject: &models.Project{
-				ID:   models.ID(1),
-				Name: "project",
-			},
-			errSaveSecret: fmt.Errorf("db is down"),
 		},
 	}
-	for _, tC := range testCases {
-		t.Run(tC.name, func(t *testing.T) {
-			projectService := &mocks.ProjectsService{}
-			projectService.On("FindByID", models.ID(1)).Return(tC.existingProject, tC.errFetchingProject)
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
 
-			secretService := &mocks.SecretService{}
-			secretService.On("List", mock.Anything).Return(tC.secrets, tC.errSaveSecret)
+			server := httptest.NewServer(s.route)
+			defer server.Close()
 
-			controller := &SecretsController{
-				AppContext: &AppContext{
-					SecretService:   secretService,
-					ProjectsService: projectService,
-				},
-			}
+			e := httpexpect.Default(s.T(), server.URL)
 
-			res := controller.ListSecret(&http.Request{}, tC.vars, nil)
-			assert.Equal(t, tC.expectedResponse, res)
+			e.DELETE(tt.args.path).
+				Expect().
+				Status(tt.want.code)
 		})
 	}
+}
+
+func (s *SecretAPITestSuite) TestListSecret() {
+	type args struct {
+		path string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want *Response
+	}{
+		{
+			name: "success: get internal secret",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets", s.project.ID),
+			},
+			want: &Response{
+				code: http.StatusOK,
+				data: s.existingSecrets,
+			},
+		},
+		{
+			name: "error: project not found",
+			args: args{
+				path: fmt.Sprintf("/v1/projects/%d/secrets", 123),
+			},
+			want: &Response{
+				code: http.StatusNotFound,
+				data: ErrorMessage{"Project with given `project_id: 123` not found"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+
+			server := httptest.NewServer(s.route)
+			defer server.Close()
+
+			e := httpexpect.Default(s.T(), server.URL)
+
+			jsonObj := e.GET(tt.args.path).
+				Expect().
+				Status(tt.want.code).
+				JSON()
+
+			if tt.want.code >= http.StatusOK && tt.want.code < http.StatusMultipleChoices {
+				var secrets []*models.Secret
+				jsonObj.Array().Decode(&secrets)
+				for i, secret := range tt.want.data.([]*models.Secret) {
+					assertSecretEquals(s.T(), secret, secrets[i])
+				}
+			} else {
+				var err ErrorMessage
+				jsonObj.Object().Decode(&err)
+				s.Equal(tt.want.data, err)
+			}
+		})
+	}
+}
+
+func TestSecretAPI(t *testing.T) {
+	suite.Run(t, new(SecretAPITestSuite))
+}
+
+func assertSecretEquals(t *testing.T, exp *models.Secret, got *models.Secret) {
+	assert.Equal(t, exp.ID, got.ID)
+	assert.Equal(t, exp.ProjectID, got.ProjectID)
+	assert.Equal(t, exp.Name, got.Name)
+	assert.Equal(t, exp.Data, got.Data)
+	assert.Equal(t, *exp.SecretStorageID, *got.SecretStorageID)
+
+	assert.NotEmpty(t, got.CreatedAt)
+	assert.NotEmpty(t, got.UpdatedAt)
 }
