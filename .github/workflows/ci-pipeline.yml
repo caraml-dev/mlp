@@ -117,7 +117,7 @@ jobs:
         run: make lint-api
 
       - name: Run Integration Test
-        run: make it-test-api-local
+        run: make it-test-api
 
   e2e-test:
     runs-on: ubuntu-latest
