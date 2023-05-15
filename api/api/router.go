@@ -3,19 +3,21 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"reflect"
-
 	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/middleware"
+	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	"github.com/caraml-dev/mlp/api/pkg/instrumentation/newrelic"
+	"github.com/caraml-dev/mlp/api/pkg/secretstorage"
 	"github.com/caraml-dev/mlp/api/repository"
 	"github.com/caraml-dev/mlp/api/service"
 	"github.com/caraml-dev/mlp/api/validation"
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/copier"
 	"github.com/jinzhu/gorm"
+	"net/http"
+	"reflect"
 )
 
 type Controller interface {
@@ -23,9 +25,11 @@ type Controller interface {
 }
 
 type AppContext struct {
-	ApplicationService service.ApplicationService
-	ProjectsService    service.ProjectsService
-	SecretService      service.SecretService
+	ApplicationService   service.ApplicationService
+	ProjectsService      service.ProjectsService
+	SecretService        service.SecretService
+	SecretStorageService service.SecretStorageService
+	DefaultSecretStorage *models.SecretStorage
 
 	AuthorizationEnabled bool
 	Enforcer             enforcer.Enforcer
@@ -59,15 +63,54 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		return nil, fmt.Errorf("failed to initialize projects service: %v", err)
 	}
 
-	secretService := service.NewSecretService(repository.NewSecretRepository(db, cfg.EncryptionKey))
+	secretRepository := repository.NewSecretRepository(db)
+	storageRepository := repository.NewSecretStorageRepository(db)
+	projectRepository := repository.NewProjectRepository(db)
+
+	// initialize default secret storage or create one
+	defaultSecretStorage, err := initializeDefaultSecretStorage(storageRepository, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	// get all secret storages and create corresponding clients
+	allSecretStorages, err := storageRepository.ListAll()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list all secret storages: %v", err)
+	}
+	storageClientRegistry, err := secretstorage.NewRegistry(allSecretStorages)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize secret storage registry: %v", err)
+	}
+
+	secretService := service.NewSecretService(secretRepository, storageRepository, projectRepository, storageClientRegistry, defaultSecretStorage)
+	secretStorageService := service.NewSecretStorageService(storageRepository, storageClientRegistry)
 
 	return &AppContext{
 		ApplicationService:   applicationService,
 		ProjectsService:      projectsService,
 		SecretService:        secretService,
+		SecretStorageService: secretStorageService,
 		AuthorizationEnabled: cfg.Authorization.Enabled,
 		Enforcer:             authEnforcer,
+		DefaultSecretStorage: defaultSecretStorage,
 	}, nil
+}
+
+func initializeDefaultSecretStorage(storageRepository repository.SecretStorageRepository, cfg *config.Config) (*models.SecretStorage, error) {
+	defaultSecretStorage, err := storageRepository.GetGlobal(cfg.DefaultSecretStorageModel().Name)
+	if err != nil {
+		if err != gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("failed to initialize default secret storage: %v", err)
+		}
+
+		// create one if not found
+		return storageRepository.Save(cfg.DefaultSecretStorageModel())
+	}
+
+	// update default secret storage if it has changed
+	err = copier.CopyWithOption(defaultSecretStorage, cfg.DefaultSecretStorageModel(), copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	return storageRepository.Save(defaultSecretStorage)
 }
 
 // type Handler func(r *http.Request, vars map[string]string, body interface{}) *Response
