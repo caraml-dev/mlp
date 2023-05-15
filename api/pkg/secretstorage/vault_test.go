@@ -11,7 +11,7 @@ import (
 
 type VaultSecretStorageClientTestSuite struct {
 	suite.Suite
-	client SecretStorageClient
+	client Client
 }
 
 func (s *VaultSecretStorageClientTestSuite) SetupSuite() {
@@ -31,7 +31,7 @@ func (s *VaultSecretStorageClientTestSuite) SetupSuite() {
 		},
 	}
 
-	client, err := NewSecretStorageClient(secretStorage)
+	client, err := NewClient(secretStorage)
 	if err != nil {
 		s.FailNow("failed to create secret storage vaultClient", err)
 	}

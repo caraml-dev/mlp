@@ -21,7 +21,7 @@ type vaultSecretStorageClient struct {
 }
 
 // NewVaultSecretStorageClient creates a new secret storage client backed by Vault
-func NewVaultSecretStorageClient(ss *models.SecretStorage) (SecretStorageClient, error) {
+func NewVaultSecretStorageClient(ss *models.SecretStorage) (Client, error) {
 	tmpl, err := template.New("secret_path").Parse(ss.Config.VaultConfig.PathPrefix)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse secret path template: %w", err)
