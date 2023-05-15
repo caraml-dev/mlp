@@ -10,6 +10,8 @@ import (
 
 // SecretService is the interface that provides secret related methods.
 type SecretService interface {
+	// FindByID finds a secret given its secretID
+	FindByID(secretID models.ID) (*models.Secret, error)
 	// Create creates a secret in the storage and returns the created secret.
 	Create(secret *models.Secret) (*models.Secret, error)
 	// Update updates a secret in the storage and returns the updated secret.
@@ -43,6 +45,35 @@ type secretService struct {
 
 	storageClientRegistry *secretstorage.Registry
 	defaultSecretStorage  *models.SecretStorage
+}
+
+func (ss *secretService) FindByID(secretID models.ID) (*models.Secret, error) {
+	existingSecret, err := ss.secretRepository.Get(secretID)
+	if err != nil {
+		return nil, fmt.Errorf("error when fetching secret with id: %d, error: %w", secretID, err)
+	}
+
+	if existingSecret.SecretStorage.Type == models.InternalSecretStorageType {
+		return existingSecret, nil
+	}
+
+	storageClient, ok := ss.storageClientRegistry.Get(*existingSecret.SecretStorageID)
+	if !ok {
+		return nil, fmt.Errorf("secret storage client with id %d is not found", *existingSecret.SecretStorageID)
+	}
+
+	project, err := ss.projectRepository.Get(existingSecret.ProjectID)
+	if err != nil {
+		return nil, fmt.Errorf("error when fetching project with id: %d, error: %w", existingSecret.ProjectID, err)
+	}
+
+	secretValue, err := storageClient.Get(existingSecret.Name, project.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error when fetching secret from secret storage with id: %d, error: %w", *existingSecret.SecretStorageID, err)
+	}
+
+	existingSecret.Data = secretValue
+	return existingSecret, nil
 }
 
 // Create creates a secret in the storage and returns the created secret.

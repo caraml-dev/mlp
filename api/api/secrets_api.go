@@ -62,6 +62,15 @@ func (c *SecretsController) UpdateSecret(r *http.Request, vars map[string]string
 		return BadRequest("project_id and secret_id is not valid")
 	}
 
+	_, err := c.SecretService.FindByID(secretID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return NotFound(fmt.Sprintf("Secret with given `secret_id: %d` not found", secretID))
+		}
+
+		return InternalServerError(err.Error())
+	}
+
 	// check that the secret storage id exists if users specify it
 	if secret.SecretStorageID != nil {
 		_, err := c.SecretStorageService.FindByID(*secret.SecretStorageID)

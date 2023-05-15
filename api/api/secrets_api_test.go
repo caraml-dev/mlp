@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/jinzhu/gorm"
 	"net/http"
 	"testing"
 
@@ -13,8 +14,14 @@ import (
 )
 
 func TestCreateSecret(t *testing.T) {
-	testCases := []struct {
-		desc               string
+	secretStorage := &models.SecretStorage{
+		ID:   models.ID(1),
+		Name: "test-storage",
+		Type: models.VaultSecretStorageType,
+	}
+
+	tests := []struct {
+		name               string
 		vars               map[string]string
 		existingProject    *models.Project
 		errFetchingProject error
@@ -24,7 +31,7 @@ func TestCreateSecret(t *testing.T) {
 		expectedResponse   *Response
 	}{
 		{
-			desc: "Should success",
+			name: "Should success",
 			vars: map[string]string{
 				"project_id": "1",
 			},
@@ -38,7 +45,7 @@ func TestCreateSecret(t *testing.T) {
 					ID:        models.ID(1),
 					ProjectID: models.ID(1),
 					Name:      "name",
-					Data:      "encryptedData",
+					Data:      `{"id": 3}`,
 				},
 			},
 			existingProject: &models.Project{
@@ -49,11 +56,45 @@ func TestCreateSecret(t *testing.T) {
 				ID:        models.ID(1),
 				ProjectID: models.ID(1),
 				Name:      "name",
-				Data:      "encryptedData",
+				Data:      `{"id": 3}`,
 			},
 		},
 		{
-			desc: "Should return not found if project is not exist",
+			name: "Should success, create in non default secret storage",
+			vars: map[string]string{
+				"project_id": "1",
+			},
+			body: &models.Secret{
+				Name:            "name",
+				Data:            `{"id": 3}`,
+				SecretStorageID: &secretStorage.ID,
+			},
+			expectedResponse: &Response{
+				code: 201,
+				data: &models.Secret{
+					ID:              models.ID(1),
+					ProjectID:       models.ID(1),
+					Name:            "name",
+					Data:            `{"id": 3}`,
+					SecretStorageID: &secretStorage.ID,
+					SecretStorage:   secretStorage,
+				},
+			},
+			existingProject: &models.Project{
+				ID:   models.ID(1),
+				Name: "project",
+			},
+			savedSecret: &models.Secret{
+				ID:              models.ID(1),
+				ProjectID:       models.ID(1),
+				Name:            "name",
+				Data:            `{"id": 3}`,
+				SecretStorageID: &secretStorage.ID,
+				SecretStorage:   secretStorage,
+			},
+		},
+		{
+			name: "Should return not found if project is not exist",
 			vars: map[string]string{
 				"project_id": "1",
 			},
@@ -68,7 +109,7 @@ func TestCreateSecret(t *testing.T) {
 			errFetchingProject: fmt.Errorf("project not found"),
 		},
 		{
-			desc: "Should got bad request when body is not complete",
+			name: "Should got bad request when body is not complete",
 			vars: map[string]string{
 				"project_id": "1",
 			},
@@ -86,7 +127,7 @@ func TestCreateSecret(t *testing.T) {
 			},
 		},
 		{
-			desc: "Should return internal server error when failed save secret",
+			name: "Should return internal server error when failed save secret",
 			vars: map[string]string{
 				"project_id": "1",
 			},
@@ -105,18 +146,22 @@ func TestCreateSecret(t *testing.T) {
 			errSaveSecret: fmt.Errorf("db is down"),
 		},
 	}
-	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
+	for _, tC := range tests {
+		t.Run(tC.name, func(t *testing.T) {
 			projectService := &mocks.ProjectsService{}
 			projectService.On("FindByID", models.ID(1)).Return(tC.existingProject, tC.errFetchingProject)
 
 			secretService := &mocks.SecretService{}
-			secretService.On("Save", mock.Anything).Return(tC.savedSecret, tC.errSaveSecret)
+			secretService.On("Create", mock.Anything).Return(tC.savedSecret, tC.errSaveSecret)
+
+			secretStorageService := &mocks.SecretStorageService{}
+			secretStorageService.On("FindByID", secretStorage.ID).Return(secretStorage, nil)
 
 			controller := &SecretsController{
 				AppContext: &AppContext{
-					SecretService:   secretService,
-					ProjectsService: projectService,
+					SecretService:        secretService,
+					ProjectsService:      projectService,
+					SecretStorageService: secretStorageService,
 				},
 			}
 
@@ -128,7 +173,7 @@ func TestCreateSecret(t *testing.T) {
 
 func TestUpdateSecret(t *testing.T) {
 	testCases := []struct {
-		desc              string
+		name              string
 		vars              map[string]string
 		body              interface{}
 		existingSecret    *models.Secret
@@ -138,7 +183,7 @@ func TestUpdateSecret(t *testing.T) {
 		expectedResponse  *Response
 	}{
 		{
-			desc: "Should responded 204",
+			name: "Should responded 204",
 			vars: map[string]string{
 				"project_id": "1",
 				"secret_id":  "1",
@@ -170,7 +215,7 @@ func TestUpdateSecret(t *testing.T) {
 			},
 		},
 		{
-			desc: "Should responded 204 even body is partially there",
+			name: "Should responded 204 even body is partially there",
 			vars: map[string]string{
 				"project_id": "1",
 				"secret_id":  "1",
@@ -201,7 +246,7 @@ func TestUpdateSecret(t *testing.T) {
 			},
 		},
 		{
-			desc: "Should responded 400 when project_id and secret_id is not integer",
+			name: "Should responded 400 when project_id and secret_id is not integer",
 			vars: map[string]string{
 				"project_id": "abc",
 				"secret_id":  "def",
@@ -227,7 +272,7 @@ func TestUpdateSecret(t *testing.T) {
 			},
 		},
 		{
-			desc: "Should responded 400 when body is invalid",
+			name: "Should responded 400 when body is invalid",
 			vars: map[string]string{
 				"project_id": "1",
 				"secret_id":  "1",
@@ -251,7 +296,7 @@ func TestUpdateSecret(t *testing.T) {
 			},
 		},
 		{
-			desc: "Should responded 404 when secret not found",
+			name: "Should responded 404 when secret not found",
 			vars: map[string]string{
 				"project_id": "1",
 				"secret_id":  "1",
@@ -260,14 +305,14 @@ func TestUpdateSecret(t *testing.T) {
 				Name: "name",
 			},
 			existingSecret:    nil,
-			errFetchingSecret: nil,
+			errFetchingSecret: gorm.ErrRecordNotFound,
 			expectedResponse: &Response{
 				code: 404,
-				data: ErrorMessage{"Secret with given `secret_id: 1` and `project_id: 1` not found"},
+				data: ErrorMessage{"Secret with given `secret_id: 1` not found"},
 			},
 		},
 		{
-			desc: "Should responded 500 when error fetching secret",
+			name: "Should responded 500 when error fetching secret",
 			vars: map[string]string{
 				"project_id": "1",
 				"secret_id":  "1",
@@ -282,7 +327,7 @@ func TestUpdateSecret(t *testing.T) {
 			},
 		},
 		{
-			desc: "Should responded 500 when error fetching secret",
+			name: "Should responded 500 when error fetching secret",
 			vars: map[string]string{
 				"project_id": "1",
 				"secret_id":  "1",
@@ -304,10 +349,10 @@ func TestUpdateSecret(t *testing.T) {
 		},
 	}
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
+		t.Run(tC.name, func(t *testing.T) {
 			secretService := &mocks.SecretService{}
-			secretService.On("FindByIDAndProjectID", models.ID(1), models.ID(1)).Return(tC.existingSecret, tC.errFetchingSecret)
-			secretService.On("Save", mock.Anything).Return(tC.updatedSecret, tC.errUpdatingSecret)
+			secretService.On("FindByID", models.ID(1)).Return(tC.existingSecret, tC.errFetchingSecret)
+			secretService.On("Update", mock.Anything).Return(tC.updatedSecret, tC.errUpdatingSecret)
 
 			controller := &SecretsController{
 				AppContext: &AppContext{
@@ -323,13 +368,13 @@ func TestUpdateSecret(t *testing.T) {
 
 func TestDeleteSecret(t *testing.T) {
 	testCases := []struct {
-		desc              string
+		name              string
 		vars              map[string]string
 		errDeletingSecret error
 		expectedResponse  *Response
 	}{
 		{
-			desc: "Should responsed 204",
+			name: "Should responsed 204",
 			vars: map[string]string{
 				"project_id": "1",
 				"secret_id":  "1",
@@ -340,7 +385,7 @@ func TestDeleteSecret(t *testing.T) {
 			},
 		},
 		{
-			desc: "Should responsed 400 if project_id or secret_id is invalid",
+			name: "Should responsed 400 if project_id or secret_id is invalid",
 			vars: map[string]string{
 				"project_id": "def",
 				"secret_id":  "ghi",
@@ -351,7 +396,7 @@ func TestDeleteSecret(t *testing.T) {
 			},
 		},
 		{
-			desc: "Should responsed 500",
+			name: "Should responsed 500",
 			vars: map[string]string{
 				"project_id": "1",
 				"secret_id":  "1",
@@ -364,9 +409,9 @@ func TestDeleteSecret(t *testing.T) {
 		},
 	}
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
+		t.Run(tC.name, func(t *testing.T) {
 			secretService := &mocks.SecretService{}
-			secretService.On("Delete", models.ID(1), models.ID(1)).Return(tC.errDeletingSecret)
+			secretService.On("Delete", models.ID(1)).Return(tC.errDeletingSecret)
 
 			controller := &SecretsController{
 				AppContext: &AppContext{
@@ -381,7 +426,7 @@ func TestDeleteSecret(t *testing.T) {
 
 func TestListSecret(t *testing.T) {
 	testCases := []struct {
-		desc               string
+		name               string
 		vars               map[string]string
 		existingProject    *models.Project
 		errFetchingProject error
@@ -390,7 +435,7 @@ func TestListSecret(t *testing.T) {
 		expectedResponse   *Response
 	}{
 		{
-			desc: "Should success",
+			name: "Should success",
 			vars: map[string]string{
 				"project_id": "1",
 			},
@@ -431,7 +476,7 @@ func TestListSecret(t *testing.T) {
 			},
 		},
 		{
-			desc: "Should return not found if project is not exist",
+			name: "Should return not found if project is not exist",
 			vars: map[string]string{
 				"project_id": "1",
 			},
@@ -442,7 +487,7 @@ func TestListSecret(t *testing.T) {
 			errFetchingProject: fmt.Errorf("project not found"),
 		},
 		{
-			desc: "Should return internal server error when listing secrets",
+			name: "Should return internal server error when listing secrets",
 			vars: map[string]string{
 				"project_id": "1",
 			},
@@ -458,12 +503,12 @@ func TestListSecret(t *testing.T) {
 		},
 	}
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
+		t.Run(tC.name, func(t *testing.T) {
 			projectService := &mocks.ProjectsService{}
 			projectService.On("FindByID", models.ID(1)).Return(tC.existingProject, tC.errFetchingProject)
 
 			secretService := &mocks.SecretService{}
-			secretService.On("ListSecret", mock.Anything).Return(tC.secrets, tC.errSaveSecret)
+			secretService.On("List", mock.Anything).Return(tC.secrets, tC.errSaveSecret)
 
 			controller := &SecretsController{
 				AppContext: &AppContext{
