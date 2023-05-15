@@ -8,6 +8,8 @@ type Secret struct {
 	ID ID `json:"id"`
 	// ProjectID is the unique identifier of the project
 	ProjectID ID `json:"project_id"`
+	// Project is the project of the secret
+	Project *Project `json:"-"`
 	// Name is the name of the secret
 	Name string `json:"name"`
 	// Data is secret value
