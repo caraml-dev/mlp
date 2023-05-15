@@ -65,6 +65,9 @@ type VaultConfig struct {
 	// This field is only used when the auth method is "token"
 	// Only use this method when Vault is running in dev mode
 	Token string `json:"token,omitempty"`
+	// ServiceAccountEmail is the service account email to be used when communicating with Vault
+	// This field is only used when the AuthMethod is "gcp" and GCPAuthType is "iam"
+	ServiceAccountEmail string `json:"service_account_email"`
 }
 
 // SecretStorageScope is the scope of the secret storage
