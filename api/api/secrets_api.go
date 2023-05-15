@@ -1,11 +1,13 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
+	"github.com/jinzhu/gorm"
 )
 
 type SecretsController struct {
@@ -26,7 +28,20 @@ func (c *SecretsController) CreateSecret(r *http.Request, vars map[string]string
 		return BadRequest("Invalid request body")
 	}
 
-	secret, err = c.SecretService.Save(secret)
+	// check that the secret storage id exists if users specify it
+	if secret.SecretStorageID != nil {
+		_, err = c.SecretStorageService.FindByID(*secret.SecretStorageID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return NotFound(fmt.Sprintf("Secret storage with given `secret_storage_id: %d` not found", *secret.SecretStorageID))
+			}
+
+			return InternalServerError(err.Error())
+		}
+	}
+
+	// creates
+	secret, err = c.SecretService.Create(secret)
 	if err != nil {
 		log.Errorf("Failed create new secret with %v", err)
 		return InternalServerError(err.Error())
@@ -46,28 +61,25 @@ func (c *SecretsController) UpdateSecret(r *http.Request, vars map[string]string
 		log.Warnf("ID: %d or project_id not valid", secretID, projectID)
 		return BadRequest("project_id and secret_id is not valid")
 	}
-	existingSecret, err := c.SecretService.FindByIDAndProjectID(secretID, projectID)
-	if err != nil {
-		log.Errorf("Unable to find secret with %v", err)
-		return InternalServerError(err.Error())
-	}
-	if existingSecret == nil {
-		log.Warnf("Secret with id: %d and project_id not found", secretID, projectID)
-		return NotFound(fmt.Sprintf("Secret with given `secret_id: %d` and `project_id: %d` not found", secretID, projectID))
+
+	// check that the secret storage id exists if users specify it
+	if secret.SecretStorageID != nil {
+		_, err := c.SecretStorageService.FindByID(*secret.SecretStorageID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return NotFound(fmt.Sprintf("Secret storage with given `secret_storage_id: %d` not found", *secret.SecretStorageID))
+			}
+
+			return InternalServerError(err.Error())
+		}
 	}
 
-	existingSecret.CopyValueFrom(secret)
-	if !existingSecret.IsValidForMutation() {
-		log.Warnf("Unable to update secret because secret: %v is not valid", existingSecret)
-		return BadRequest("Invalid request body")
-	}
-
-	existingSecret, err = c.SecretService.Save(existingSecret)
+	updatedSecret, err := c.SecretService.Update(secret)
 	if err != nil {
 		log.Errorf("Failed update secret with %v", err)
 		return InternalServerError(err.Error())
 	}
-	return Ok(existingSecret)
+	return Ok(updatedSecret)
 }
 
 func (c *SecretsController) DeleteSecret(r *http.Request, vars map[string]string, _ interface{}) *Response {
@@ -78,8 +90,8 @@ func (c *SecretsController) DeleteSecret(r *http.Request, vars map[string]string
 		return BadRequest("project_id and secret_id is not valid")
 	}
 
-	if err := c.SecretService.Delete(secretID, projectID); err != nil {
-		log.Errorf("Failed delete secret with %v", err)
+	if err := c.SecretService.Delete(secretID); err != nil {
+		log.Errorf("Failed delete secret with id %v", err)
 		return InternalServerError(err.Error())
 	}
 	return NoContent()
@@ -93,7 +105,7 @@ func (c *SecretsController) ListSecret(r *http.Request, vars map[string]string, 
 		return NotFound(fmt.Sprintf("Project with given `project_id: %d` not found", projectID))
 	}
 
-	secrets, err := c.SecretService.ListSecret(projectID)
+	secrets, err := c.SecretService.List(projectID)
 	if err != nil {
 		log.Errorf("Failed retrieving secret from project id %s: %v", projectID, err)
 		return InternalServerError(err.Error())
