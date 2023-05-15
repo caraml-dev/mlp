@@ -17,7 +17,6 @@ import (
 
 type Config struct {
 	APIHost       string `validate:"required"`
-	EncryptionKey string `validate:"required"`
 	Environment   string `validate:"required"`
 	Port          int    `validate:"required"`
 	SentryDSN     string
