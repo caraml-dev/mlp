@@ -46,7 +46,8 @@ lint-ui:
 .PHONY: fmt
 fmt:
 	@echo "Formatting code..."
-	gofmt -s -w ${SRC_ROOT}
+	@goimports -w -local github.com/caraml-dev/mlp $(shell find . -type f -name '*.go' -not -path "**/vendor/*")
+	@gofmt -s -w .
 
 .PHONY: lint-api
 lint-api: setup

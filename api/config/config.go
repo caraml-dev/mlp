@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/caraml-dev/mlp/api/models"
-	modelsv2 "github.com/caraml-dev/mlp/api/models/v2"
 	"github.com/go-playground/validator/v10"
 	"github.com/iancoleman/strcase"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
+
+	"github.com/caraml-dev/mlp/api/models"
+	modelsv2 "github.com/caraml-dev/mlp/api/models/v2"
 )
 
 type Config struct {

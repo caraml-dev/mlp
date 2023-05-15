@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
-	"github.com/jinzhu/gorm"
 )
 
 type ProjectsController struct {

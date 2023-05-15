@@ -5,11 +5,12 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/models"
 	modelsv2 "github.com/caraml-dev/mlp/api/models/v2"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func envSetter(envs map[string]string) (closer func()) {

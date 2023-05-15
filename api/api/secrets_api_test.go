@@ -4,18 +4,20 @@ package api
 
 import (
 	"fmt"
-	"github.com/caraml-dev/mlp/api/config"
-	"github.com/caraml-dev/mlp/api/it/database"
-	"github.com/caraml-dev/mlp/api/models"
-	"github.com/gavv/httpexpect/v2"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gavv/httpexpect/v2"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/caraml-dev/mlp/api/config"
+	"github.com/caraml-dev/mlp/api/it/database"
+	"github.com/caraml-dev/mlp/api/models"
 )
 
 type SecretAPITestSuite struct {
@@ -282,7 +284,8 @@ func (s *SecretAPITestSuite) TestCreateSecret() {
 			},
 			want: &Response{
 				code: http.StatusInternalServerError,
-				data: ErrorMessage{"error when saving secret in database, error: pq: duplicate key value violates unique constraint \"secrets_project_id_name_key\""},
+				data: ErrorMessage{"error when saving secret in database, " +
+					"error: pq: duplicate key value violates unique constraint \"secrets_project_id_name_key\""},
 			},
 		},
 	}

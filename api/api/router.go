@@ -3,6 +3,14 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"reflect"
+
+	"github.com/go-playground/validator"
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/copier"
+	"github.com/jinzhu/gorm"
+
 	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/middleware"
 	"github.com/caraml-dev/mlp/api/models"
@@ -12,12 +20,6 @@ import (
 	"github.com/caraml-dev/mlp/api/repository"
 	"github.com/caraml-dev/mlp/api/service"
 	"github.com/caraml-dev/mlp/api/validation"
-	"github.com/go-playground/validator"
-	"github.com/gorilla/mux"
-	"github.com/jinzhu/copier"
-	"github.com/jinzhu/gorm"
-	"net/http"
-	"reflect"
 )
 
 type Controller interface {
@@ -83,7 +85,8 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		return nil, fmt.Errorf("failed to initialize secret storage registry: %v", err)
 	}
 
-	secretService := service.NewSecretService(secretRepository, storageRepository, projectRepository, storageClientRegistry, defaultSecretStorage)
+	secretService := service.NewSecretService(secretRepository, storageRepository,
+		projectRepository, storageClientRegistry, defaultSecretStorage)
 	secretStorageService := service.NewSecretStorageService(storageRepository, storageClientRegistry)
 
 	return &AppContext{
@@ -97,8 +100,11 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 	}, nil
 }
 
-func initializeDefaultSecretStorage(storageRepository repository.SecretStorageRepository, cfg *config.Config) (*models.SecretStorage, error) {
+func initializeDefaultSecretStorage(
+	storageRepository repository.SecretStorageRepository,
+	cfg *config.Config) (*models.SecretStorage, error) {
 	defaultSecretStorage, err := storageRepository.GetGlobal(cfg.DefaultSecretStorageModel().Name)
+
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("failed to initialize default secret storage: %v", err)
@@ -109,7 +115,13 @@ func initializeDefaultSecretStorage(storageRepository repository.SecretStorageRe
 	}
 
 	// update default secret storage if it has changed
-	err = copier.CopyWithOption(defaultSecretStorage, cfg.DefaultSecretStorageModel(), copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	err = copier.CopyWithOption(defaultSecretStorage, cfg.DefaultSecretStorageModel(),
+		copier.Option{IgnoreEmpty: true, DeepCopy: true})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed copying default secret storage: %v", err)
+	}
+
 	return storageRepository.Save(defaultSecretStorage)
 }
 

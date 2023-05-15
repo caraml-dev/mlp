@@ -8,15 +8,16 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gorilla/mux"
+	"github.com/heptiolabs/healthcheck"
+	"github.com/rs/cors"
+	flag "github.com/spf13/pflag"
+
 	"github.com/caraml-dev/mlp/api/api"
 	apiV2 "github.com/caraml-dev/mlp/api/api/v2"
 	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/database"
 	"github.com/caraml-dev/mlp/api/log"
-	"github.com/gorilla/mux"
-	"github.com/heptiolabs/healthcheck"
-	"github.com/rs/cors"
-	flag "github.com/spf13/pflag"
 )
 
 func main() {

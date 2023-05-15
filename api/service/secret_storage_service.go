@@ -16,7 +16,8 @@ type secretStorageService struct {
 	ssClientRegistry *secretstorage.Registry
 }
 
-func NewSecretStorageService(ssRepository repository.SecretStorageRepository, ssClientRegistry *secretstorage.Registry) SecretStorageService {
+func NewSecretStorageService(ssRepository repository.SecretStorageRepository,
+	ssClientRegistry *secretstorage.Registry) SecretStorageService {
 	return &secretStorageService{
 		ssRepository:     ssRepository,
 		ssClientRegistry: ssClientRegistry,

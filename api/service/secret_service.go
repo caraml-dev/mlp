@@ -3,11 +3,13 @@ package service
 import (
 	"errors"
 	"fmt"
+
+	"github.com/jinzhu/gorm"
+
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/secretstorage"
 	"github.com/caraml-dev/mlp/api/repository"
 	"github.com/caraml-dev/mlp/api/util"
-	"github.com/jinzhu/gorm"
 )
 
 // SecretService is the interface that provides secret related methods.
@@ -66,7 +68,8 @@ func (ss *secretService) FindByID(secretID models.ID) (*models.Secret, error) {
 
 	secretValue, err := storageClient.Get(existingSecret.Name, existingSecret.Project.Name)
 	if err != nil {
-		return nil, fmt.Errorf("error when fetching secret from secret storage with id: %d, error: %w", *existingSecret.SecretStorageID, err)
+		return nil, fmt.Errorf("error when fetching secret from secret storage with id: %d, error: %w",
+			*existingSecret.SecretStorageID, err)
 	}
 
 	existingSecret.Data = secretValue
@@ -107,7 +110,8 @@ func (ss *secretService) Create(secret *models.Secret) (*models.Secret, error) {
 	// Update secret data in the corresponding secret storage
 	err = ssClient.Set(secret.Name, secret.Data, project.Name)
 	if err != nil {
-		return nil, fmt.Errorf("error when creating secret in secret storage with id: %d, error: %w", *secret.SecretStorageID, err)
+		return nil, fmt.Errorf("error when creating secret in secret storage with id: %d, error: %w",
+			*secret.SecretStorageID, err)
 	}
 
 	return ss.saveExternalSecret(secret)
@@ -145,7 +149,8 @@ func (ss *secretService) List(projectID models.ID) ([]*models.Secret, error) {
 
 		temp, err := secretStorageClient.List(secrets[0].Project.Name)
 		if err != nil {
-			return nil, fmt.Errorf("error when fetching secrets from secret storage with id: %d, error: %w", storageID, err)
+			return nil, fmt.Errorf("error when fetching secrets from secret storage with id: %d, error: %w",
+				storageID, err)
 		}
 
 		secretKVs = util.JoinMaps(secretKVs, temp)
@@ -166,7 +171,8 @@ func (ss *secretService) List(projectID models.ID) ([]*models.Secret, error) {
 func (ss *secretService) Update(secret *models.Secret) (*models.Secret, error) {
 	existingSecret, err := ss.secretRepository.Get(secret.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error when fetching secret with id: %d, project_id: %d, error: %w", secret.ID, secret.ProjectID, err)
+		return nil, fmt.Errorf("error when fetching secret with id: %d, project_id: %d, error: %w",
+			secret.ID, secret.ProjectID, err)
 	}
 
 	// secret storage id is changed, migrate the secret to the new storage
@@ -176,7 +182,8 @@ func (ss *secretService) Update(secret *models.Secret) (*models.Secret, error) {
 
 	secretStorage, err := ss.storageRepository.Get(*secret.SecretStorageID)
 	if err != nil {
-		return nil, fmt.Errorf("error when fetching secret storage with id: %d, error: %w", *secret.SecretStorageID, err)
+		return nil, fmt.Errorf("error when fetching secret storage with id: %d, error: %w",
+			*secret.SecretStorageID, err)
 	}
 
 	if secretStorage.Type == models.InternalSecretStorageType {
@@ -193,7 +200,8 @@ func (ss *secretService) Update(secret *models.Secret) (*models.Secret, error) {
 	// Update secret data in the corresponding secret storage
 	err = ssClient.Set(secret.Project.Name, secret.Data, secret.Name)
 	if err != nil {
-		return nil, fmt.Errorf("error when creating secret in secret storage with id: %d, error: %w", *secret.SecretStorageID, err)
+		return nil, fmt.Errorf("error when creating secret in secret storage with id: %d, error: %w",
+			*secret.SecretStorageID, err)
 	}
 
 	return ss.saveExternalSecret(secret)
@@ -217,7 +225,8 @@ func (ss *secretService) Delete(secretID models.ID) error {
 
 		err = ssClient.Delete(existingSecret.Name, existingSecret.Project.Name)
 		if err != nil {
-			return fmt.Errorf("error when deleting secret in secret storage with id: %d, error: %w", existingSecret.SecretStorage.ID, err)
+			return fmt.Errorf("error when deleting secret in secret storage with id: %d, error: %w",
+				existingSecret.SecretStorage.ID, err)
 		}
 	}
 
@@ -258,7 +267,8 @@ func (ss *secretService) migrateSecret(oldSecret *models.Secret, newSecret *mode
 
 		secretValue, err := oldSsClient.Get(oldSecret.Name, oldSecret.Project.Name)
 		if err != nil {
-			return nil, fmt.Errorf("error when fetching secret from secret storage with id: %d, error: %w", *oldSecret.SecretStorageID, err)
+			return nil, fmt.Errorf("error when fetching secret from secret storage with id: %d, error: %w",
+				*oldSecret.SecretStorageID, err)
 		}
 
 		oldSecret.Data = secretValue
@@ -266,7 +276,8 @@ func (ss *secretService) migrateSecret(oldSecret *models.Secret, newSecret *mode
 		// delete secret from old storage
 		err = oldSsClient.Delete(oldSecret.Name, oldSecret.Project.Name)
 		if err != nil {
-			return nil, fmt.Errorf("error when deleting secret from secret storage with id: %d, error: %w", *oldSecret.SecretStorageID, err)
+			return nil, fmt.Errorf("error when deleting secret from secret storage with id: %d, error: %w",
+				*oldSecret.SecretStorageID, err)
 		}
 	}
 
@@ -282,7 +293,8 @@ func (ss *secretService) migrateSecret(oldSecret *models.Secret, newSecret *mode
 
 	err = newSsClient.Set(newSecret.Name, newSecret.Data, oldSecret.Project.Name)
 	if err != nil {
-		return nil, fmt.Errorf("error when creating secret in secret storage with id: %d, error: %w", *newSecret.SecretStorageID, err)
+		return nil, fmt.Errorf("error when creating secret in secret storage with id: %d, error: %w",
+			*newSecret.SecretStorageID, err)
 	}
 
 	return ss.saveExternalSecret(newSecret)

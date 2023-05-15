@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	enforcerMock "github.com/caraml-dev/mlp/api/pkg/authz/enforcer/mocks"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer/types"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/repository/mocks"

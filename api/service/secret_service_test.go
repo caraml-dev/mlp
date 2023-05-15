@@ -2,14 +2,16 @@ package service
 
 import (
 	"fmt"
+	"testing"
+
+	"github.com/jinzhu/gorm"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/secretstorage"
 	ssmocks "github.com/caraml-dev/mlp/api/pkg/secretstorage/mocks"
 	"github.com/caraml-dev/mlp/api/repository/mocks"
-	"github.com/jinzhu/gorm"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestSecretService_FindByID(t *testing.T) {
@@ -95,19 +97,27 @@ func TestSecretService_FindByID(t *testing.T) {
 
 			ssClient := &ssmocks.Client{}
 			if tt.existingSecret != nil {
-				ssClient.On("Get", tt.existingSecret.Name, project.Name).Return(tt.existingSecret.Data, tt.errorFromSecretStorageClient)
+				ssClient.On("Get", tt.existingSecret.Name, project.Name).
+					Return(tt.existingSecret.Data, tt.errorFromSecretStorageClient)
 			}
 			ssClientRegistry.Set(internalSecretStorage.ID, ssClient)
 			ssClientRegistry.Set(vaultSecretStorage.ID, ssClient)
 
 			storageRepository := &mocks.SecretStorageRepository{}
-			storageRepository.On("Get", internalSecretStorage.ID).Return(internalSecretStorage, tt.errorFromSecretStorageRepository)
-			storageRepository.On("Get", vaultSecretStorage.ID).Return(vaultSecretStorage, tt.errorFromSecretStorageRepository)
+			storageRepository.On("Get", internalSecretStorage.ID).
+				Return(internalSecretStorage, tt.errorFromSecretStorageRepository)
+			storageRepository.On("Get", vaultSecretStorage.ID).
+				Return(vaultSecretStorage, tt.errorFromSecretStorageRepository)
 
 			secretRepository := &mocks.SecretRepository{}
-			secretRepository.On("Get", tt.args.secretID).Return(tt.existingSecret, tt.errorFromSecretRepository)
+			secretRepository.On("Get", tt.args.secretID).
+				Return(tt.existingSecret, tt.errorFromSecretRepository)
 
-			secretService := NewSecretService(secretRepository, storageRepository, projectRepository, ssClientRegistry, vaultSecretStorage)
+			secretService := NewSecretService(secretRepository,
+				storageRepository,
+				projectRepository,
+				ssClientRegistry,
+				vaultSecretStorage)
 			result, err := secretService.FindByID(tt.args.secretID)
 			if tt.expectedError != "" {
 				assert.EqualError(t, err, tt.expectedError)
@@ -229,18 +239,26 @@ func TestSecretService_Create(t *testing.T) {
 			require.NoError(t, err)
 
 			ssClient := &ssmocks.Client{}
-			ssClient.On("Set", tt.secret.Name, tt.secret.Data, project.Name).Return(tt.errorFromSecretStorageClient)
+			ssClient.On("Set", tt.secret.Name, tt.secret.Data, project.Name).
+				Return(tt.errorFromSecretStorageClient)
 			ssClientRegistry.Set(internalSecretStorage.ID, ssClient)
 			ssClientRegistry.Set(vaultSecretStorage.ID, ssClient)
 
 			storageRepository := &mocks.SecretStorageRepository{}
-			storageRepository.On("Get", internalSecretStorage.ID).Return(internalSecretStorage, tt.errorFromSecretStorageRepository)
-			storageRepository.On("Get", vaultSecretStorage.ID).Return(vaultSecretStorage, tt.errorFromSecretStorageRepository)
+			storageRepository.On("Get", internalSecretStorage.ID).
+				Return(internalSecretStorage, tt.errorFromSecretStorageRepository)
+			storageRepository.On("Get", vaultSecretStorage.ID).
+				Return(vaultSecretStorage, tt.errorFromSecretStorageRepository)
 
 			secretRepository := &mocks.SecretRepository{}
-			secretRepository.On("Save", tt.secret).Return(tt.secret, tt.errorFromSecretRepository)
+			secretRepository.On("Save", tt.secret).
+				Return(tt.secret, tt.errorFromSecretRepository)
 
-			secretService := NewSecretService(secretRepository, storageRepository, projectRepository, ssClientRegistry, vaultSecretStorage)
+			secretService := NewSecretService(secretRepository,
+				storageRepository,
+				projectRepository,
+				ssClientRegistry,
+				vaultSecretStorage)
 			result, err := secretService.Create(tt.secret)
 			if tt.expectedError != "" {
 				assert.EqualError(t, err, tt.expectedError)
@@ -417,7 +435,11 @@ func TestSecretService_List(t *testing.T) {
 
 	storageRepository := &mocks.SecretStorageRepository{}
 
-	secretService := NewSecretService(secretRepository, storageRepository, projectRepository, ssClientRegistry, vaultSecretStorage)
+	secretService := NewSecretService(secretRepository,
+		storageRepository,
+		projectRepository,
+		ssClientRegistry,
+		vaultSecretStorage)
 	actual, err := secretService.List(project.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, secrets, actual)
@@ -556,7 +578,11 @@ func TestSecretService_Update(t *testing.T) {
 			storageRepository.On("Get", internalSecretStorage.ID).Return(internalSecretStorage, nil)
 			storageRepository.On("Get", vaultSecretStorage.ID).Return(vaultSecretStorage, nil)
 
-			secretService := NewSecretService(secretRepository, storageRepository, projectRepository, ssClientRegistry, vaultSecretStorage)
+			secretService := NewSecretService(secretRepository,
+				storageRepository,
+				projectRepository,
+				ssClientRegistry,
+				vaultSecretStorage)
 			got, err := secretService.Update(tt.args.secret)
 			if tt.expectedError != "" {
 				assert.EqualError(t, err, tt.expectedError)

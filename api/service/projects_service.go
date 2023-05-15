@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/caraml-dev/mlp/api/repository"
 	"github.com/pkg/errors"
+
+	"github.com/caraml-dev/mlp/api/repository"
 
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"

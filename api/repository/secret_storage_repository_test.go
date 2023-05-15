@@ -5,10 +5,11 @@ package repository
 import (
 	"testing"
 
-	"github.com/caraml-dev/mlp/api/it/database"
-	"github.com/caraml-dev/mlp/api/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/caraml-dev/mlp/api/it/database"
+	"github.com/caraml-dev/mlp/api/models"
 )
 
 type SecretStorageTestSuite struct {

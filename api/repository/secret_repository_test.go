@@ -4,12 +4,14 @@ package repository
 
 import (
 	"fmt"
-	"github.com/caraml-dev/mlp/api/it/database"
-	"github.com/caraml-dev/mlp/api/models"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/caraml-dev/mlp/api/it/database"
+	"github.com/caraml-dev/mlp/api/models"
 )
 
 type SecretRepositoryTestSuite struct {
@@ -65,10 +67,10 @@ func (suite *SecretRepositoryTestSuite) TearDownSuite() {
 
 func (suite *SecretRepositoryTestSuite) TestSave() {
 	tests := []struct {
-		name             string
-		secret           *models.Secret
-		want             *models.Secret
-		wantErrorMessage string
+		name       string
+		secret     *models.Secret
+		want       *models.Secret
+		wantErrMsg string
 	}{
 		{
 			name: "Should success if all validation is met",
@@ -92,7 +94,7 @@ func (suite *SecretRepositoryTestSuite) TestSave() {
 				Name:      "name",
 				Data:      "data",
 			},
-			wantErrorMessage: `pq: insert or update on table "secrets" violates foreign key constraint "secrets_project_id_fkey"`,
+			wantErrMsg: `pq: insert or update on table "secrets" violates foreign key constraint "secrets_project_id_fkey"`,
 		},
 		{
 			name: "Should failed if existing secret name used in the same project_id",
@@ -101,7 +103,7 @@ func (suite *SecretRepositoryTestSuite) TestSave() {
 				Name:      "secret_name",
 				Data:      "data",
 			},
-			wantErrorMessage: `pq: duplicate key value violates unique constraint "secrets_project_id_name_key"`,
+			wantErrMsg: `pq: duplicate key value violates unique constraint "secrets_project_id_name_key"`,
 		},
 		{
 			name: "Should success edit secret data",
@@ -127,8 +129,8 @@ func (suite *SecretRepositoryTestSuite) TestSave() {
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
 			got, err := suite.secretRepository.Save(tt.secret)
-			if tt.wantErrorMessage != "" {
-				suite.Assert().EqualError(err, tt.wantErrorMessage)
+			if tt.wantErrMsg != "" {
+				suite.Assert().EqualError(err, tt.wantErrMsg)
 				return
 			}
 

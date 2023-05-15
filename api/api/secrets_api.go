@@ -3,12 +3,14 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/jinzhu/copier"
 	"net/http"
+
+	"github.com/jinzhu/copier"
+
+	"github.com/jinzhu/gorm"
 
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
-	"github.com/jinzhu/gorm"
 )
 
 type SecretsController struct {
@@ -97,7 +99,8 @@ func (c *SecretsController) UpdateSecret(r *http.Request, vars map[string]string
 		_, err := c.SecretStorageService.FindByID(*updateRequest.SecretStorageID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return NotFound(fmt.Sprintf("Secret storage with given `secret_storage_id: %d` not found", *updateRequest.SecretStorageID))
+				return NotFound(fmt.Sprintf("Secret storage with given `secret_storage_id: %d` not found",
+					*updateRequest.SecretStorageID))
 			}
 
 			return InternalServerError(err.Error())

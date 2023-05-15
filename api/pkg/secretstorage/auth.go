@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/caraml-dev/mlp/api/models"
 	vault "github.com/hashicorp/vault/api"
 	gcpauth "github.com/hashicorp/vault/api/auth/gcp"
+
+	"github.com/caraml-dev/mlp/api/models"
 )
 
 // authHelper is an interface for authentication against Vault

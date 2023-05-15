@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"text/template"
 
+	vault "github.com/hashicorp/vault/api"
+
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
 	mlperror "github.com/caraml-dev/mlp/api/pkg/errors"
-	vault "github.com/hashicorp/vault/api"
 )
 
 type vaultSecretStorageClient struct {
@@ -194,7 +195,7 @@ func (v *vaultSecretStorageClient) renewToken() {
 // Starts token lifecycle management. Returns only fatal errors as errors,
 // otherwise returns nil, so we can attempt login again.
 func (v *vaultSecretStorageClient) manageTokenLifecycle(token *vault.Secret) error {
-	renew := token.Auth.Renewable // You may notice a different top-level field called Renewable. That one is used for dynamic secrets renewal, not token renewal.
+	renew := token.Auth.Renewable
 	if !renew {
 		log.Infof("Token is not configured to be renewable. Re-attempting login.")
 		return nil

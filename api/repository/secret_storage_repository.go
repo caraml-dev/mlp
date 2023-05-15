@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"github.com/caraml-dev/mlp/api/models"
 	"github.com/jinzhu/gorm"
+
+	"github.com/caraml-dev/mlp/api/models"
 )
 
 // SecretStorageRepository is an interface for interacting with "secret_storages" table in DB

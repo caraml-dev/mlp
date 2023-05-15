@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/caraml-dev/mlp/api/models"
 	mlperror "github.com/caraml-dev/mlp/api/pkg/errors"
-	"github.com/stretchr/testify/suite"
 )
 
 type VaultSecretStorageClientTestSuite struct {
