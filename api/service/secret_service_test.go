@@ -93,7 +93,7 @@ func TestSecretService_FindByID(t *testing.T) {
 			ssClientRegistry, err := secretstorage.NewRegistry([]*models.SecretStorage{})
 			require.NoError(t, err)
 
-			ssClient := &ssmocks.SecretStorageClient{}
+			ssClient := &ssmocks.Client{}
 			if tt.existingSecret != nil {
 				ssClient.On("Get", tt.existingSecret.Name, project.Name).Return(tt.existingSecret.Data, tt.errorFromSecretStorageClient)
 			}
@@ -228,7 +228,7 @@ func TestSecretService_Create(t *testing.T) {
 			ssClientRegistry, err := secretstorage.NewRegistry([]*models.SecretStorage{})
 			require.NoError(t, err)
 
-			ssClient := &ssmocks.SecretStorageClient{}
+			ssClient := &ssmocks.Client{}
 			ssClient.On("Set", tt.secret.Name, tt.secret.Data, project.Name).Return(tt.errorFromSecretStorageClient)
 			ssClientRegistry.Set(internalSecretStorage.ID, ssClient)
 			ssClientRegistry.Set(vaultSecretStorage.ID, ssClient)
@@ -327,7 +327,7 @@ func TestSecretService_Delete(t *testing.T) {
 
 			ssClientRegistry, err := secretstorage.NewRegistry([]*models.SecretStorage{})
 			require.NoError(t, err)
-			ssClient := &ssmocks.SecretStorageClient{}
+			ssClient := &ssmocks.Client{}
 
 			if tt.existingSecret != nil {
 				ssClient.On("Delete", tt.existingSecret.Name, project.Name).Return(tt.errorFromSecretStorageClient)
@@ -404,7 +404,7 @@ func TestSecretService_List(t *testing.T) {
 	ssClientRegistry, err := secretstorage.NewRegistry([]*models.SecretStorage{})
 	require.NoError(t, err)
 
-	ssClient := &ssmocks.SecretStorageClient{}
+	ssClient := &ssmocks.Client{}
 	ssClient.On("List", project.Name).Return(map[string]string{
 		secrets[0].Name: secrets[0].Data,
 	}, nil)
@@ -543,7 +543,7 @@ func TestSecretService_Update(t *testing.T) {
 			ssClientRegistry, err := secretstorage.NewRegistry([]*models.SecretStorage{})
 			require.NoError(t, err)
 
-			ssClient := &ssmocks.SecretStorageClient{}
+			ssClient := &ssmocks.Client{}
 			ssClient.On("Get", existingSecret.Name, project.Name).Return(existingSecret.Data, nil)
 			ssClient.On("Set", tt.args.secret.Name, tt.args.secret.Data, project.Name).Return(nil)
 			ssClient.On("Set", tt.args.secret.Name, existingSecret.Data, project.Name).Return(nil)
