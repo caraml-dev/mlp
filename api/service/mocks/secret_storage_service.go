@@ -13,6 +13,43 @@ type SecretStorageService struct {
 	mock.Mock
 }
 
+// Create provides a mock function with given fields: ss
+func (_m *SecretStorageService) Create(ss *models.SecretStorage) (*models.SecretStorage, error) {
+	ret := _m.Called(ss)
+
+	var r0 *models.SecretStorage
+	if rf, ok := ret.Get(0).(func(*models.SecretStorage) *models.SecretStorage); ok {
+		r0 = rf(ss)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.SecretStorage)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*models.SecretStorage) error); ok {
+		r1 = rf(ss)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Delete provides a mock function with given fields: id
+func (_m *SecretStorageService) Delete(id models.ID) error {
+	ret := _m.Called(id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(models.ID) error); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // FindByID provides a mock function with given fields: id
 func (_m *SecretStorageService) FindByID(id models.ID) (*models.SecretStorage, error) {
 	ret := _m.Called(id)
@@ -36,6 +73,29 @@ func (_m *SecretStorageService) FindByID(id models.ID) (*models.SecretStorage, e
 	return r0, r1
 }
 
+// List provides a mock function with given fields: projectID
+func (_m *SecretStorageService) List(projectID models.ID) ([]*models.SecretStorage, error) {
+	ret := _m.Called(projectID)
+
+	var r0 []*models.SecretStorage
+	if rf, ok := ret.Get(0).(func(models.ID) []*models.SecretStorage); ok {
+		r0 = rf(projectID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.SecretStorage)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.ID) error); ok {
+		r1 = rf(projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ListAll provides a mock function with given fields:
 func (_m *SecretStorageService) ListAll() ([]*models.SecretStorage, error) {
 	ret := _m.Called()
@@ -52,6 +112,29 @@ func (_m *SecretStorageService) ListAll() ([]*models.SecretStorage, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Update provides a mock function with given fields: storage
+func (_m *SecretStorageService) Update(storage *models.SecretStorage) (*models.SecretStorage, error) {
+	ret := _m.Called(storage)
+
+	var r0 *models.SecretStorage
+	if rf, ok := ret.Get(0).(func(*models.SecretStorage) *models.SecretStorage); ok {
+		r0 = rf(storage)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.SecretStorage)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*models.SecretStorage) error); ok {
+		r1 = rf(storage)
 	} else {
 		r1 = ret.Error(1)
 	}

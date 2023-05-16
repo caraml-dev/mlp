@@ -1,7 +1,11 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/jinzhu/gorm"
+
+	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
 
 	"github.com/caraml-dev/mlp/api/models"
 )
@@ -42,6 +46,13 @@ func (r *secretStorageRepository) Get(id models.ID) (*models.SecretStorage, erro
 	err := r.db.Preload("Project").
 		Where("id = ?", id).
 		First(&ss).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NewNotFoundErrorf("secret storage with ID %d not found", id)
+		}
+		return nil, err
+	}
 
 	return &ss, err
 }

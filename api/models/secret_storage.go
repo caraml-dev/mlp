@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/jinzhu/copier"
 )
 
 // SecretStorage represents the external secret storage service for storing a secret
@@ -20,11 +22,48 @@ type SecretStorage struct {
 	// ProjectID is the ID of the project that the secret storage belongs to when the scope is "project"
 	ProjectID *ID `json:"project_id"`
 	// Project is the project that the secret storage belongs to when the scope is "project"
-	Project *Project `json:"project,omitempty"`
+	Project *Project `json:"-"`
 	// Config is type-specific secret storage configuration
 	Config SecretStorageConfig `json:"config"`
 	// CreatedUpdated is the timestamp of the creation and last update of the secret storage
 	CreatedUpdated
+}
+
+func (s *SecretStorage) ValidateForCreation() error {
+	return s.validate(false)
+}
+
+func (s *SecretStorage) ValidateForMutation() error {
+	return s.validate(true)
+}
+
+func (s *SecretStorage) MergeValue(other *SecretStorage) error {
+	return copier.CopyWithOption(s, other, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+}
+
+func (s *SecretStorage) validate(checkID bool) error {
+	if checkID && s.ID <= 0 {
+		return fmt.Errorf("invalid secret storage ID: %d", s.ID)
+	}
+
+	maxNameChar := 64
+	if s.Name == "" || len(s.Name) > maxNameChar {
+		return fmt.Errorf("invalid secret storage name: %s", s.Name)
+	}
+
+	if s.Type == "" || s.Type == InternalSecretStorageType {
+		return fmt.Errorf("invalid secret storage type: %s", s.Type)
+	}
+
+	if s.Scope != ProjectSecretStorageScope {
+		return fmt.Errorf("invalid secret storage scope: %s", s.Scope)
+	}
+
+	if s.ProjectID == nil {
+		return fmt.Errorf("invalid secret storage project ID: %d", s.ProjectID)
+	}
+
+	return nil
 }
 
 type SecretStorageConfig struct {

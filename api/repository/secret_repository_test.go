@@ -213,7 +213,7 @@ func (suite *SecretRepositoryTestSuite) TestGet() {
 			args: args{
 				id: 123,
 			},
-			wantErrorMessage: "record not found",
+			wantErrorMessage: "secret with id 123 not found",
 		},
 	}
 	for _, tt := range tests {

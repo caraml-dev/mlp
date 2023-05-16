@@ -330,7 +330,7 @@ func (s *VaultSecretStorageClientTestSuite) TestSetAll() {
 		project string
 	}
 
-	project := "test-set"
+	project := "test-set-all"
 	existingSecrets := map[string]string{
 		"secret_1": "value_1",
 	}

@@ -82,7 +82,7 @@ func TestSecretService_FindByID(t *testing.T) {
 			},
 			existingSecret:            nil,
 			errorFromSecretRepository: gorm.ErrRecordNotFound,
-			expectedError:             "error when fetching secret with id: 1, error: record not found",
+			expectedError:             "record not found",
 		},
 	}
 	for _, tt := range tests {

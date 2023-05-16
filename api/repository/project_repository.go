@@ -1,9 +1,12 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/jinzhu/gorm"
 
 	"github.com/caraml-dev/mlp/api/models"
+	apperrors "github.com/caraml-dev/mlp/api/pkg/errors"
 )
 
 type ProjectRepository interface {
@@ -29,6 +32,10 @@ func (storage *projectRepository) ListProjects(name string) (projects []*models.
 func (storage *projectRepository) Get(projectID models.ID) (*models.Project, error) {
 	var project models.Project
 	if err := storage.db.Where("id = ?", projectID).First(&project).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperrors.NewNotFoundErrorf("project with ID %d not found", projectID)
+		}
+
 		return nil, err
 	}
 	return &project, nil
@@ -37,6 +44,10 @@ func (storage *projectRepository) Get(projectID models.ID) (*models.Project, err
 func (storage *projectRepository) GetByName(projectName string) (*models.Project, error) {
 	var project models.Project
 	if err := storage.db.Where("name = ?", projectName).First(&project).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperrors.NewNotFoundErrorf("project with name %s not found", projectName)
+		}
+
 		return nil, err
 	}
 	return &project, nil

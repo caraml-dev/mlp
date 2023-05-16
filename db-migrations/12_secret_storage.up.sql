@@ -20,7 +20,7 @@ INSERT INTO secret_storages (name, type, scope) VALUES ('internal', 'internal', 
 
 -- Add a foreign key constraint to secrets table
 ALTER TABLE secrets ADD COLUMN secret_storage_id integer;
-ALTER TABLE secrets ADD CONSTRAINT fk_secret_storage_id FOREIGN KEY (secret_storage_id) REFERENCES secret_storages(id);
+ALTER TABLE secrets ADD CONSTRAINT fk_secret_storage_id FOREIGN KEY (secret_storage_id) REFERENCES secret_storages(id) ON DELETE CASCADE;
 
 -- Update existing secrets to use 'internal' secret storage during migration
 UPDATE secrets 

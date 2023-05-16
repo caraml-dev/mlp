@@ -23,6 +23,20 @@ func (_m *Client) Delete(name string, project string) error {
 	return r0
 }
 
+// DeleteAll provides a mock function with given fields: project
+func (_m *Client) DeleteAll(project string) error {
+	ret := _m.Called(project)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string) error); ok {
+		r0 = rf(project)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Get provides a mock function with given fields: name, project
 func (_m *Client) Get(name string, project string) (string, error) {
 	ret := _m.Called(name, project)
@@ -74,6 +88,20 @@ func (_m *Client) Set(name string, secretValue string, project string) error {
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, string, string) error); ok {
 		r0 = rf(name, secretValue, project)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SetAll provides a mock function with given fields: secrets, project
+func (_m *Client) SetAll(secrets map[string]string, project string) error {
+	ret := _m.Called(secrets, project)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(map[string]string, string) error); ok {
+		r0 = rf(secrets, project)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -49,6 +49,7 @@ func main() {
 		&api.ApplicationsController{AppContext: appCtx},
 		&api.ProjectsController{AppContext: appCtx},
 		&api.SecretsController{AppContext: appCtx},
+		&api.SecretStoragesController{AppContext: appCtx},
 	}
 	mount(router, "/v1", api.NewRouter(appCtx, v1Controllers))
 

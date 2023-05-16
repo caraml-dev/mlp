@@ -463,7 +463,7 @@ func TestUpdateProject(t *testing.T) {
 			expectedResponse: &Response{
 				code: 404,
 				data: ErrorMessage{
-					Message: "Project id 2 not found",
+					Message: "project with ID 2 not found",
 				},
 			},
 		},
@@ -582,7 +582,7 @@ func TestGetProject(t *testing.T) {
 			expectedResponse: &Response{
 				code: 404,
 				data: ErrorMessage{
-					Message: "Project id 2 not found",
+					Message: "project with ID 2 not found",
 				},
 			},
 		},

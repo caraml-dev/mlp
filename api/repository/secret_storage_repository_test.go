@@ -203,7 +203,7 @@ func (suite *SecretStorageTestSuite) TestGet() {
 			args: args{
 				ID: 100,
 			},
-			wantErrorMessage: "record not found",
+			wantErrorMessage: "secret storage with ID 100 not found",
 		},
 	}
 	for _, tt := range tests {
@@ -352,7 +352,7 @@ func (suite *SecretStorageTestSuite) TestDelete() {
 			suite.Assert().NoError(err)
 
 			_, err = suite.ssRepository.Get(got.ID)
-			suite.Assert().EqualError(err, "record not found")
+			suite.Assert().EqualError(err, "secret storage with ID 4 not found")
 		})
 	}
 }

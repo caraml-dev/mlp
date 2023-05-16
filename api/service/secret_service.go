@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jinzhu/gorm"
+	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
 
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/secretstorage"
@@ -54,7 +54,7 @@ type secretService struct {
 func (ss *secretService) FindByID(secretID models.ID) (*models.Secret, error) {
 	existingSecret, err := ss.secretRepository.Get(secretID)
 	if err != nil {
-		return nil, fmt.Errorf("error when fetching secret with id: %d, error: %w", secretID, err)
+		return nil, err
 	}
 
 	if existingSecret.SecretStorage.Type == models.InternalSecretStorageType {
@@ -210,7 +210,7 @@ func (ss *secretService) Update(secret *models.Secret) (*models.Secret, error) {
 func (ss *secretService) Delete(secretID models.ID) error {
 	existingSecret, err := ss.secretRepository.Get(secretID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, &apperror.NotFoundError{}) {
 			return nil
 		}
 

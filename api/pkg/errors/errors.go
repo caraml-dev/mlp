@@ -16,6 +16,12 @@ func (e *NotFoundError) Error() string {
 	return e.message
 }
 
+// Is check whether the error is NotFoundError
+func (e *NotFoundError) Is(target error) bool {
+	_, ok := target.(*NotFoundError)
+	return ok
+}
+
 type AlreadyExistsError struct {
 	message string
 }
@@ -30,6 +36,11 @@ func (e *AlreadyExistsError) Error() string {
 	return e.message
 }
 
+func (e *AlreadyExistsError) Is(target error) bool {
+	_, ok := target.(*AlreadyExistsError)
+	return ok
+}
+
 type InvalidArgumentError struct {
 	message string
 }
@@ -42,4 +53,9 @@ func NewInvalidArgumentErrorf(format string, a ...any) *InvalidArgumentError {
 
 func (e *InvalidArgumentError) Error() string {
 	return e.message
+}
+
+func (e *InvalidArgumentError) Is(target error) bool {
+	_, ok := target.(*InvalidArgumentError)
+	return ok
 }
