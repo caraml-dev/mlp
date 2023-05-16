@@ -3,6 +3,7 @@ package secretstorage
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 
@@ -15,7 +16,7 @@ type VaultSecretStorageClientTestSuite struct {
 	client Client
 }
 
-func (s *VaultSecretStorageClientTestSuite) SetupSuite() {
+func (s *VaultSecretStorageClientTestSuite) SetupTest() {
 	secretStorage := &models.SecretStorage{
 		Name:  "test-storage",
 		Type:  models.VaultSecretStorageType,
@@ -25,7 +26,7 @@ func (s *VaultSecretStorageClientTestSuite) SetupSuite() {
 				URL:        "http://localhost:8200",
 				Role:       "my-role",
 				MountPath:  "secret",
-				PathPrefix: "caraml/{{ .Project }}",
+				PathPrefix: fmt.Sprintf("caraml/%d/{{ .Project }}", time.Now().Unix()),
 				AuthMethod: models.TokenAuthMethod,
 				Token:      "root",
 			},
@@ -96,8 +97,6 @@ func (s *VaultSecretStorageClientTestSuite) TestGet() {
 			s.Assert().Equal(tt.want, got)
 		})
 	}
-
-	s.deleteSecrets(existingSecrets, project)
 }
 
 func (s *VaultSecretStorageClientTestSuite) TestSet() {
@@ -164,8 +163,6 @@ func (s *VaultSecretStorageClientTestSuite) TestSet() {
 			s.Assert().Equal(tt.want, got)
 		})
 	}
-
-	s.deleteSecrets(existingSecrets, project)
 }
 
 func (s *VaultSecretStorageClientTestSuite) TestList() {
@@ -215,8 +212,6 @@ func (s *VaultSecretStorageClientTestSuite) TestList() {
 			s.Assert().Equal(tt.want, got)
 		})
 	}
-
-	s.deleteSecrets(existingSecrets, project)
 }
 
 func (s *VaultSecretStorageClientTestSuite) TestDelete() {
@@ -278,20 +273,125 @@ func (s *VaultSecretStorageClientTestSuite) TestDelete() {
 	}
 }
 
+func (s *VaultSecretStorageClientTestSuite) TestDeleteAll() {
+	type args struct {
+		project string
+	}
+
+	existingSecrets := map[string]string{
+		"secret-1": "value-1",
+		"secret-2": "value-2",
+		"secret-3": "value-3",
+	}
+
+	projectName := "test-delete-all"
+	s.initializeSecrets(existingSecrets, projectName)
+
+	tests := []struct {
+		name             string
+		args             args
+		wantErrorMessage string
+	}{
+		{
+			name: "success: delete existing secret",
+			args: args{
+				project: projectName,
+			},
+		},
+		{
+			name: "success: delete all non existent secret in different project as existing secret",
+			args: args{
+				project: "test-delete-2",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+
+			err := s.client.DeleteAll(tt.args.project)
+			if tt.wantErrorMessage != "" {
+				s.Assert().Error(err)
+				s.Assert().EqualError(err, tt.wantErrorMessage)
+				return
+			}
+			s.Assert().NoError(err)
+
+			gotSecrets, err := s.client.List(tt.args.project)
+			s.Assert().NoError(err)
+			s.Assert().Empty(gotSecrets)
+		})
+	}
+}
+
+func (s *VaultSecretStorageClientTestSuite) TestSetAll() {
+	type args struct {
+		secrets map[string]string
+		project string
+	}
+
+	project := "test-set"
+	existingSecrets := map[string]string{
+		"secret_1": "value_1",
+	}
+
+	s.initializeSecrets(existingSecrets, project)
+
+	tests := []struct {
+		name             string
+		args             args
+		want             map[string]string
+		wantErrorMessage string
+	}{
+		{
+			name: "success: set all secrets in an existing project",
+			args: args{
+				secrets: map[string]string{
+					"new_secrets": "new_value",
+				},
+				project: project,
+			},
+			want: map[string]string{
+				"secret_1":    "value_1",
+				"new_secrets": "new_value",
+			},
+		},
+		{
+			name: "success: set all secrets in different project",
+			args: args{
+				secrets: map[string]string{
+					"new_secrets": "new_value",
+				},
+				project: "different-project",
+			},
+			want: map[string]string{
+				"new_secrets": "new_value",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			err := s.client.SetAll(tt.args.secrets, tt.args.project)
+			if tt.wantErrorMessage != "" {
+				s.Assert().Error(err)
+				s.Assert().EqualError(err, tt.wantErrorMessage)
+				return
+			}
+			s.Assert().NoError(err)
+
+			got, err := s.client.List(tt.args.project)
+			s.Assert().NoError(err)
+			s.Assert().Equal(tt.want, got)
+		})
+	}
+}
+
 func (s *VaultSecretStorageClientTestSuite) initializeSecrets(secrets map[string]string, project string) {
 	for k, v := range secrets {
 		err := s.client.Set(k, v, project)
 		if err != nil {
 			s.FailNow("failed to create secret", err)
-		}
-	}
-}
-
-func (s *VaultSecretStorageClientTestSuite) deleteSecrets(secrets map[string]string, project string) {
-	for k := range secrets {
-		err := s.client.Delete(k, project)
-		if err != nil {
-			s.FailNow("failed to delete secret", err)
 		}
 	}
 }

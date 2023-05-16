@@ -158,6 +158,40 @@ func (v *vaultSecretStorageClient) Delete(name string, project string) error {
 	return err
 }
 
+func (v *vaultSecretStorageClient) DeleteAll(project string) error {
+	secretPath, err := v.secretPath(project)
+	if err != nil {
+		return err
+	}
+
+	return v.vaultClient.KVv2(v.vaultConfig.MountPath).Delete(context.Background(), secretPath)
+}
+
+func (v *vaultSecretStorageClient) SetAll(secrets map[string]string, project string) error {
+	secretPath, err := v.secretPath(project)
+	if err != nil {
+		return err
+	}
+
+	var existingSecrets map[string]interface{}
+	secret, err := v.vaultClient.KVv2(v.vaultConfig.MountPath).Get(context.Background(), secretPath)
+	if err != nil {
+		if !errors.Is(err, vault.ErrSecretNotFound) {
+			return err
+		}
+		existingSecrets = make(map[string]interface{})
+	} else {
+		existingSecrets = secret.Data
+	}
+
+	for k, v := range secrets {
+		existingSecrets[k] = v
+	}
+
+	_, err = v.vaultClient.KVv2(v.vaultConfig.MountPath).Put(context.Background(), secretPath, existingSecrets)
+	return err
+}
+
 // secretPath returns the secret path for a project
 func (v *vaultSecretStorageClient) secretPath(project string) (string, error) {
 	var tpl bytes.Buffer
