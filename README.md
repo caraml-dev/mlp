@@ -22,7 +22,7 @@ The MLP Server provides REST API used across MLP Products. It exposes a shared c
 
 1. [Google Oauth credential](https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow)
 
-    MLP uses Google Sign-in to authenticate the user to access the API and UI. After you get the client ID, specify it into `OAUTH_CLIENT_ID` in `.env.development` file.
+    MLP uses Google Sign-in to authenticate the user to access the API and UI. After you get the client ID, specify it into `REACT_APP_OAUTH_CLIENT_ID` in `.env.development` file.
 
 ### From Docker Compose
 

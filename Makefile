@@ -110,9 +110,9 @@ build-image: version
 # Run recipes
 # ============================================================
 .PHONY: run
-run: build-api local-db
+run: local-env
 	@echo "> Running application ..."
-	@./bin/${BIN_NAME} --config config-dev.yaml
+	@go run api/cmd/main.go --config config-dev.yaml
 
 .PHONY: start-ui
 start-ui:

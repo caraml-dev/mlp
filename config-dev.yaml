@@ -1,4 +1,3 @@
-encryptionKey: "encryption-key"
 oauthClientId: "[OAUTH_CLIENT_ID]"
 
 applications:
@@ -73,3 +72,17 @@ streams:
   operations:
     - inventory
     - partners
+
+defaultSecretStorage:
+  name: default-secret-storage
+  type: vault
+  config:
+    vaultConfig:
+      url: http://localhost:8200
+      role: my-role
+      mountPath: secret
+      pathPrefix: mlp-secret/{{ .Project }}/
+      # DO NOT USE THIS IN PRODUCTION
+      # ONLY FOR TESTING PURPOSES
+      authMethod: token
+      token: root
