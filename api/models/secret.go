@@ -17,7 +17,7 @@ type Secret struct {
 	// SecretStorageID is the unique identifier of the secret storage for storing the secret
 	SecretStorageID *ID `json:"secret_storage_id,omitempty"`
 	// SecretStorage is the secret storage for storing the secret
-	SecretStorage *SecretStorage `json:"-"`
+	SecretStorage *SecretStorage `json:"secret_storage,omitempty"`
 	// CreatedUpdated is the timestamp of the secret creation and update
 	CreatedUpdated
 }

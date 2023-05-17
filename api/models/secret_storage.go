@@ -20,11 +20,11 @@ type SecretStorage struct {
 	// Scope of the secret storage, it can be either "global" or "project"
 	Scope SecretStorageScope `json:"scope"`
 	// ProjectID is the ID of the project that the secret storage belongs to when the scope is "project"
-	ProjectID *ID `json:"project_id"`
+	ProjectID *ID `json:"project_id,omitempty"`
 	// Project is the project that the secret storage belongs to when the scope is "project"
 	Project *Project `json:"-"`
 	// Config is type-specific secret storage configuration
-	Config SecretStorageConfig `json:"config"`
+	Config SecretStorageConfig `json:"config,omitempty"`
 	// CreatedUpdated is the timestamp of the creation and last update of the secret storage
 	CreatedUpdated
 }
