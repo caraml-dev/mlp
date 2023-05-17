@@ -152,7 +152,7 @@ func (v *vaultSecretStorageClient) Delete(name string, project string) error {
 		return err
 	}
 
-	secret.Data[name] = nil
+	delete(secret.Data, name)
 
 	_, err = v.vaultClient.KVv2(v.vaultConfig.MountPath).Put(context.Background(), secretPath, secret.Data)
 	return err
