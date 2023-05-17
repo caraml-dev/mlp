@@ -3,14 +3,13 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/caraml-dev/mlp/api/log"
 	"net/http"
 	"strings"
 
-	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
-
+	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
+	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
 )
 
 type ProjectsController struct {
