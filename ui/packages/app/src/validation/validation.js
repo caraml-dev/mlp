@@ -14,7 +14,7 @@ export const validateSecretName = name => {
   return expression.test(String(name).toLowerCase());
 };
 
-export const validateSecretKey = key => {
+export const validateSecretData = key => {
   const expression = /^(?!\s*$).+/;
   return expression.test(String(key).toLowerCase());
 };

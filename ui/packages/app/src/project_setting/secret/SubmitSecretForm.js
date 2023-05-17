@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   EuiFieldText,
   EuiFormRow,
@@ -13,19 +13,33 @@ import {
   EuiIcon,
   EuiToolTip,
   EuiSpacer,
-  EuiPanel
+  EuiPanel,
+  EuiSelect
 } from "@elastic/eui";
 import { addToast, useMlpApi } from "@caraml-dev/ui-lib";
 import {
-  validateSecretKey,
+  validateSecretData,
   validateSecretName
 } from "../../validation/validation";
 
 const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
+  const DEFAULT_SECRET_STORAGE_ID = 2;
   const [request, setRequest] = useState({
     name: secret ? secret.name : "",
-    data: ""
+    // only authenticated user with proper access to the project can get the secret value,
+    // so it's safe to show the value here
+    data: secret ? secret.data : "",
+    secret_storage_id: secret
+      ? secret.secret_storage_id
+      : DEFAULT_SECRET_STORAGE_ID
   });
+
+  const [listSecretStorageResponse] = useMlpApi(
+    `/v1/projects/${projectId}/secret_storages`,
+    {
+      method: "GET"
+    }
+  );
 
   const [submissionResponse, submitForm] = useMlpApi(
     secret
@@ -38,6 +52,21 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
     {},
     false
   );
+
+  const secretStorageOptions = useMemo(() => {
+    if (
+      listSecretStorageResponse.isLoaded &&
+      !listSecretStorageResponse.error
+    ) {
+      return listSecretStorageResponse.data.map(item => {
+        return {
+          value: item.id,
+          text: item.name
+        };
+      });
+    }
+    return [];
+  }, [listSecretStorageResponse]);
 
   useEffect(() => {
     if (submissionResponse.isLoaded && !submissionResponse.error) {
@@ -69,16 +98,24 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
   };
 
   const onDataChanges = e => {
-    setValidKey(validateSecretKey(e.target.value));
+    setValidData(validateSecretData(e.target.value));
     onChange("data")(e.target.value);
+  };
+
+  const onSecretStorageChanges = e => {
+    onChange("secret_storage_id")(parseInt(e.target.value));
   };
 
   const saveAction = () => {
     submitForm({ body: JSON.stringify(request) });
   };
 
-  const [isValidName, setValidName] = useState(false);
-  const [isValidKey, setValidKey] = useState(false);
+  const [isValidName, setValidName] = useState(
+    validateSecretName(request.name)
+  );
+  const [isValidData, setValidData] = useState(
+    validateSecretData(request.data)
+  );
 
   return (
     <EuiPanel paddingSize="m">
@@ -119,9 +156,27 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
             <EuiFormRow
               fullWidth
               label={
+                <EuiToolTip content="Specify the secret storage to store the secret">
+                  <span>
+                    Secret Storage{" "}
+                    <EuiIcon type="questionInCircle" color="subdued" />
+                  </span>
+                </EuiToolTip>
+              }
+              display="columnCompressed">
+              <EuiSelect
+                id="select-secret-storage"
+                options={secretStorageOptions}
+                value={request.secret_storage_id}
+                onChange={e => onSecretStorageChanges(e)}
+              />
+            </EuiFormRow>
+            <EuiFormRow
+              fullWidth
+              label={
                 <EuiToolTip content="Specify content of secret">
                   <span>
-                    Key <EuiIcon type="questionInCircle" color="subdued" />
+                    Data <EuiIcon type="questionInCircle" color="subdued" />
                   </span>
                 </EuiToolTip>
               }
@@ -132,7 +187,7 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
                 value={request.data}
                 onChange={e => onDataChanges(e)}
                 name="data"
-                isInvalid={!isValidKey}
+                isInvalid={!isValidData}
               />
             </EuiFormRow>
             <EuiFormRow>
@@ -142,7 +197,7 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
                     fill
                     size="s"
                     disabled={
-                      secret ? !isValidKey : !isValidKey || !isValidName
+                      secret ? !isValidData : !isValidData || !isValidName
                     }
                     onClick={() => saveAction()}>
                     <EuiText size="s"> {secret ? "Save" : "Add"}</EuiText>
