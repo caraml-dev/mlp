@@ -36,14 +36,19 @@ MLP will now be reachable at <http://localhost:8080>.
 
 ### From source
 
-To build and run MLP from the source code, you need to have [Go](https://golang.org/doc/install), [Node.js](https://nodejs.org/), and [Yarn](https://yarnpkg.com/) installed. You will also need a running Postgresql database. MLP uses Docker to make the task of setting up databases a little easier. You can run `make local-db` to starting up a Postgres Docker container.
+To build and run MLP from the source code, you need to have [Go](https://golang.org/doc/install), [Node.js](https://nodejs.org/), and [Yarn](https://yarnpkg.com/) installed. 
+You will also need a running Postgresql database, Keto, and Vault servers. 
+MLP uses Docker to make the task of setting up the dependencies a little easier. You can run `make local-env` to starting up all those dependencies.
 
 ```shell script
-mkdir -p $GOPATH/src/github.com/caraml-dev
-cd $GOPATH/src/github.com/caraml-dev
-git clone git@github.com/caraml-dev/mlp.git mlp
-cd mlp
-make local-db
+make local-env
+make run
+```
+
+OR
+
+```shell script
+# `make` will execute `make local-env` and `make run`
 make
 ```
 
