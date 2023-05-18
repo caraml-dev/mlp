@@ -11,6 +11,7 @@ type SecretStoragesController struct {
 	*AppContext
 }
 
+// ListSecretStorage lists all secret storage for a project including the global secret storage
 func (c *SecretStoragesController) ListSecretStorage(_ *http.Request,
 	vars map[string]string,
 	_ interface{}) *Response {
@@ -36,6 +37,7 @@ func (c *SecretStoragesController) ListSecretStorage(_ *http.Request,
 	return Ok(secretStorages)
 }
 
+// GetSecretStorage gets a secret storage given specified project_id and secret_storage_id
 func (c *SecretStoragesController) GetSecretStorage(_ *http.Request,
 	vars map[string]string,
 	_ interface{}) *Response {
@@ -56,6 +58,7 @@ func (c *SecretStoragesController) GetSecretStorage(_ *http.Request,
 	return Ok(secretStorage)
 }
 
+// CreateSecretStorage creates a secret storage for a project
 func (c *SecretStoragesController) CreateSecretStorage(_ *http.Request,
 	vars map[string]string,
 	body interface{}) *Response {
@@ -90,6 +93,8 @@ func (c *SecretStoragesController) CreateSecretStorage(_ *http.Request,
 	return Created(secretStorage)
 }
 
+// UpdateSecretStorage updates a secret storage given specified project_id and secret_storage_id
+// Note: cannot update global secret storage
 func (c *SecretStoragesController) UpdateSecretStorage(_ *http.Request,
 	vars map[string]string,
 	body interface{}) *Response {
