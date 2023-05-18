@@ -137,7 +137,7 @@ clean-bin:
 
 generate-client:
 	@echo "> Generating API client ..."
-	@swagger-codegen generate -i api/static/swagger.yaml -l go -o api/client -DpackageName=client
+	@swagger-codegen generate -i static/swagger.yaml -l go -o client -DpackageName=client
 	@goimports -l -w client
 
 .PHONY: local-env
