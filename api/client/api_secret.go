@@ -12,11 +12,12 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/antihax/optional"
 )
 
 // Linger please
@@ -28,12 +29,12 @@ type SecretApiService service
 
 /*
 SecretApiService List secret
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param projectID
 
 @return []Secret
 */
-func (a *SecretApiService) V1ProjectsProjectIdSecretsGet(ctx context.Context, projectId int32) ([]Secret, *http.Response, error) {
+func (a *SecretApiService) ProjectsProjectIdSecretsGet(ctx context.Context, projectID int32) ([]Secret, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -43,8 +44,8 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsGet(ctx context.Context, pr
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}/secrets"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
+	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}/secrets"
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -99,7 +100,9 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsGet(ctx context.Context, pr
 	if localVarHttpResponse.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
 		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-		return localVarReturnValue, localVarHttpResponse, err
+		if err == nil {
+			return localVarReturnValue, localVarHttpResponse, err
+		}
 	}
 
 	if localVarHttpResponse.StatusCode >= 300 {
@@ -108,7 +111,7 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsGet(ctx context.Context, pr
 			error: localVarHttpResponse.Status,
 		}
 
-		if localVarHttpResponse.StatusCode == 200 {
+		if localVarHttpResponse.StatusCode == 201 {
 			var v []Secret
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
@@ -127,13 +130,13 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsGet(ctx context.Context, pr
 
 /*
 SecretApiService Create secret
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId
- * @param body
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param projectID
+  - @param body
 
 @return Secret
 */
-func (a *SecretApiService) V1ProjectsProjectIdSecretsPost(ctx context.Context, projectId int32, body Secret) (Secret, *http.Response, error) {
+func (a *SecretApiService) ProjectsProjectIdSecretsPost(ctx context.Context, projectID int32, body Secret) (Secret, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
@@ -143,8 +146,8 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsPost(ctx context.Context, p
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}/secrets"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
+	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}/secrets"
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -201,7 +204,9 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsPost(ctx context.Context, p
 	if localVarHttpResponse.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
 		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-		return localVarReturnValue, localVarHttpResponse, err
+		if err == nil {
+			return localVarReturnValue, localVarHttpResponse, err
+		}
 	}
 
 	if localVarHttpResponse.StatusCode >= 300 {
@@ -229,13 +234,11 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsPost(ctx context.Context, p
 
 /*
 SecretApiService Delete secret
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId
- * @param secretId
-
-
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param projectID
+  - @param secretID
 */
-func (a *SecretApiService) V1ProjectsProjectIdSecretsSecretIdDelete(ctx context.Context, projectId int32, secretId int32) (*http.Response, error) {
+func (a *SecretApiService) ProjectsProjectIdSecretsSecretIdDelete(ctx context.Context, projectID int32, secretID int32) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Delete")
 		localVarPostBody   interface{}
@@ -244,9 +247,9 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsSecretIdDelete(ctx context.
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}/secrets/{secret_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"secret_id"+"}", fmt.Sprintf("%v", secretId), -1)
+	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}/secrets/{secret_id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"secret_id"+"}", fmt.Sprintf("%v", secretID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -311,122 +314,21 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsSecretIdDelete(ctx context.
 }
 
 /*
-SecretApiService Get secret
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId
- * @param secretId
-
-@return Secret
-*/
-func (a *SecretApiService) V1ProjectsProjectIdSecretsSecretIdGet(ctx context.Context, projectId int32, secretId int32) (Secret, *http.Response, error) {
-	var (
-		localVarHttpMethod  = strings.ToUpper("Get")
-		localVarPostBody    interface{}
-		localVarFileName    string
-		localVarFileBytes   []byte
-		localVarReturnValue Secret
-	)
-
-	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}/secrets/{secret_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"secret_id"+"}", fmt.Sprintf("%v", secretId), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHttpContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
-	if localVarHttpContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHttpContentType
-	}
-
-	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{}
-
-	// set Accept header
-	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
-	if localVarHttpHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
-	}
-	if ctx != nil {
-		// API Key Authentication
-		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
-			var key string
-			if auth.Prefix != "" {
-				key = auth.Prefix + " " + auth.Key
-			} else {
-				key = auth.Key
-			}
-			localVarHeaderParams["Authorization"] = key
-
-		}
-	}
-	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHttpResponse, err := a.client.callAPI(r)
-	if err != nil || localVarHttpResponse == nil {
-		return localVarReturnValue, localVarHttpResponse, err
-	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
-	localVarHttpResponse.Body.Close()
-	if err != nil {
-		return localVarReturnValue, localVarHttpResponse, err
-	}
-
-	if localVarHttpResponse.StatusCode < 300 {
-		// If we succeed, return the data, otherwise pass on to decode error.
-		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-		return localVarReturnValue, localVarHttpResponse, err
-	}
-
-	if localVarHttpResponse.StatusCode >= 300 {
-		newErr := GenericSwaggerError{
-			body:  localVarBody,
-			error: localVarHttpResponse.Status,
-		}
-
-		if localVarHttpResponse.StatusCode == 200 {
-			var v Secret
-			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHttpResponse, newErr
-			}
-			newErr.model = v
-			return localVarReturnValue, localVarHttpResponse, newErr
-		}
-
-		return localVarReturnValue, localVarHttpResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHttpResponse, nil
-}
-
-/*
 SecretApiService Update secret
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param projectId
- * @param secretId
- * @param optional nil or *SecretApiV1ProjectsProjectIdSecretsSecretIdPatchOpts - Optional Parameters:
+ * @param projectID
+ * @param secretID
+ * @param optional nil or *SecretApiProjectsProjectIdSecretsSecretIdPatchOpts - Optional Parameters:
      * @param "Body" (optional.Interface of Secret) -
 
 @return Secret
 */
 
-type SecretApiV1ProjectsProjectIdSecretsSecretIdPatchOpts struct {
+type SecretApiProjectsProjectIdSecretsSecretIdPatchOpts struct {
 	Body optional.Interface
 }
 
-func (a *SecretApiService) V1ProjectsProjectIdSecretsSecretIdPatch(ctx context.Context, projectId int32, secretId int32, localVarOptionals *SecretApiV1ProjectsProjectIdSecretsSecretIdPatchOpts) (Secret, *http.Response, error) {
+func (a *SecretApiService) ProjectsProjectIdSecretsSecretIdPatch(ctx context.Context, projectID int32, secretID int32, localVarOptionals *SecretApiProjectsProjectIdSecretsSecretIdPatchOpts) (Secret, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Patch")
 		localVarPostBody    interface{}
@@ -436,9 +338,9 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsSecretIdPatch(ctx context.C
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}/secrets/{secret_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"secret_id"+"}", fmt.Sprintf("%v", secretId), -1)
+	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}/secrets/{secret_id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"secret_id"+"}", fmt.Sprintf("%v", secretID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -502,7 +404,9 @@ func (a *SecretApiService) V1ProjectsProjectIdSecretsSecretIdPatch(ctx context.C
 	if localVarHttpResponse.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
 		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-		return localVarReturnValue, localVarHttpResponse, err
+		if err == nil {
+			return localVarReturnValue, localVarHttpResponse, err
+		}
 	}
 
 	if localVarHttpResponse.StatusCode >= 300 {

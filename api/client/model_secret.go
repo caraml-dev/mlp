@@ -9,15 +9,8 @@
 
 package client
 
-import (
-	"time"
-)
-
 type Secret struct {
-	Id              int32     `json:"id,omitempty"`
-	Name            string    `json:"name"`
-	Data            string    `json:"data"`
-	SecretStorageId int32     `json:"secret_storage_id,omitempty"`
-	CreatedAt       time.Time `json:"created_at,omitempty"`
-	UpdatedAt       time.Time `json:"updated_at,omitempty"`
+	ID   int32  `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	Data string `json:"data,omitempty"`
 }

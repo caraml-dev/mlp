@@ -17,38 +17,25 @@ import "./client"
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://localhost:8080*
+All URIs are relative to *http://localhost:8080/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*ApplicationApi* | [**V2ApplicationsGet**](docs/ApplicationApi.md#v2applicationsget) | **Get** /v2/applications | List CaraML applications
-*ProjectApi* | [**V1ProjectsGet**](docs/ProjectApi.md#v1projectsget) | **Get** /v1/projects | List existing projects
-*ProjectApi* | [**V1ProjectsPost**](docs/ProjectApi.md#v1projectspost) | **Post** /v1/projects | Create new project
-*ProjectApi* | [**V1ProjectsProjectIdGet**](docs/ProjectApi.md#v1projectsprojectidget) | **Get** /v1/projects/{project_id} | Get project
-*ProjectApi* | [**V1ProjectsProjectIdPut**](docs/ProjectApi.md#v1projectsprojectidput) | **Put** /v1/projects/{project_id} | Update project
-*SecretApi* | [**V1ProjectsProjectIdSecretsGet**](docs/SecretApi.md#v1projectsprojectidsecretsget) | **Get** /v1/projects/{project_id}/secrets | List secret
-*SecretApi* | [**V1ProjectsProjectIdSecretsPost**](docs/SecretApi.md#v1projectsprojectidsecretspost) | **Post** /v1/projects/{project_id}/secrets | Create secret
-*SecretApi* | [**V1ProjectsProjectIdSecretsSecretIdDelete**](docs/SecretApi.md#v1projectsprojectidsecretssecretiddelete) | **Delete** /v1/projects/{project_id}/secrets/{secret_id} | Delete secret
-*SecretApi* | [**V1ProjectsProjectIdSecretsSecretIdGet**](docs/SecretApi.md#v1projectsprojectidsecretssecretidget) | **Get** /v1/projects/{project_id}/secrets/{secret_id} | Get secret
-*SecretApi* | [**V1ProjectsProjectIdSecretsSecretIdPatch**](docs/SecretApi.md#v1projectsprojectidsecretssecretidpatch) | **Patch** /v1/projects/{project_id}/secrets/{secret_id} | Update secret
-*SecretStorageApi* | [**V1ProjectsProjectIdSecretStoragesGet**](docs/SecretStorageApi.md#v1projectsprojectidsecretstoragesget) | **Get** /v1/projects/{project_id}/secret_storages | List secret storage
-*SecretStorageApi* | [**V1ProjectsProjectIdSecretStoragesPost**](docs/SecretStorageApi.md#v1projectsprojectidsecretstoragespost) | **Post** /v1/projects/{project_id}/secret_storages | Create secret storage
-*SecretStorageApi* | [**V1ProjectsProjectIdSecretStoragesSecretStorageIdDelete**](docs/SecretStorageApi.md#v1projectsprojectidsecretstoragessecretstorageiddelete) | **Delete** /v1/projects/{project_id}/secret_storages/{secret_storage_id} | Delete secret storage
-*SecretStorageApi* | [**V1ProjectsProjectIdSecretStoragesSecretStorageIdGet**](docs/SecretStorageApi.md#v1projectsprojectidsecretstoragessecretstorageidget) | **Get** /v1/projects/{project_id}/secret_storages/{secret_storage_id} | Get secret storage
-*SecretStorageApi* | [**V1ProjectsProjectIdSecretStoragesSecretStorageIdPatch**](docs/SecretStorageApi.md#v1projectsprojectidsecretstoragessecretstorageidpatch) | **Patch** /v1/projects/{project_id}/secret_storages/{secret_storage_id} | Update secret storage
+*ProjectApi* | [**ProjectsGet**](docs/ProjectApi.md#projectsget) | **Get** /projects | List existing projects
+*ProjectApi* | [**ProjectsPost**](docs/ProjectApi.md#projectspost) | **Post** /projects | Create new project
+*ProjectApi* | [**ProjectsProjectIdGet**](docs/ProjectApi.md#projectsprojectidget) | **Get** /projects/{project_id} | Get project
+*ProjectApi* | [**ProjectsProjectIdPut**](docs/ProjectApi.md#projectsprojectidput) | **Put** /projects/{project_id} | Update project
+*SecretApi* | [**ProjectsProjectIdSecretsGet**](docs/SecretApi.md#projectsprojectidsecretsget) | **Get** /projects/{project_id}/secrets | List secret
+*SecretApi* | [**ProjectsProjectIdSecretsPost**](docs/SecretApi.md#projectsprojectidsecretspost) | **Post** /projects/{project_id}/secrets | Create secret
+*SecretApi* | [**ProjectsProjectIdSecretsSecretIdDelete**](docs/SecretApi.md#projectsprojectidsecretssecretiddelete) | **Delete** /projects/{project_id}/secrets/{secret_id} | Delete secret
+*SecretApi* | [**ProjectsProjectIdSecretsSecretIdPatch**](docs/SecretApi.md#projectsprojectidsecretssecretidpatch) | **Patch** /projects/{project_id}/secrets/{secret_id} | Update secret
 
 
 ## Documentation For Models
 
- - [Application](docs/Application.md)
- - [ApplicationConfig](docs/ApplicationConfig.md)
- - [ApplicationConfigNavigation](docs/ApplicationConfigNavigation.md)
  - [Label](docs/Label.md)
  - [Project](docs/Project.md)
  - [Secret](docs/Secret.md)
- - [SecretStorage](docs/SecretStorage.md)
- - [SecretStorageConfig](docs/SecretStorageConfig.md)
- - [VaultSecretStorageConfig](docs/VaultSecretStorageConfig.md)
 
 
 ## Documentation For Authorization
