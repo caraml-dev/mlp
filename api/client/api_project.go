@@ -12,12 +12,11 @@ package client
 import (
 	"context"
 	"fmt"
+	"github.com/antihax/optional"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/antihax/optional"
 )
 
 // Linger please
@@ -31,17 +30,17 @@ type ProjectApiService service
 ProjectApiService List existing projects
 Projects can be filtered by optional &#x60;name&#x60; parameter
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param optional nil or *ProjectApiProjectsGetOpts - Optional Parameters:
+ * @param optional nil or *ProjectApiV1ProjectsGetOpts - Optional Parameters:
      * @param "Name" (optional.String) -
 
 @return []Project
 */
 
-type ProjectApiProjectsGetOpts struct {
+type ProjectApiV1ProjectsGetOpts struct {
 	Name optional.String
 }
 
-func (a *ProjectApiService) ProjectsGet(ctx context.Context, localVarOptionals *ProjectApiProjectsGetOpts) ([]Project, *http.Response, error) {
+func (a *ProjectApiService) V1ProjectsGet(ctx context.Context, localVarOptionals *ProjectApiV1ProjectsGetOpts) ([]Project, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -51,7 +50,7 @@ func (a *ProjectApiService) ProjectsGet(ctx context.Context, localVarOptionals *
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/projects"
+	localVarPath := a.client.cfg.BasePath + "/v1/projects"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -109,9 +108,7 @@ func (a *ProjectApiService) ProjectsGet(ctx context.Context, localVarOptionals *
 	if localVarHttpResponse.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
 		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-		if err == nil {
-			return localVarReturnValue, localVarHttpResponse, err
-		}
+		return localVarReturnValue, localVarHttpResponse, err
 	}
 
 	if localVarHttpResponse.StatusCode >= 300 {
@@ -139,12 +136,12 @@ func (a *ProjectApiService) ProjectsGet(ctx context.Context, localVarOptionals *
 
 /*
 ProjectApiService Create new project
-  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-  - @param body Project object that has to be added
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param body Project object that has to be added
 
 @return Project
 */
-func (a *ProjectApiService) ProjectsPost(ctx context.Context, body Project) (Project, *http.Response, error) {
+func (a *ProjectApiService) V1ProjectsPost(ctx context.Context, body Project) (Project, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
@@ -154,7 +151,7 @@ func (a *ProjectApiService) ProjectsPost(ctx context.Context, body Project) (Pro
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/projects"
+	localVarPath := a.client.cfg.BasePath + "/v1/projects"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -211,9 +208,7 @@ func (a *ProjectApiService) ProjectsPost(ctx context.Context, body Project) (Pro
 	if localVarHttpResponse.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
 		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-		if err == nil {
-			return localVarReturnValue, localVarHttpResponse, err
-		}
+		return localVarReturnValue, localVarHttpResponse, err
 	}
 
 	if localVarHttpResponse.StatusCode >= 300 {
@@ -241,12 +236,12 @@ func (a *ProjectApiService) ProjectsPost(ctx context.Context, body Project) (Pro
 
 /*
 ProjectApiService Get project
-  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-  - @param projectID project id of the project to be retrieved
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param projectId project id of the project to be retrieved
 
 @return Project
 */
-func (a *ProjectApiService) ProjectsProjectIdGet(ctx context.Context, projectID int32) (Project, *http.Response, error) {
+func (a *ProjectApiService) V1ProjectsProjectIdGet(ctx context.Context, projectId int32) (Project, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -256,8 +251,8 @@ func (a *ProjectApiService) ProjectsProjectIdGet(ctx context.Context, projectID 
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
+	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -312,9 +307,7 @@ func (a *ProjectApiService) ProjectsProjectIdGet(ctx context.Context, projectID 
 	if localVarHttpResponse.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
 		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-		if err == nil {
-			return localVarReturnValue, localVarHttpResponse, err
-		}
+		return localVarReturnValue, localVarHttpResponse, err
 	}
 
 	if localVarHttpResponse.StatusCode >= 300 {
@@ -342,13 +335,13 @@ func (a *ProjectApiService) ProjectsProjectIdGet(ctx context.Context, projectID 
 
 /*
 ProjectApiService Update project
-  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-  - @param projectID project id of the project to be updated
-  - @param body Project object that has to be updated
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param projectId project id of the project to be updated
+ * @param body Project object that has to be updated
 
 @return Project
 */
-func (a *ProjectApiService) ProjectsProjectIdPut(ctx context.Context, projectID int32, body Project) (Project, *http.Response, error) {
+func (a *ProjectApiService) V1ProjectsProjectIdPut(ctx context.Context, projectId int32, body Project) (Project, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
@@ -358,8 +351,8 @@ func (a *ProjectApiService) ProjectsProjectIdPut(ctx context.Context, projectID 
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/projects/{project_id}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
+	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectId), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -416,9 +409,7 @@ func (a *ProjectApiService) ProjectsProjectIdPut(ctx context.Context, projectID 
 	if localVarHttpResponse.StatusCode < 300 {
 		// If we succeed, return the data, otherwise pass on to decode error.
 		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
-		if err == nil {
-			return localVarReturnValue, localVarHttpResponse, err
-		}
+		return localVarReturnValue, localVarHttpResponse, err
 	}
 
 	if localVarHttpResponse.StatusCode >= 300 {

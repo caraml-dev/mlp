@@ -128,7 +128,7 @@ paths:
           type: "integer"
           required: true
       responses:
-        201:
+        200:
           description: "Ok"
           schema:
             type: "array"
@@ -136,6 +136,23 @@ paths:
               $ref: "#/definitions/Secret"
 
   "/v1/projects/{project_id}/secrets/{secret_id}":
+    get:
+      tags: [ "secret" ]
+      summary: "Get secret"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          type: "integer"
+          required: true
+        - in: "path"
+          name: "secret_id"
+          type: "integer"
+          required: true
+      responses:
+        200:
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/Secret"
     patch:
       tags: ["secret"]
       summary: "Update secret"
@@ -167,6 +184,96 @@ paths:
           required: true
         - in: "path"
           name: "secret_id"
+          type: "integer"
+          required: true
+      responses:
+        204:
+          description: "No content"
+
+  "/v1/projects/{project_id}/secret_storages":
+    post:
+      tags: ["secret_storage"]
+      summary: "Create secret storage"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          type: "integer"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/SecretStorage"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/SecretStorage"
+    get:
+      tags: ["secret_storage"]
+      summary: "List secret storage"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          type: "integer"
+          required: true
+      responses:
+        200:
+          description: "Ok"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/SecretStorage"
+
+  "/v1/projects/{project_id}/secret_storages/{secret_storage_id}":
+    get:
+      tags: ["secret_storage"]
+      summary: "Get secret storage"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          type: "integer"
+          required: true
+        - in: "path"
+          name: "secret_storage_id"
+          type: "integer"
+          required: true
+      responses:
+        200:
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/SecretStorage"
+    patch:
+      tags: ["secret_storage"]
+      summary: "Update secret storage"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          type: "integer"
+          required: true
+        - in: "path"
+          name: "secret_storage_id"
+          type: "integer"
+          required: true
+        - in: "body"
+          name: "body"
+          schema:
+            $ref: "#/definitions/SecretStorage"
+      responses:
+        200:
+          description: "Updated"
+          schema:
+            $ref: "#/definitions/SecretStorage"
+    delete:
+      tags: ["secret_storage"]
+      summary: "Delete secret storage"
+      parameters:
+        - in: "path"
+          name: "project_id"
+          type: "integer"
+          required: true
+        - in: "path"
+          name: "secret_storage_id"
           type: "integer"
           required: true
       responses:
@@ -248,6 +355,9 @@ definitions:
 
   Secret:
     type: "object"
+    required:
+      - name
+      - data
     properties:
       id:
         type: "integer"
@@ -255,6 +365,75 @@ definitions:
       name:
         type: "string"
       data:
+        type: "string"
+      secret_storage_id:
+        type: "integer"
+        format: "int32"
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+
+  SecretStorage:
+    type: "object"
+    required:
+      - name
+      - type
+      - scope
+      - config
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+      name:
+        type: "string"
+      type:
+        type: "string"
+        enum: ["vault", "internal"]
+      scope:
+        type: "string"
+        enum: ["project", "global"]
+      project_id:
+        type: "integer"
+        format: "int32"
+      config:
+        $ref: "#/definitions/SecretStorageConfig"
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+
+  SecretStorageConfig:
+    type: "object"
+    properties:
+      vault:
+        $ref: "#/definitions/VaultSecretStorageConfig"
+
+  VaultSecretStorageConfig:
+    type: "object"
+    required:
+      - url
+      - mount_path
+      - path_prefix
+      - auth_method
+    properties:
+      url:
+        type: "string"
+      role:
+        type: "string"
+      mount_path:
+        type: "string"
+      path_prefix:
+        type: "string"
+      auth_method:
+        type: "string"
+      gcp_auth_type:
+        type: "string"
+      service_account_email:
         type: "string"
 
 securityDefinitions:

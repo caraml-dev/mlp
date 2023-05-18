@@ -3,9 +3,9 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ID** | **int32** |  | [optional] [default to null]
+**Id** | **int32** |  | [optional] [default to null]
 **Name** | **string** |  | [default to null]
-**MLFlowTrackingURL** | **string** |  | [optional] [default to null]
+**MlflowTrackingUrl** | **string** |  | [optional] [default to null]
 **Administrators** | **[]string** |  | [optional] [default to null]
 **Readers** | **[]string** |  | [optional] [default to null]
 **Team** | **string** |  | [optional] [default to null]
