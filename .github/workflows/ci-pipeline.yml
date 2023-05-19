@@ -223,7 +223,7 @@ jobs:
 
       - name: Run E2E tests
         env:
-          MLP_API_BASEPATH: http://mlp.127.0.0.1.nip.io/v1
+          MLP_API_BASEPATH: http://mlp.127.0.0.1.nip.io
         shell: bash
         run: |
           for example in api/client/examples/*; do
