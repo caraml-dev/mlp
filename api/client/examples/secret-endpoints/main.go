@@ -13,7 +13,7 @@ import (
 
 func main() {
 	ctx := context.Background()
-	basePath := "http://mlp.dev/api/v1"
+	basePath := "http://mlp.dev/api"
 	if os.Getenv("MLP_API_BASEPATH") != "" {
 		basePath = os.Getenv("MLP_API_BASEPATH")
 	}
