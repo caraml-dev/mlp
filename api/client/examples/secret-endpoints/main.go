@@ -33,10 +33,10 @@ func main() {
 
 	apiClient := client.NewAPIClient(cfg)
 
-	apiClient.ProjectApi.ProjectsGet(ctx, nil)
+	apiClient.ProjectApi.V1ProjectsGet(ctx, nil)
 
 	// Get all projects
-	projects, _, err := apiClient.ProjectApi.ProjectsGet(ctx, nil)
+	projects, _, err := apiClient.ProjectApi.V1ProjectsGet(ctx, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +49,7 @@ func main() {
 
 		log.Println("Project:", project.Name)
 
-		_, _, err := apiClient.SecretApi.ProjectsProjectIdSecretsPost(ctx, project.ID, client.Secret{
+		_, _, err := apiClient.SecretApi.V1ProjectsProjectIdSecretsPost(ctx, project.ID, client.Secret{
 			Name: project.Name,
 			Data: `{"data": "encrypted"}`,
 		})
@@ -58,14 +58,14 @@ func main() {
 		}
 
 		// Get all secrets for projects
-		secrets, _, err := apiClient.SecretApi.ProjectsProjectIdSecretsGet(ctx, project.ID)
+		secrets, _, err := apiClient.SecretApi.V1ProjectsProjectIdSecretsGet(ctx, project.ID)
 		if err != nil {
 			panic(err)
 		}
 
 		for _, secret := range secrets {
 			log.Println("Secret name:", secret.Name)
-			_, err := apiClient.SecretApi.ProjectsProjectIdSecretsSecretIdDelete(ctx, project.ID, secret.ID)
+			_, err := apiClient.SecretApi.V1ProjectsProjectIdSecretsSecretIdDelete(ctx, project.ID, secret.ID)
 			if err != nil {
 				panic(err)
 			}

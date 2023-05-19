@@ -137,8 +137,12 @@ clean-bin:
 
 generate-client:
 	@echo "> Generating API client ..."
-	@swagger-codegen generate -i static/swagger.yaml -l go -o client -DpackageName=client
-	@goimports -l -w client
+	@docker run --rm -v $(shell pwd):/local swaggerapi/swagger-codegen-cli:2.4.14 generate \
+         -i /local/api/static/swagger.yaml \
+         -l go \
+         -o /local/api/client \
+         -DpackageName=client
+	$(MAKE) fmt
 
 .PHONY: local-env
 local-env: local-db start-keto start-vault

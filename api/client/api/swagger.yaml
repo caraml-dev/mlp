@@ -5,7 +5,7 @@ info:
   version: "0.4.0"
   title: "MLP API"
 host: "localhost:8080"
-basePath: "/v1"
+basePath: "/"
 tags:
 - name: "project"
   description: "Project Management API. Project is used to namespace model, secret,\
@@ -18,7 +18,20 @@ schemes:
 security:
 - Bearer: []
 paths:
-  /projects:
+  /v2/applications:
+    get:
+      tags:
+      - "application"
+      summary: "List CaraML applications"
+      parameters: []
+      responses:
+        "200":
+          description: "OK"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Application"
+  /v1/projects:
     get:
       tags:
       - "project"
@@ -59,7 +72,7 @@ paths:
           description: "Invalid request format"
         "409":
           description: "Project with the same name already exists"
-  /projects/{project_id}:
+  /v1/projects/{project_id}:
     get:
       tags:
       - "project"
@@ -103,7 +116,7 @@ paths:
             $ref: "#/definitions/Project"
         "400":
           description: "Invalid request format"
-  /projects/{project_id}/secrets:
+  /v1/projects/{project_id}/secrets:
     get:
       tags:
       - "secret"
@@ -115,7 +128,7 @@ paths:
         type: "integer"
         x-exportParamName: "ProjectID"
       responses:
-        "201":
+        "200":
           description: "Ok"
           schema:
             type: "array"
@@ -142,7 +155,27 @@ paths:
           description: "Created"
           schema:
             $ref: "#/definitions/Secret"
-  /projects/{project_id}/secrets/{secret_id}:
+  /v1/projects/{project_id}/secrets/{secret_id}:
+    get:
+      tags:
+      - "secret"
+      summary: "Get secret"
+      parameters:
+      - name: "project_id"
+        in: "path"
+        required: true
+        type: "integer"
+        x-exportParamName: "ProjectID"
+      - name: "secret_id"
+        in: "path"
+        required: true
+        type: "integer"
+        x-exportParamName: "SecretId"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/Secret"
     delete:
       tags:
       - "secret"
@@ -187,12 +220,142 @@ paths:
           description: "Updated"
           schema:
             $ref: "#/definitions/Secret"
+  /v1/projects/{project_id}/secret_storages:
+    get:
+      tags:
+      - "secret_storage"
+      summary: "List secret storage"
+      parameters:
+      - name: "project_id"
+        in: "path"
+        required: true
+        type: "integer"
+        x-exportParamName: "ProjectID"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/SecretStorage"
+    post:
+      tags:
+      - "secret_storage"
+      summary: "Create secret storage"
+      parameters:
+      - name: "project_id"
+        in: "path"
+        required: true
+        type: "integer"
+        x-exportParamName: "ProjectID"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/SecretStorage"
+        x-exportParamName: "Body"
+      responses:
+        "201":
+          description: "Created"
+          schema:
+            $ref: "#/definitions/SecretStorage"
+  /v1/projects/{project_id}/secret_storages/{secret_storage_id}:
+    get:
+      tags:
+      - "secret_storage"
+      summary: "Get secret storage"
+      parameters:
+      - name: "project_id"
+        in: "path"
+        required: true
+        type: "integer"
+        x-exportParamName: "ProjectID"
+      - name: "secret_storage_id"
+        in: "path"
+        required: true
+        type: "integer"
+        x-exportParamName: "SecretStorageID"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/SecretStorage"
+    delete:
+      tags:
+      - "secret_storage"
+      summary: "Delete secret storage"
+      parameters:
+      - name: "project_id"
+        in: "path"
+        required: true
+        type: "integer"
+        x-exportParamName: "ProjectID"
+      - name: "secret_storage_id"
+        in: "path"
+        required: true
+        type: "integer"
+        x-exportParamName: "SecretStorageID"
+      responses:
+        "204":
+          description: "No content"
+    patch:
+      tags:
+      - "secret_storage"
+      summary: "Update secret storage"
+      parameters:
+      - name: "project_id"
+        in: "path"
+        required: true
+        type: "integer"
+        x-exportParamName: "ProjectID"
+      - name: "secret_storage_id"
+        in: "path"
+        required: true
+        type: "integer"
+        x-exportParamName: "SecretStorageID"
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/SecretStorage"
+        x-exportParamName: "Body"
+      responses:
+        "200":
+          description: "Updated"
+          schema:
+            $ref: "#/definitions/SecretStorage"
 securityDefinitions:
   Bearer:
     type: "apiKey"
     name: "Authorization"
     in: "header"
 definitions:
+  Application:
+    type: "object"
+    required:
+    - "homepage"
+    - "name"
+    properties:
+      name:
+        type: "string"
+      description:
+        type: "string"
+      homepage:
+        type: "string"
+      config:
+        $ref: "#/definitions/Application_config"
+    example:
+      name: "name"
+      description: "description"
+      config:
+        navigation:
+        - destination: "destination"
+          label: "label"
+        - destination: "destination"
+          label: "label"
+        icon: "icon"
+        api: "api"
+      homepage: "homepage"
   Project:
     type: "object"
     required:
@@ -201,10 +364,12 @@ definitions:
       id:
         type: "integer"
         format: "int32"
+        x-exportParamName: "ID"
       name:
         type: "string"
       mlflow_tracking_url:
         type: "string"
+        x-exportParamName: "MLFlowTrackingURL"
       administrators:
         type: "array"
         items:
@@ -258,15 +423,155 @@ definitions:
       key: "key"
   Secret:
     type: "object"
+    required:
+    - "data"
+    - "name"
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+        x-exportParamName: "ID"
+      name:
+        type: "string"
+      data:
+        type: "string"
+      secret_storage_id:
+        type: "integer"
+        format: "int32"
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+    example:
+      data: "data"
+      updated_at: "2000-01-23T04:56:07.000+00:00"
+      name: "name"
+      created_at: "2000-01-23T04:56:07.000+00:00"
+      id: 0
+      secret_storage_id: 6
+  SecretStorage:
+    type: "object"
+    required:
+    - "config"
+    - "name"
+    - "scope"
+    - "type"
     properties:
       id:
         type: "integer"
         format: "int32"
       name:
         type: "string"
-      data:
+      type:
+        type: "string"
+        enum:
+        - "vault"
+        - "internal"
+      scope:
+        type: "string"
+        enum:
+        - "project"
+        - "global"
+      project_id:
+        type: "integer"
+        format: "int32"
+      config:
+        $ref: "#/definitions/SecretStorageConfig"
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+    example:
+      updated_at: "2000-01-23T04:56:07.000+00:00"
+      project_id: 6
+      scope: "project"
+      name: "name"
+      created_at: "2000-01-23T04:56:07.000+00:00"
+      id: 0
+      type: "vault"
+      config:
+        vault:
+          mount_path: "mount_path"
+          auth_method: "auth_method"
+          role: "role"
+          gcp_auth_type: "gcp_auth_type"
+          service_account_email: "service_account_email"
+          url: "url"
+          path_prefix: "path_prefix"
+  SecretStorageConfig:
+    type: "object"
+    properties:
+      vault:
+        $ref: "#/definitions/VaultSecretStorageConfig"
+    example:
+      vault:
+        mount_path: "mount_path"
+        auth_method: "auth_method"
+        role: "role"
+        gcp_auth_type: "gcp_auth_type"
+        service_account_email: "service_account_email"
+        url: "url"
+        path_prefix: "path_prefix"
+  VaultSecretStorageConfig:
+    type: "object"
+    required:
+    - "auth_method"
+    - "mount_path"
+    - "path_prefix"
+    - "url"
+    properties:
+      url:
+        type: "string"
+      role:
+        type: "string"
+      mount_path:
+        type: "string"
+      path_prefix:
+        type: "string"
+      auth_method:
+        type: "string"
+      gcp_auth_type:
+        type: "string"
+      service_account_email:
         type: "string"
     example:
-      data: "data"
-      name: "name"
-      id: 0
+      mount_path: "mount_path"
+      auth_method: "auth_method"
+      role: "role"
+      gcp_auth_type: "gcp_auth_type"
+      service_account_email: "service_account_email"
+      url: "url"
+      path_prefix: "path_prefix"
+  Application_config_navigation:
+    type: "object"
+    properties:
+      label:
+        type: "string"
+      destination:
+        type: "string"
+    example:
+      destination: "destination"
+      label: "label"
+  Application_config:
+    type: "object"
+    properties:
+      api:
+        type: "string"
+      icon:
+        type: "string"
+      navigation:
+        type: "array"
+        items:
+          $ref: "#/definitions/Application_config_navigation"
+    example:
+      navigation:
+      - destination: "destination"
+        label: "label"
+      - destination: "destination"
+        label: "label"
+      icon: "icon"
+      api: "api"

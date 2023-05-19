@@ -1,19 +1,19 @@
-# \SecretApi
+# \SecretStorageApi
 
 All URIs are relative to *http://localhost:8080*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**V1ProjectsProjectIdSecretsGet**](SecretApi.md#V1ProjectsProjectIdSecretsGet) | **Get** /v1/projects/{project_id}/secrets | List secret
-[**V1ProjectsProjectIdSecretsPost**](SecretApi.md#V1ProjectsProjectIdSecretsPost) | **Post** /v1/projects/{project_id}/secrets | Create secret
-[**V1ProjectsProjectIdSecretsSecretIdDelete**](SecretApi.md#V1ProjectsProjectIdSecretsSecretIdDelete) | **Delete** /v1/projects/{project_id}/secrets/{secret_id} | Delete secret
-[**V1ProjectsProjectIdSecretsSecretIdGet**](SecretApi.md#V1ProjectsProjectIdSecretsSecretIdGet) | **Get** /v1/projects/{project_id}/secrets/{secret_id} | Get secret
-[**V1ProjectsProjectIdSecretsSecretIdPatch**](SecretApi.md#V1ProjectsProjectIdSecretsSecretIdPatch) | **Patch** /v1/projects/{project_id}/secrets/{secret_id} | Update secret
+[**V1ProjectsProjectIdSecretStoragesGet**](SecretStorageApi.md#V1ProjectsProjectIdSecretStoragesGet) | **Get** /v1/projects/{project_id}/secret_storages | List secret storage
+[**V1ProjectsProjectIdSecretStoragesPost**](SecretStorageApi.md#V1ProjectsProjectIdSecretStoragesPost) | **Post** /v1/projects/{project_id}/secret_storages | Create secret storage
+[**V1ProjectsProjectIdSecretStoragesSecretStorageIdDelete**](SecretStorageApi.md#V1ProjectsProjectIdSecretStoragesSecretStorageIdDelete) | **Delete** /v1/projects/{project_id}/secret_storages/{secret_storage_id} | Delete secret storage
+[**V1ProjectsProjectIdSecretStoragesSecretStorageIdGet**](SecretStorageApi.md#V1ProjectsProjectIdSecretStoragesSecretStorageIdGet) | **Get** /v1/projects/{project_id}/secret_storages/{secret_storage_id} | Get secret storage
+[**V1ProjectsProjectIdSecretStoragesSecretStorageIdPatch**](SecretStorageApi.md#V1ProjectsProjectIdSecretStoragesSecretStorageIdPatch) | **Patch** /v1/projects/{project_id}/secret_storages/{secret_storage_id} | Update secret storage
 
 
-# **V1ProjectsProjectIdSecretsGet**
-> []Secret V1ProjectsProjectIdSecretsGet(ctx, projectID)
-List secret
+# **V1ProjectsProjectIdSecretStoragesGet**
+> []SecretStorage V1ProjectsProjectIdSecretStoragesGet(ctx, projectID)
+List secret storage
 
 ### Required Parameters
 
@@ -24,7 +24,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**[]Secret**](Secret.md)
+[**[]SecretStorage**](SecretStorage.md)
 
 ### Authorization
 
@@ -37,9 +37,9 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **V1ProjectsProjectIdSecretsPost**
-> Secret V1ProjectsProjectIdSecretsPost(ctx, projectID, body)
-Create secret
+# **V1ProjectsProjectIdSecretStoragesPost**
+> SecretStorage V1ProjectsProjectIdSecretStoragesPost(ctx, projectID, body)
+Create secret storage
 
 ### Required Parameters
 
@@ -47,11 +47,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **projectID** | **int32**|  | 
-  **body** | [**Secret**](Secret.md)|  | 
+  **body** | [**SecretStorage**](SecretStorage.md)|  | 
 
 ### Return type
 
-[**Secret**](Secret.md)
+[**SecretStorage**](SecretStorage.md)
 
 ### Authorization
 
@@ -64,9 +64,9 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **V1ProjectsProjectIdSecretsSecretIdDelete**
-> V1ProjectsProjectIdSecretsSecretIdDelete(ctx, projectID, secretId)
-Delete secret
+# **V1ProjectsProjectIdSecretStoragesSecretStorageIdDelete**
+> V1ProjectsProjectIdSecretStoragesSecretStorageIdDelete(ctx, projectID, secretStorageID)
+Delete secret storage
 
 ### Required Parameters
 
@@ -74,7 +74,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **projectID** | **int32**|  | 
-  **secretId** | **int32**|  | 
+  **secretStorageID** | **int32**|  | 
 
 ### Return type
 
@@ -91,9 +91,9 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **V1ProjectsProjectIdSecretsSecretIdGet**
-> Secret V1ProjectsProjectIdSecretsSecretIdGet(ctx, projectID, secretId)
-Get secret
+# **V1ProjectsProjectIdSecretStoragesSecretStorageIdGet**
+> SecretStorage V1ProjectsProjectIdSecretStoragesSecretStorageIdGet(ctx, projectID, secretStorageID)
+Get secret storage
 
 ### Required Parameters
 
@@ -101,11 +101,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **projectID** | **int32**|  | 
-  **secretId** | **int32**|  | 
+  **secretStorageID** | **int32**|  | 
 
 ### Return type
 
-[**Secret**](Secret.md)
+[**SecretStorage**](SecretStorage.md)
 
 ### Authorization
 
@@ -118,9 +118,9 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **V1ProjectsProjectIdSecretsSecretIdPatch**
-> Secret V1ProjectsProjectIdSecretsSecretIdPatch(ctx, projectID, secretId, optional)
-Update secret
+# **V1ProjectsProjectIdSecretStoragesSecretStorageIdPatch**
+> SecretStorage V1ProjectsProjectIdSecretStoragesSecretStorageIdPatch(ctx, projectID, secretStorageID, optional)
+Update secret storage
 
 ### Required Parameters
 
@@ -128,21 +128,21 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **projectID** | **int32**|  | 
-  **secretId** | **int32**|  | 
- **optional** | ***SecretApiV1ProjectsProjectIdSecretsSecretIdPatchOpts** | optional parameters | nil if no parameters
+  **secretStorageID** | **int32**|  | 
+ **optional** | ***SecretStorageApiV1ProjectsProjectIdSecretStoragesSecretStorageIdPatchOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a SecretApiV1ProjectsProjectIdSecretsSecretIdPatchOpts struct
+Optional parameters are passed through a pointer to a SecretStorageApiV1ProjectsProjectIdSecretStoragesSecretStorageIdPatchOpts struct
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
 
- **body** | [**optional.Interface of Secret**](Secret.md)|  | 
+ **body** | [**optional.Interface of SecretStorage**](SecretStorage.md)|  | 
 
 ### Return type
 
-[**Secret**](Secret.md)
+[**SecretStorage**](SecretStorage.md)
 
 ### Authorization
 

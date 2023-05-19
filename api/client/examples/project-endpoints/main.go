@@ -34,7 +34,7 @@ func main() {
 	apiClient := client.NewAPIClient(cfg)
 
 	// Get all projects
-	projects, _, err := apiClient.ProjectApi.ProjectsGet(ctx, nil)
+	projects, _, err := apiClient.ProjectApi.V1ProjectsGet(ctx, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -48,7 +48,7 @@ func main() {
 		log.Println("Project:", project.Name)
 
 		// Update project
-		updatedProject, _, err := apiClient.ProjectApi.ProjectsProjectIdPut(ctx, project.ID, client.Project{
+		updatedProject, _, err := apiClient.ProjectApi.V1ProjectsProjectIdPut(ctx, project.ID, client.Project{
 			Team:   "dsp-new",
 			Stream: "dsp-new",
 			Name:   project.Name,

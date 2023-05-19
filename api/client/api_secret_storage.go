@@ -25,41 +25,32 @@ var (
 	_ context.Context
 )
 
-type ProjectApiService service
+type SecretStorageApiService service
 
 /*
-ProjectApiService List existing projects
-Projects can be filtered by optional &#x60;name&#x60; parameter
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param optional nil or *ProjectApiV1ProjectsGetOpts - Optional Parameters:
-     * @param "Name" (optional.String) -
+SecretStorageApiService List secret storage
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param projectID
 
-@return []Project
+@return []SecretStorage
 */
-
-type ProjectApiV1ProjectsGetOpts struct {
-	Name optional.String
-}
-
-func (a *ProjectApiService) V1ProjectsGet(ctx context.Context, localVarOptionals *ProjectApiV1ProjectsGetOpts) ([]Project, *http.Response, error) {
+func (a *SecretStorageApiService) V1ProjectsProjectIdSecretStoragesGet(ctx context.Context, projectID int32) ([]SecretStorage, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue []Project
+		localVarReturnValue []SecretStorage
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/v1/projects"
+	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}/secret_storages"
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
-	if localVarOptionals != nil && localVarOptionals.Name.IsSet() {
-		localVarQueryParams.Add("name", parameterToString(localVarOptionals.Name.Value(), ""))
-	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{}
 
@@ -121,7 +112,7 @@ func (a *ProjectApiService) V1ProjectsGet(ctx context.Context, localVarOptionals
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v []Project
+			var v []SecretStorage
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -138,23 +129,25 @@ func (a *ProjectApiService) V1ProjectsGet(ctx context.Context, localVarOptionals
 }
 
 /*
-ProjectApiService Create new project
+SecretStorageApiService Create secret storage
   - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-  - @param body Project object that has to be added
+  - @param projectID
+  - @param body
 
-@return Project
+@return SecretStorage
 */
-func (a *ProjectApiService) V1ProjectsPost(ctx context.Context, body Project) (Project, *http.Response, error) {
+func (a *SecretStorageApiService) V1ProjectsProjectIdSecretStoragesPost(ctx context.Context, projectID int32, body SecretStorage) (SecretStorage, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue Project
+		localVarReturnValue SecretStorage
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/v1/projects"
+	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}/secret_storages"
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -223,7 +216,7 @@ func (a *ProjectApiService) V1ProjectsPost(ctx context.Context, body Project) (P
 		}
 
 		if localVarHttpResponse.StatusCode == 201 {
-			var v Project
+			var v SecretStorage
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -240,24 +233,107 @@ func (a *ProjectApiService) V1ProjectsPost(ctx context.Context, body Project) (P
 }
 
 /*
-ProjectApiService Get project
+SecretStorageApiService Delete secret storage
   - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-  - @param projectID project id of the project to be retrieved
-
-@return Project
+  - @param projectID
+  - @param secretStorageID
 */
-func (a *ProjectApiService) V1ProjectsProjectIdGet(ctx context.Context, projectID int32) (Project, *http.Response, error) {
+func (a *SecretStorageApiService) V1ProjectsProjectIdSecretStoragesSecretStorageIdDelete(ctx context.Context, projectID int32, secretStorageID int32) (*http.Response, error) {
+	var (
+		localVarHttpMethod = strings.ToUpper("Delete")
+		localVarPostBody   interface{}
+		localVarFileName   string
+		localVarFileBytes  []byte
+	)
+
+	// create path and map variables
+	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}/secret_storages/{secret_storage_id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"secret_storage_id"+"}", fmt.Sprintf("%v", secretStorageID), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHttpContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHttpContentType := selectHeaderContentType(localVarHttpContentTypes)
+	if localVarHttpContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHttpContentType
+	}
+
+	// to determine the Accept header
+	localVarHttpHeaderAccepts := []string{}
+
+	// set Accept header
+	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
+	if localVarHttpHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
+	}
+	if ctx != nil {
+		// API Key Authentication
+		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
+			var key string
+			if auth.Prefix != "" {
+				key = auth.Prefix + " " + auth.Key
+			} else {
+				key = auth.Key
+			}
+			localVarHeaderParams["Authorization"] = key
+
+		}
+	}
+	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	localVarHttpResponse, err := a.client.callAPI(r)
+	if err != nil || localVarHttpResponse == nil {
+		return localVarHttpResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		return localVarHttpResponse, newErr
+	}
+
+	return localVarHttpResponse, nil
+}
+
+/*
+SecretStorageApiService Get secret storage
+  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param projectID
+  - @param secretStorageID
+
+@return SecretStorage
+*/
+func (a *SecretStorageApiService) V1ProjectsProjectIdSecretStoragesSecretStorageIdGet(ctx context.Context, projectID int32, secretStorageID int32) (SecretStorage, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue Project
+		localVarReturnValue SecretStorage
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}"
+	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}/secret_storages/{secret_storage_id}"
 	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"secret_storage_id"+"}", fmt.Sprintf("%v", secretStorageID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -324,7 +400,7 @@ func (a *ProjectApiService) V1ProjectsProjectIdGet(ctx context.Context, projectI
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v Project
+			var v SecretStorage
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -341,25 +417,33 @@ func (a *ProjectApiService) V1ProjectsProjectIdGet(ctx context.Context, projectI
 }
 
 /*
-ProjectApiService Update project
-  - @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-  - @param projectID project id of the project to be updated
-  - @param body Project object that has to be updated
+SecretStorageApiService Update secret storage
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param projectID
+ * @param secretStorageID
+ * @param optional nil or *SecretStorageApiV1ProjectsProjectIdSecretStoragesSecretStorageIdPatchOpts - Optional Parameters:
+     * @param "Body" (optional.Interface of SecretStorage) -
 
-@return Project
+@return SecretStorage
 */
-func (a *ProjectApiService) V1ProjectsProjectIdPut(ctx context.Context, projectID int32, body Project) (Project, *http.Response, error) {
+
+type SecretStorageApiV1ProjectsProjectIdSecretStoragesSecretStorageIdPatchOpts struct {
+	Body optional.Interface
+}
+
+func (a *SecretStorageApiService) V1ProjectsProjectIdSecretStoragesSecretStorageIdPatch(ctx context.Context, projectID int32, secretStorageID int32, localVarOptionals *SecretStorageApiV1ProjectsProjectIdSecretStoragesSecretStorageIdPatchOpts) (SecretStorage, *http.Response, error) {
 	var (
-		localVarHttpMethod  = strings.ToUpper("Put")
+		localVarHttpMethod  = strings.ToUpper("Patch")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue Project
+		localVarReturnValue SecretStorage
 	)
 
 	// create path and map variables
-	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}"
+	localVarPath := a.client.cfg.BasePath + "/v1/projects/{project_id}/secret_storages/{secret_storage_id}"
 	localVarPath = strings.Replace(localVarPath, "{"+"project_id"+"}", fmt.Sprintf("%v", projectID), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"secret_storage_id"+"}", fmt.Sprintf("%v", secretStorageID), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -383,7 +467,14 @@ func (a *ProjectApiService) V1ProjectsProjectIdPut(ctx context.Context, projectI
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
 	}
 	// body params
-	localVarPostBody = &body
+	if localVarOptionals != nil && localVarOptionals.Body.IsSet() {
+
+		localVarOptionalBody, localVarOptionalBodyok := localVarOptionals.Body.Value().(SecretStorage)
+		if !localVarOptionalBodyok {
+			return localVarReturnValue, nil, reportError("body should be SecretStorage")
+		}
+		localVarPostBody = &localVarOptionalBody
+	}
 	if ctx != nil {
 		// API Key Authentication
 		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
@@ -428,7 +519,7 @@ func (a *ProjectApiService) V1ProjectsProjectIdPut(ctx context.Context, projectI
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v Project
+			var v SecretStorage
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
