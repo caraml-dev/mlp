@@ -198,9 +198,9 @@ func (ss *secretService) Update(secret *models.Secret) (*models.Secret, error) {
 	}
 
 	// Update secret data in the corresponding secret storage
-	err = ssClient.Set(secret.Project.Name, secret.Data, secret.Name)
+	err = ssClient.Set(secret.Name, secret.Data, secret.Project.Name)
 	if err != nil {
-		return nil, fmt.Errorf("error when creating secret in secret storage with id: %d, error: %w",
+		return nil, fmt.Errorf("error when updating secret in secret storage with id: %d, error: %w",
 			*secret.SecretStorageID, err)
 	}
 
