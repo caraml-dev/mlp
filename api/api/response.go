@@ -83,5 +83,5 @@ func FromError(err error) *Response {
 		return BadRequest(err.Error())
 	}
 
-	return Error(http.StatusInternalServerError, err.Error())
+	return InternalServerError(err.Error())
 }
