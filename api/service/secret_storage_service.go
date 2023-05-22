@@ -21,20 +21,25 @@ type SecretStorageService interface {
 	ListAll() ([]*models.SecretStorage, error)
 	// Update updates a secret storage
 	Update(storage *models.SecretStorage) (*models.SecretStorage, error)
+	// UpdateGlobal updates a global secret storage
+	UpdateGlobal(storage *models.SecretStorage) (*models.SecretStorage, error)
 	// Delete deletes a secret storage
 	Delete(id models.ID) error
 }
 
 type secretStorageService struct {
-	ssRepository     repository.SecretStorageRepository
-	ssClientRegistry *secretstorage.Registry
+	ssRepository      repository.SecretStorageRepository
+	projectRepository repository.ProjectRepository
+	ssClientRegistry  *secretstorage.Registry
 }
 
 func NewSecretStorageService(ssRepository repository.SecretStorageRepository,
+	projectRepository repository.ProjectRepository,
 	ssClientRegistry *secretstorage.Registry) SecretStorageService {
 	return &secretStorageService{
-		ssRepository:     ssRepository,
-		ssClientRegistry: ssClientRegistry,
+		ssRepository:      ssRepository,
+		projectRepository: projectRepository,
+		ssClientRegistry:  ssClientRegistry,
 	}
 }
 
@@ -117,6 +122,19 @@ func (s *secretStorageService) Update(ss *models.SecretStorage) (*models.SecretS
 	return s.ssRepository.Save(ss)
 }
 
+func (s *secretStorageService) UpdateGlobal(ss *models.SecretStorage) (*models.SecretStorage, error) {
+	existingSs, err := s.ssRepository.Get(ss.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve secret storage: %w", err)
+	}
+
+	if existingSs.Type != ss.Type || !reflect.DeepEqual(existingSs.Config, ss.Config) {
+		return s.migrateGlobalSecretStorage(existingSs, ss)
+	}
+
+	return s.ssRepository.Save(ss)
+}
+
 func (s *secretStorageService) migrateSecretStorage(oldSs *models.SecretStorage,
 	newSs *models.SecretStorage) (*models.SecretStorage, error) {
 
@@ -144,6 +162,51 @@ func (s *secretStorageService) migrateSecretStorage(oldSs *models.SecretStorage,
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete secrets in secret storage: %w", err)
 	}
+
+	// update client registry entry to use new secret storage client
+	s.ssClientRegistry.Set(newSs.ID, newClient)
+
+	return s.ssRepository.Save(newSs)
+}
+
+func (s *secretStorageService) migrateGlobalSecretStorage(oldSs *models.SecretStorage,
+	newSs *models.SecretStorage) (*models.SecretStorage, error) {
+
+	projects, err := s.projectRepository.ListAll()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve projects: %w", err)
+	}
+
+	oldClient, ok := s.ssClientRegistry.Get(oldSs.ID)
+	if !ok {
+		return nil, fmt.Errorf("secret storage client not found")
+	}
+
+	newClient, err := secretstorage.NewClient(newSs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create secret storage client: %w", err)
+	}
+
+	// migrate secrets from all projects
+	for _, project := range projects {
+		allSecrets, err := oldClient.List(project.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list secrets in secret storage: %w", err)
+		}
+
+		err = newClient.SetAll(allSecrets, project.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to set secrets in secret storage: %w", err)
+		}
+
+		err = oldClient.DeleteAll(project.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to delete secrets in secret storage: %w", err)
+		}
+	}
+
+	// update client registry entry to use new secret storage client
+	s.ssClientRegistry.Set(newSs.ID, newClient)
 
 	return s.ssRepository.Save(newSs)
 }

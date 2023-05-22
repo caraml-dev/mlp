@@ -69,12 +69,6 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 	storageRepository := repository.NewSecretStorageRepository(db)
 	projectRepository := repository.NewProjectRepository(db)
 
-	// initialize default secret storage or create one
-	defaultSecretStorage, err := initializeDefaultSecretStorage(storageRepository, cfg)
-	if err != nil {
-		return nil, err
-	}
-
 	// get all secret storages and create corresponding clients
 	allSecretStorages, err := storageRepository.ListAll()
 	if err != nil {
@@ -85,9 +79,15 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		return nil, fmt.Errorf("failed to initialize secret storage registry: %v", err)
 	}
 
+	secretStorageService := service.NewSecretStorageService(storageRepository, projectRepository, storageClientRegistry)
+	// initialize default secret storage or create one
+	defaultSecretStorage, err := initializeDefaultSecretStorage(storageRepository, secretStorageService, cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	secretService := service.NewSecretService(secretRepository, storageRepository,
 		projectRepository, storageClientRegistry, defaultSecretStorage)
-	secretStorageService := service.NewSecretStorageService(storageRepository, storageClientRegistry)
 
 	return &AppContext{
 		ApplicationService:   applicationService,
@@ -101,9 +101,10 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 }
 
 func initializeDefaultSecretStorage(
-	storageRepository repository.SecretStorageRepository,
+	secretStorageRepository repository.SecretStorageRepository,
+	secretStorageService service.SecretStorageService,
 	cfg *config.Config) (*models.SecretStorage, error) {
-	defaultSecretStorage, err := storageRepository.GetGlobal(cfg.DefaultSecretStorageModel().Name)
+	defaultSecretStorage, err := secretStorageRepository.GetGlobal(cfg.DefaultSecretStorageModel().Name)
 
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
@@ -111,7 +112,7 @@ func initializeDefaultSecretStorage(
 		}
 
 		// create one if not found
-		return storageRepository.Save(cfg.DefaultSecretStorageModel())
+		return secretStorageService.Create(cfg.DefaultSecretStorageModel())
 	}
 
 	// update default secret storage if it has changed
@@ -122,7 +123,7 @@ func initializeDefaultSecretStorage(
 		return nil, fmt.Errorf("failed copying default secret storage: %v", err)
 	}
 
-	return storageRepository.Save(defaultSecretStorage)
+	return secretStorageService.UpdateGlobal(defaultSecretStorage)
 }
 
 // type Handler func(r *http.Request, vars map[string]string, body interface{}) *Response

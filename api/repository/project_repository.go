@@ -10,6 +10,7 @@ import (
 )
 
 type ProjectRepository interface {
+	ListAll() ([]*models.Project, error)
 	ListProjects(name string) ([]*models.Project, error)
 	Get(projectID models.ID) (*models.Project, error)
 	GetByName(projectName string) (*models.Project, error)
@@ -22,6 +23,14 @@ type projectRepository struct {
 
 func NewProjectRepository(db *gorm.DB) ProjectRepository {
 	return &projectRepository{db: db}
+}
+
+func (storage *projectRepository) ListAll() ([]*models.Project, error) {
+	var projects []*models.Project
+	if err := storage.db.Find(&projects).Error; err != nil {
+		return nil, err
+	}
+	return projects, nil
 }
 
 func (storage *projectRepository) ListProjects(name string) (projects []*models.Project, err error) {
