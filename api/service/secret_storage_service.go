@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/caraml-dev/mlp/api/models"
 	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
@@ -109,7 +110,7 @@ func (s *secretStorageService) Update(ss *models.SecretStorage) (*models.SecretS
 		return nil, fmt.Errorf("failed to retrieve secret storage: %w", err)
 	}
 
-	if existingSs.Type != ss.Type || existingSs.Config != ss.Config {
+	if existingSs.Type != ss.Type || !reflect.DeepEqual(existingSs.Config, ss.Config) {
 		return s.migrateSecretStorage(existingSs, ss)
 	}
 
