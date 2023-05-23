@@ -153,7 +153,7 @@ func (ss *secretService) List(projectID models.ID) ([]*models.Secret, error) {
 				storageID, err)
 		}
 
-		secretKVs = util.JoinMaps(secretKVs, temp)
+		secretKVs = util.JoinStringMaps(secretKVs, temp)
 	}
 
 	// populate 'data' field of secrets
