@@ -46,15 +46,6 @@ func (c *SecretsController) CreateSecret(r *http.Request, vars map[string]string
 		return BadRequest("Invalid request body")
 	}
 
-	// check that the secret storage id exists if users specify it
-	if secret.SecretStorageID != nil {
-		_, err = c.SecretStorageService.FindByID(*secret.SecretStorageID)
-		if err != nil {
-			log.Errorf("error fetching secret storage with ID %d: %s", *secret.SecretStorageID, err)
-			return FromError(err)
-		}
-	}
-
 	// creates
 	secret, err = c.SecretService.Create(secret)
 	if err != nil {
@@ -80,15 +71,6 @@ func (c *SecretsController) UpdateSecret(r *http.Request, vars map[string]string
 	secret, err := c.SecretService.FindByID(secretID)
 	if err != nil {
 		return FromError(err)
-	}
-
-	// check that the secret storage id exists if users specify it
-	if updateRequest.SecretStorageID != nil {
-		_, err := c.SecretStorageService.FindByID(*updateRequest.SecretStorageID)
-		if err != nil {
-			log.Errorf("error fetching secret storage with ID %d: %s", *updateRequest.SecretStorageID, err)
-			return FromError(err)
-		}
 	}
 
 	err = copier.CopyWithOption(secret, updateRequest, copier.Option{IgnoreEmpty: true})

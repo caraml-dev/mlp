@@ -161,7 +161,7 @@ func (s *APITestSuite) TestCreateSecret() {
 			},
 			want: &Response{
 				code: http.StatusNotFound,
-				data: ErrorMessage{"secret storage with ID 123 not found"},
+				data: ErrorMessage{"error when fetching secret storage with id: 123, error: secret storage with ID 123 not found"},
 			},
 		},
 		{
