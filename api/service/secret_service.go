@@ -141,13 +141,14 @@ func (ss *secretService) List(projectID models.ID) ([]*models.Secret, error) {
 
 	// fetch secrets from secret storage
 	secretKVs := make(map[string]string)
+	projectName := secrets[0].Project.Name
 	for storageID := range secretsByStorageID {
 		secretStorageClient, ok := ss.storageClientRegistry.Get(storageID)
 		if !ok {
 			return nil, fmt.Errorf("secret storage client with id %d is not found", storageID)
 		}
 
-		temp, err := secretStorageClient.List(secrets[0].Project.Name)
+		temp, err := secretStorageClient.List(projectName)
 		if err != nil {
 			return nil, fmt.Errorf("error when fetching secrets from secret storage with id: %d, error: %w",
 				storageID, err)
