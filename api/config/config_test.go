@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/models/v2"
@@ -34,6 +35,9 @@ func envSetter(envs map[string]string) (closer func()) {
 }
 
 func TestLoad(t *testing.T) {
+	oneSecond, _ := time.ParseDuration("1s")
+	twoSeconds, _ := time.ParseDuration("2s")
+
 	suite := map[string]struct {
 		configs  []string
 		env      map[string]string
@@ -56,11 +60,15 @@ func TestLoad(t *testing.T) {
 					Enabled: false,
 				},
 				Database: &config.DatabaseConfig{
-					Host:          "localhost",
-					Port:          5432,
-					Database:      "mlp",
-					User:          "mlp",
-					MigrationPath: "file://db-migrations",
+					Host:            "localhost",
+					Port:            5432,
+					Database:        "mlp",
+					User:            "mlp",
+					MigrationPath:   "file://db-migrations",
+					ConnMaxIdleTime: oneSecond,
+					ConnMaxLifetime: twoSeconds,
+					MaxIdleConns:    10,
+					MaxOpenConns:    20,
 				},
 				Mlflow: &config.MlflowConfig{},
 				Docs:   []config.Documentation{},
@@ -90,12 +98,16 @@ func TestLoad(t *testing.T) {
 					Enabled: false,
 				},
 				Database: &config.DatabaseConfig{
-					Host:          "localhost",
-					Port:          5432,
-					Database:      "mlp",
-					User:          "mlp",
-					Password:      "secret",
-					MigrationPath: "file://db-migrations",
+					Host:            "localhost",
+					Port:            5432,
+					Database:        "mlp",
+					User:            "mlp",
+					Password:        "secret",
+					MigrationPath:   "file://db-migrations",
+					ConnMaxIdleTime: oneSecond,
+					ConnMaxLifetime: twoSeconds,
+					MaxIdleConns:    10,
+					MaxOpenConns:    20,
 				},
 				Mlflow: &config.MlflowConfig{},
 				Docs:   []config.Documentation{},
@@ -152,12 +164,16 @@ func TestLoad(t *testing.T) {
 					KetoServerURL: "http://localhost:4466",
 				},
 				Database: &config.DatabaseConfig{
-					Host:          "localhost",
-					Port:          5432,
-					Database:      "mlp",
-					User:          "mlp",
-					Password:      "secret",
-					MigrationPath: "file://db-migrations",
+					Host:            "localhost",
+					Port:            5432,
+					Database:        "mlp",
+					User:            "mlp",
+					Password:        "secret",
+					MigrationPath:   "file://db-migrations",
+					ConnMaxIdleTime: oneSecond,
+					ConnMaxLifetime: twoSeconds,
+					MaxIdleConns:    10,
+					MaxOpenConns:    20,
 				},
 				Docs: []config.Documentation{
 					{

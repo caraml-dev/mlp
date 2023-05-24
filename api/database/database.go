@@ -31,6 +31,17 @@ func InitDB(dbCfg *config.DatabaseConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Get the underlying SQL DB and apply connection properties
+	sqlDB := db.DB()
+	if sqlDB == nil {
+		return nil, errors.New("Failed to get underlying database connection")
+	}
+	sqlDB.SetConnMaxIdleTime(dbCfg.ConnMaxIdleTime)
+	sqlDB.SetConnMaxLifetime(dbCfg.ConnMaxLifetime)
+	sqlDB.SetMaxIdleConns(dbCfg.MaxIdleConns)
+	sqlDB.SetMaxOpenConns(dbCfg.MaxOpenConns)
+
 	db.LogMode(false)
 	err = runDBMigration(db, dbCfg.MigrationPath)
 	if err != nil {
