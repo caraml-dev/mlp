@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/caraml-dev/mlp/api/models/v2"
 	"github.com/go-playground/validator/v10"
@@ -55,6 +56,11 @@ type DatabaseConfig struct {
 	Password      string `validate:"required"`
 	Database      string `validate:"required"`
 	MigrationPath string `validate:"required,url"`
+
+	ConnMaxIdleTime time.Duration
+	ConnMaxLifetime time.Duration
+	MaxIdleConns    int
+	MaxOpenConns    int
 }
 
 type AuthorizationConfig struct {
