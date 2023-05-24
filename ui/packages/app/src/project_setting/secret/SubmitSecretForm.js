@@ -4,7 +4,6 @@ import {
   EuiFormRow,
   EuiButton,
   EuiButtonEmpty,
-  EuiTextArea,
   EuiFlexItem,
   EuiFlexGroup,
   EuiForm,
@@ -12,9 +11,9 @@ import {
   EuiTitle,
   EuiIcon,
   EuiToolTip,
-  EuiSpacer,
   EuiPanel,
-  EuiSelect
+  EuiSelect,
+  EuiFieldPassword
 } from "@elastic/eui";
 import { addToast, useMlpApi } from "@caraml-dev/ui-lib";
 import {
@@ -144,6 +143,7 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
                 }
                 display="columnCompressed">
                 <EuiFieldText
+                  fullWidth
                   placeholder="e.g MERLIN SECRET"
                   value={request.name}
                   onChange={e => onNameChanges(e)}
@@ -152,7 +152,26 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
                 />
               </EuiFormRow>
             )}
-            <EuiSpacer size="s" />
+            <EuiFormRow
+              fullWidth
+              label={
+                <EuiToolTip content="Specify content of secret">
+                  <span>
+                    Data <EuiIcon type="questionInCircle" color="subdued" />
+                  </span>
+                </EuiToolTip>
+              }
+              display="columnCompressed">
+              <EuiFieldPassword
+                fullWidth
+                placeholder="e.g p@ass-w0rD"
+                type="dual"
+                value={request.data}
+                onChange={e => onDataChanges(e)}
+                name="data"
+                isInvalid={!isValidData}
+              />
+            </EuiFormRow>
             <EuiFormRow
               fullWidth
               label={
@@ -165,29 +184,11 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
               }
               display="columnCompressed">
               <EuiSelect
+                fullWidth
                 id="select-secret-storage"
                 options={secretStorageOptions}
                 value={request.secret_storage_id}
                 onChange={e => onSecretStorageChanges(e)}
-              />
-            </EuiFormRow>
-            <EuiFormRow
-              fullWidth
-              label={
-                <EuiToolTip content="Specify content of secret">
-                  <span>
-                    Data <EuiIcon type="questionInCircle" color="subdued" />
-                  </span>
-                </EuiToolTip>
-              }
-              display="columnCompressed">
-              <EuiTextArea
-                fullWidth
-                placeholder="e.g p@ass-w0rD"
-                value={request.data}
-                onChange={e => onDataChanges(e)}
-                name="data"
-                isInvalid={!isValidData}
               />
             </EuiFormRow>
             <EuiFormRow>
