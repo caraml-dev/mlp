@@ -35,7 +35,8 @@ func envSetter(envs map[string]string) (closer func()) {
 }
 
 func TestLoad(t *testing.T) {
-	zeroSecond, _ := time.ParseDuration("0s")
+	oneSecond, _ := time.ParseDuration("1s")
+	twoSeconds, _ := time.ParseDuration("2s")
 
 	suite := map[string]struct {
 		configs  []string
@@ -64,10 +65,10 @@ func TestLoad(t *testing.T) {
 					Database:      "mlp",
 					User:          "mlp",
 					MigrationPath: "file://db-migrations",
-					ConnMaxIdleTime:  zeroSecond,
-					ConnMaxLifetime:  zeroSecond,
-					MaxIdleConns:     0,
-					MaxOpenConns:     0,
+					ConnMaxIdleTime:  oneSecond,
+					ConnMaxLifetime:  twoSeconds,
+					MaxIdleConns:     10,
+					MaxOpenConns:     20,
 				},
 				Mlflow: &config.MlflowConfig{},
 				Docs:   []config.Documentation{},
@@ -103,10 +104,10 @@ func TestLoad(t *testing.T) {
 					User:          "mlp",
 					Password:      "secret",
 					MigrationPath: "file://db-migrations",
-					ConnMaxIdleTime:  zeroSecond,
-					ConnMaxLifetime:  zeroSecond,
-					MaxIdleConns:     0,
-					MaxOpenConns:     0,
+					ConnMaxIdleTime:  oneSecond,
+					ConnMaxLifetime:  twoSeconds,
+					MaxIdleConns:     10,
+					MaxOpenConns:     20,
 				},
 				Mlflow: &config.MlflowConfig{},
 				Docs:   []config.Documentation{},
@@ -169,10 +170,10 @@ func TestLoad(t *testing.T) {
 					User:          "mlp",
 					Password:      "secret",
 					MigrationPath: "file://db-migrations",
-					ConnMaxIdleTime:  zeroSecond,
-					ConnMaxLifetime:  zeroSecond,
-					MaxIdleConns:     0,
-					MaxOpenConns:     0,
+					ConnMaxIdleTime:  oneSecond,
+					ConnMaxLifetime:  twoSeconds,
+					MaxIdleConns:     10,
+					MaxOpenConns:     20,
 				},
 				Docs: []config.Documentation{
 					{
@@ -221,8 +222,6 @@ func TestLoad(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	zeroSecond, _ := time.ParseDuration("0s")
-
 	suite := map[string]struct {
 		config *config.Config
 		error  error
@@ -243,10 +242,6 @@ func TestValidate(t *testing.T) {
 					Password:      "mlp",
 					Database:      "mlp",
 					MigrationPath: "file://db-migrations",
-					ConnMaxIdleTime:  zeroSecond,
-					ConnMaxLifetime:  zeroSecond,
-					MaxIdleConns:     0,
-					MaxOpenConns:     0,
 				},
 				Mlflow: &config.MlflowConfig{
 					TrackingURL: "http://mlflow.tracking",
@@ -270,10 +265,6 @@ func TestValidate(t *testing.T) {
 					Password:      "mlp",
 					Database:      "mlp",
 					MigrationPath: "file://db-migrations",
-					ConnMaxIdleTime:  zeroSecond,
-					ConnMaxLifetime:  zeroSecond,
-					MaxIdleConns:     0,
-					MaxOpenConns:     0,
 				},
 				Mlflow: &config.MlflowConfig{
 					TrackingURL: "http://mlflow.tracking",
@@ -308,10 +299,6 @@ func TestValidate(t *testing.T) {
 					Password:      "mlp",
 					Database:      "mlp",
 					MigrationPath: "file://db-migrations",
-					ConnMaxIdleTime:  zeroSecond,
-					ConnMaxLifetime:  zeroSecond,
-					MaxIdleConns:     0,
-					MaxOpenConns:     0,
 				},
 				Mlflow: &config.MlflowConfig{
 					TrackingURL: "http://mlflow.tracking",

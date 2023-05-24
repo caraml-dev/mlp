@@ -1,5 +1,9 @@
 database:
   user: mlp
+  connMaxIdleTime: 1s
+  connMaxLifetime: 2s
+  MaxIdleConns: 10
+  MaxOpenConns: 20
 
 streams:
   stream-1:
