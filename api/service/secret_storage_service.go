@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"github.com/caraml-dev/mlp/api/log"
 	"reflect"
 
 	"github.com/caraml-dev/mlp/api/models"
@@ -171,6 +172,11 @@ func (s *secretStorageService) migrateSecretStorage(oldSs *models.SecretStorage,
 
 func (s *secretStorageService) migrateGlobalSecretStorage(oldSs *models.SecretStorage,
 	newSs *models.SecretStorage) (*models.SecretStorage, error) {
+	log.Infof("migrating global secret storage %s", oldSs.Name)
+
+	if newSs.Type == models.InternalSecretStorageType {
+		return nil, fmt.Errorf("cannot migrate to internal secret storage")
+	}
 
 	projects, err := s.projectRepository.ListAll()
 	if err != nil {
@@ -201,7 +207,8 @@ func (s *secretStorageService) migrateGlobalSecretStorage(oldSs *models.SecretSt
 
 		err = oldClient.DeleteAll(project.Name)
 		if err != nil {
-			return nil, fmt.Errorf("failed to delete secrets in secret storage: %w", err)
+			// suppress error and continue to next project
+			log.Warnf("failed to delete secrets in secret storage: %w", err)
 		}
 	}
 
