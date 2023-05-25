@@ -22,15 +22,12 @@ import {
 } from "../../validation/validation";
 
 const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
-  const DEFAULT_SECRET_STORAGE_ID = 2;
   const [request, setRequest] = useState({
     name: secret ? secret.name : "",
     // only authenticated user with proper access to the project can get the secret value,
     // so it's safe to show the value here
     data: secret ? secret.data : "",
-    secret_storage_id: secret
-      ? secret.secret_storage_id
-      : DEFAULT_SECRET_STORAGE_ID
+    secret_storage_id: secret ? secret.secret_storage_id : undefined
   });
 
   const [listSecretStorageResponse] = useMlpApi(
@@ -51,21 +48,6 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
     {},
     false
   );
-
-  const secretStorageOptions = useMemo(() => {
-    if (
-      listSecretStorageResponse.isLoaded &&
-      !listSecretStorageResponse.error
-    ) {
-      return listSecretStorageResponse.data.map(item => {
-        return {
-          value: item.id,
-          text: item.name
-        };
-      });
-    }
-    return [];
-  }, [listSecretStorageResponse]);
 
   useEffect(() => {
     if (submissionResponse.isLoaded && !submissionResponse.error) {
@@ -112,9 +94,29 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
   const [isValidName, setValidName] = useState(
     validateSecretName(request.name)
   );
+
   const [isValidData, setValidData] = useState(
     validateSecretData(request.data)
   );
+
+  const secretStorageOptions = useMemo(() => {
+    if (
+      listSecretStorageResponse.isLoaded &&
+      !listSecretStorageResponse.error
+    ) {
+      if (!request.secret_storage_id) {
+        onChange("secret_storage_id")(listSecretStorageResponse.data[0].id);
+      }
+
+      return listSecretStorageResponse.data.map(item => {
+        return {
+          value: item.id,
+          text: item.name
+        };
+      });
+    }
+    return [];
+  }, [listSecretStorageResponse]);
 
   return (
     <EuiPanel paddingSize="m">
