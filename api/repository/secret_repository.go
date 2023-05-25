@@ -32,10 +32,11 @@ func NewSecretRepository(db *gorm.DB) SecretRepository {
 }
 
 // List lists all secret within the given project ID.
-func (ss *secretRepository) List(projectID models.ID) (secrets []*models.Secret, err error) {
-	err = ss.db.Preload("SecretStorage").Preload("Project").
+func (ss *secretRepository) List(projectID models.ID) ([]*models.Secret, error) {
+	var secrets []*models.Secret
+	err := ss.db.Preload("SecretStorage").Preload("Project").
 		Where("project_id = ?", projectID).Find(&secrets).Error
-	return
+	return secrets, err
 }
 
 // Save create or update a secret.
