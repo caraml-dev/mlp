@@ -116,7 +116,7 @@ const SubmitSecretForm = ({ projectId, fetchUpdates, secret, toggleAdd }) => {
       });
     }
     return [];
-  }, [listSecretStorageResponse]);
+  }, [listSecretStorageResponse, request]);
 
   return (
     <EuiPanel paddingSize="m">
