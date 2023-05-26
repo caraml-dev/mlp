@@ -46,7 +46,8 @@ lint-ui:
 .PHONY: fmt
 fmt:
 	@echo "Formatting code..."
-	gofmt -s -w ${SRC_ROOT}
+	@goimports -w -local github.com/caraml-dev/mlp $(shell find . -type f -name '*.go' -not -path "**/vendor/*")
+	@gofmt -s -w .
 
 .PHONY: lint-api
 lint-api: setup
@@ -65,18 +66,12 @@ test-api: init-dep-api
 	@cd ${API_PATH} && go test -v -race -cover -coverprofile cover.out ${API_ALL_PACKAGES}
 	@cd ${API_PATH} && go tool cover -func cover.out
 
-.PHONY: it-test-api-local
-it-test-api-local: local-db start-keto
+.PHONY: it-test-api
+it-test-api: local-db start-keto start-vault
 	@echo "> API integration testing locally..."
 	@cd ${API_PATH} && go test -race -short -cover -coverprofile cover.out -tags integration ${API_ALL_PACKAGES}
 	@cd ${API_PATH} && go tool cover -func cover.out
 	@make stop-docker
-
-.PHONY: it-test-api-ci
-it-test-api-ci:
-	@echo "> API integration testing ..."
-	@cd ${API_PATH} && go test -race -short -cover -coverprofile cover.out -tags integration ${API_ALL_PACKAGES}
-	@cd ${API_PATH} && go tool cover -func cover.out
 
 # ============================================================
 # Building recipes
@@ -115,9 +110,9 @@ build-image: version
 # Run recipes
 # ============================================================
 .PHONY: run
-run: build-api local-db
+run: local-env
 	@echo "> Running application ..."
-	@./bin/${BIN_NAME} --config config-dev.yaml
+	@go run api/cmd/main.go --config config-dev.yaml
 
 .PHONY: start-ui
 start-ui:
@@ -142,8 +137,15 @@ clean-bin:
 
 generate-client:
 	@echo "> Generating API client ..."
-	@swagger-codegen generate -i static/swagger.yaml -l go -o client -DpackageName=client
-	@goimports -l -w client
+	@docker run --rm -v $(shell pwd):/local swaggerapi/swagger-codegen-cli:2.4.14 generate \
+         -i /local/api/static/swagger.yaml \
+         -l go \
+         -o /local/api/client \
+         -DpackageName=client
+	$(MAKE) fmt
+
+.PHONY: local-env
+local-env: local-db start-keto start-vault
 
 .PHONY: local-db
 local-db:
@@ -154,6 +156,11 @@ local-db:
 start-keto:
 	@echo "> Starting up keto server ..."
 	@docker-compose up -d keto
+
+.PHONY: start-vault
+start-vault:
+	@echo "> Starting up vault server ..."
+	@docker-compose up -d vault
 
 .PHONY: stop-docker
 stop-docker:

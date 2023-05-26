@@ -4,6 +4,7 @@ services:
     depends_on:
       - postgres
       - keto
+      - vault
     build: .
     image: gojecktech/mlp:dev
     ports:
@@ -22,34 +23,24 @@ services:
       - POSTGRESQL_DATABASE=mlp
 
   keto:
-    depends_on:
-      - keto-db
-      - keto-db-migrations
     image: oryd/keto:v0.4
     ports:
       - 4466:4466
     environment:
-      - DSN=postgres://keto:keto@keto-db:5432/keto?sslmode=disable
+      - DSN=memory
     command:
       - serve
 
-  keto-db:
-    image: bitnami/postgresql:14.5.0
+  vault:
+    image: hashicorp/vault
+    ports:
+      - 8200:8200
+    cap_add:
+      - IPC_LOCK
     environment:
-      - POSTGRESQL_USERNAME=keto
-      - POSTGRESQL_PASSWORD=keto
-      - POSTGRESQL_DATABASE=keto
-
-  keto-db-migrations:
-    depends_on:
-      - keto-db
-    image: oryd/keto:v0.4
-    environment:
-      - DSN=postgres://keto:keto@keto-db:5432/keto?sslmode=disable
-    command:
-      - migrate
-      - sql
-      - -e
+      - VAULT_DEV_ROOT_TOKEN_ID=root
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    entrypoint: vault server -dev
 
   swagger-ui:
     image: swaggerapi/swagger-ui:v3.23.5

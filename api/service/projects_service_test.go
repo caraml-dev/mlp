@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	enforcerMock "github.com/caraml-dev/mlp/api/pkg/authz/enforcer/mocks"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer/types"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/caraml-dev/mlp/api/models"
-	"github.com/caraml-dev/mlp/api/storage/mocks"
+	"github.com/caraml-dev/mlp/api/repository/mocks"
 )
 
 const MLFlowTrackingURL = "http://localhost:5555"
@@ -78,7 +79,7 @@ func TestProjectsService_CreateProject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			storage := &mocks.ProjectStorage{}
+			storage := &mocks.ProjectRepository{}
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
 
 			projectResource := fmt.Sprintf(ProjectResources, tt.arg.ID)
@@ -191,7 +192,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			storage := &mocks.ProjectStorage{}
+			storage := &mocks.ProjectRepository{}
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
 
 			authEnforcer := &enforcerMock.Enforcer{}
@@ -269,7 +270,7 @@ func TestProjectsService_ListProjects(t *testing.T) {
 			Readers:           nil,
 		},
 	}
-	storage := &mocks.ProjectStorage{}
+	storage := &mocks.ProjectRepository{}
 	storage.On("ListProjects", projectFilter).Return(exp, nil)
 
 	authEnforcer := &enforcerMock.Enforcer{}
@@ -293,7 +294,7 @@ func TestProjectsService_FindById(t *testing.T) {
 		Administrators:    []string{"user@email.com"},
 		Readers:           nil,
 	}
-	storage := &mocks.ProjectStorage{}
+	storage := &mocks.ProjectRepository{}
 	storage.On("Get", id).Return(exp, nil)
 
 	authEnforcer := &enforcerMock.Enforcer{}

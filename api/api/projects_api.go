@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -8,7 +9,7 @@ import (
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
-	"github.com/jinzhu/gorm"
+	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
 )
 
 type ProjectsController struct {
@@ -18,7 +19,8 @@ type ProjectsController struct {
 func (c *ProjectsController) ListProjects(r *http.Request, vars map[string]string, _ interface{}) *Response {
 	projects, err := c.ProjectsService.ListProjects(vars["name"])
 	if err != nil {
-		return InternalServerError(err.Error())
+		log.Errorf("error fetching projects: %s", err)
+		return FromError(err)
 	}
 
 	user := vars["user"]
@@ -38,15 +40,18 @@ func (c *ProjectsController) CreateProject(r *http.Request, vars map[string]stri
 
 	project, ok := body.(*models.Project)
 	if !ok {
+		log.Errorf("invalid request body %v", body)
 		return BadRequest("Unable to parse request body as project")
 	}
 
 	existingProject, err := c.ProjectsService.FindByName(project.Name)
 	if existingProject != nil {
+		log.Errorf("project %s already exists", project.Name)
 		return BadRequest(fmt.Sprintf("Project %s already exists", project.Name))
 	}
 
-	if err != nil && !gorm.IsRecordNotFoundError(err) {
+	if err != nil && !errors.Is(err, &apperror.NotFoundError{}) {
+		log.Errorf("error fetching project with name %s: %s", project.Name, err)
 		return InternalServerError(err.Error())
 	}
 
@@ -54,7 +59,8 @@ func (c *ProjectsController) CreateProject(r *http.Request, vars map[string]stri
 	project.Administrators = addRequester(user, project.Administrators)
 	project, err = c.ProjectsService.CreateProject(project)
 	if err != nil {
-		return InternalServerError(err.Error())
+		log.Errorf("error creating project %s: %s", project.Name, err)
+		return FromError(err)
 	}
 
 	return Created(project)
@@ -64,15 +70,13 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 	projectID, _ := models.ParseID(vars["project_id"])
 	project, err := c.ProjectsService.FindByID(projectID)
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			return NotFound(fmt.Sprintf("Project id %s not found", projectID))
-		}
-
-		return InternalServerError(err.Error())
+		log.Errorf("error fetching project with id %s: %s", projectID, err)
+		return FromError(err)
 	}
 
 	newProject, ok := body.(*models.Project)
 	if !ok {
+		log.Errorf("invalid request body %v", body)
 		return BadRequest("Unable to parse request body as project")
 	}
 
@@ -83,8 +87,8 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 	project.Labels = newProject.Labels
 	project, err = c.ProjectsService.UpdateProject(project)
 	if err != nil {
-		log.Errorf("unable to update project %s %v", projectID, err)
-		return InternalServerError(fmt.Sprintf("Unable to update project %s", projectID))
+		log.Errorf("error updating project %s: %s", project.Name, err)
+		return FromError(err)
 	}
 
 	return Ok(project)
@@ -94,11 +98,8 @@ func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string,
 	projectID, _ := models.ParseID(vars["project_id"])
 	project, err := c.ProjectsService.FindByID(projectID)
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			return NotFound(fmt.Sprintf("Project id %s not found", projectID))
-		}
-
-		return InternalServerError(err.Error())
+		log.Errorf("error fetching project with id %s: %s", projectID, err)
+		return FromError(err)
 	}
 
 	return Ok(project)

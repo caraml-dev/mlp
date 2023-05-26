@@ -17,8 +17,8 @@ import (
 
 	"github.com/caraml-dev/mlp/api/it/database"
 	"github.com/caraml-dev/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/repository"
 	"github.com/caraml-dev/mlp/api/service"
-	"github.com/caraml-dev/mlp/api/storage"
 )
 
 const (
@@ -201,12 +201,12 @@ func TestCreateProject(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
-				prjStorage := storage.NewProjectStorage(db)
+				prjRepository := repository.NewProjectRepository(db)
 				if tC.existingProject != nil {
-					_, err := prjStorage.Save(tC.existingProject)
+					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, nil, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
@@ -309,14 +309,14 @@ func TestListProjects(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
-				prjStorage := storage.NewProjectStorage(db)
+				prjRepository := repository.NewProjectRepository(db)
 				if tC.existingProjects != nil {
 					for _, project := range tC.existingProjects {
-						_, err := prjStorage.Save(&project)
+						_, err := prjRepository.Save(&project)
 						assert.NoError(t, err)
 					}
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, nil, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
@@ -463,7 +463,7 @@ func TestUpdateProject(t *testing.T) {
 			expectedResponse: &Response{
 				code: 404,
 				data: ErrorMessage{
-					Message: "Project id 2 not found",
+					Message: "project with ID 2 not found",
 				},
 			},
 		},
@@ -471,12 +471,12 @@ func TestUpdateProject(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
-				prjStorage := storage.NewProjectStorage(db)
+				prjRepository := repository.NewProjectRepository(db)
 				if tC.existingProject != nil {
-					_, err := prjStorage.Save(tC.existingProject)
+					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, nil, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
@@ -582,7 +582,7 @@ func TestGetProject(t *testing.T) {
 			expectedResponse: &Response{
 				code: 404,
 				data: ErrorMessage{
-					Message: "Project id 2 not found",
+					Message: "project with ID 2 not found",
 				},
 			},
 		},
@@ -590,12 +590,12 @@ func TestGetProject(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
-				prjStorage := storage.NewProjectStorage(db)
+				prjRepository := repository.NewProjectRepository(db)
 				if tC.existingProject != nil {
-					_, err := prjStorage.Save(tC.existingProject)
+					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjStorage, nil, false)
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{

@@ -6,10 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/caraml-dev/mlp/api/config"
-	"github.com/caraml-dev/mlp/api/models/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/caraml-dev/mlp/api/config"
+	"github.com/caraml-dev/mlp/api/models"
+	modelsv2 "github.com/caraml-dev/mlp/api/models/v2"
 )
 
 func envSetter(envs map[string]string) (closer func()) {
@@ -81,6 +83,20 @@ func TestLoad(t *testing.T) {
 					StaticPath: "ui/build",
 					IndexPath:  "index.html",
 				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
+				},
 			},
 		},
 		"config-1.yaml + env variables | success": {
@@ -90,10 +106,9 @@ func TestLoad(t *testing.T) {
 				"DATABASE__PASSWORD": "secret",
 			},
 			expected: &config.Config{
-				APIHost:       "http://localhost:8080",
-				Port:          8080,
-				EncryptionKey: "test-key",
-				Environment:   "dev",
+				APIHost:     "http://localhost:8080",
+				Port:        8080,
+				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled: false,
 				},
@@ -120,6 +135,20 @@ func TestLoad(t *testing.T) {
 					StaticPath: "ui/build",
 					IndexPath:  "index.html",
 				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
+				},
 			},
 		},
 		"config-1.yaml + config-2.yaml + env variables | success": {
@@ -134,19 +163,18 @@ func TestLoad(t *testing.T) {
 			expected: &config.Config{
 				APIHost:       "http://localhost:8080",
 				Port:          8080,
-				EncryptionKey: "test-key",
 				Environment:   "dev",
 				OauthClientID: "oauth-client-id",
 				SentryDSN:     "1234",
-				Applications: []models.Application{
+				Applications: []modelsv2.Application{
 					{
 						Name:        "Turing",
 						Description: "ML Experimentation System",
 						Homepage:    "/turing",
-						Configuration: &models.ApplicationConfig{
+						Configuration: &modelsv2.ApplicationConfig{
 							API:      "/api/turing/v1",
 							IconName: "graphApp",
-							Navigation: []models.NavigationMenuItem{
+							Navigation: []modelsv2.NavigationMenuItem{
 								{
 									Label:       "Routers",
 									Destination: "/routers",
@@ -196,6 +224,20 @@ func TestLoad(t *testing.T) {
 					ClockworkUIHomepage: "http://clockwork.dev",
 					KubeflowUIHomepage:  "http://kubeflow.org",
 				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
+				},
 			},
 		},
 		"config files doesn't exist | failure": {
@@ -228,10 +270,9 @@ func TestValidate(t *testing.T) {
 	}{
 		"minimal | success": {
 			config: &config.Config{
-				APIHost:       "/v1",
-				Port:          8080,
-				Environment:   "dev",
-				EncryptionKey: "secret-key",
+				APIHost:     "/v1",
+				Port:        8080,
+				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled: false,
 				},
@@ -246,14 +287,27 @@ func TestValidate(t *testing.T) {
 				Mlflow: &config.MlflowConfig{
 					TrackingURL: "http://mlflow.tracking",
 				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
+				},
 			},
 		},
 		"extended | success": {
 			config: &config.Config{
-				APIHost:       "/v1",
-				Port:          8080,
-				Environment:   "dev",
-				EncryptionKey: "secret-key",
+				APIHost:     "/v1",
+				Port:        8080,
+				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled:       true,
 					KetoServerURL: "http://keto.mlp",
@@ -272,23 +326,35 @@ func TestValidate(t *testing.T) {
 				Streams: map[string][]string{
 					"my-stream": {"my-team"},
 				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
+				},
 			},
 		},
 		"default config | failure": {
 			config: config.NewDefaultConfig(),
 			error: errors.New(
 				"failed to validate configuration: " +
-					"Key: 'Config.EncryptionKey' Error:Field validation for 'EncryptionKey' failed on the 'required' tag\n" +
 					"Key: 'Config.Database.User' Error:Field validation for 'User' failed on the 'required' tag\n" +
 					"Key: 'Config.Database.Password' Error:Field validation for 'Password' failed on the 'required' tag",
 			),
 		},
 		"missing auth server | failure": {
 			config: &config.Config{
-				APIHost:       "/v1",
-				Port:          8080,
-				Environment:   "dev",
-				EncryptionKey: "secret-key",
+				APIHost:     "/v1",
+				Port:        8080,
+				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled: true,
 				},
@@ -302,6 +368,20 @@ func TestValidate(t *testing.T) {
 				},
 				Mlflow: &config.MlflowConfig{
 					TrackingURL: "http://mlflow.tracking",
+				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
 				},
 			},
 			error: errors.New(

@@ -6,9 +6,10 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/caraml-dev/mlp/api/repository"
+
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
-	"github.com/caraml-dev/mlp/api/storage"
 )
 
 type ProjectsService interface {
@@ -34,7 +35,7 @@ const (
 
 func NewProjectsService(
 	mlflowURL string,
-	projectStorage storage.ProjectStorage,
+	projectRepository repository.ProjectRepository,
 	authEnforcer enforcer.Enforcer,
 	authEnabled bool) (ProjectsService, error) {
 	if strings.TrimSpace(mlflowURL) == "" {
@@ -42,7 +43,7 @@ func NewProjectsService(
 	}
 
 	return &projectsService{
-		projectStorage:              projectStorage,
+		projectRepository:           projectRepository,
 		defaultMlflowTrackingServer: mlflowURL,
 		authEnforcer:                authEnforcer,
 		authEnabled:                 authEnabled,
@@ -50,7 +51,7 @@ func NewProjectsService(
 }
 
 type projectsService struct {
-	projectStorage              storage.ProjectStorage
+	projectRepository           repository.ProjectRepository
 	defaultMlflowTrackingServer string
 	authEnforcer                enforcer.Enforcer
 	authEnabled                 bool
@@ -81,7 +82,7 @@ func (service *projectsService) CreateProject(project *models.Project) (*models.
 }
 
 func (service *projectsService) ListProjects(name string) (projects []*models.Project, err error) {
-	return service.projectStorage.ListProjects(name)
+	return service.projectRepository.ListProjects(name)
 }
 
 func (service *projectsService) UpdateProject(project *models.Project) (*models.Project, error) {
@@ -96,11 +97,11 @@ func (service *projectsService) UpdateProject(project *models.Project) (*models.
 }
 
 func (service *projectsService) FindByID(projectID models.ID) (*models.Project, error) {
-	return service.projectStorage.Get(projectID)
+	return service.projectRepository.Get(projectID)
 }
 
 func (service *projectsService) FindByName(projectName string) (*models.Project, error) {
-	return service.projectStorage.GetByName(projectName)
+	return service.projectRepository.GetByName(projectName)
 }
 
 func (service *projectsService) save(project *models.Project) (*models.Project, error) {
@@ -108,7 +109,7 @@ func (service *projectsService) save(project *models.Project) (*models.Project, 
 		project.MLFlowTrackingURL = service.defaultMlflowTrackingServer
 	}
 
-	return service.projectStorage.Save(project)
+	return service.projectRepository.Save(project)
 }
 
 func (service *projectsService) upsertAuthorizationPolicy(project *models.Project) error {

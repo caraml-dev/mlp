@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/jinzhu/copier"
+
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
 )
@@ -12,74 +14,89 @@ type SecretsController struct {
 	*AppContext
 }
 
+func (c *SecretsController) GetSecret(r *http.Request, vars map[string]string, _ interface{}) *Response {
+	projectID, _ := models.ParseID(vars["project_id"])
+	secretID, _ := models.ParseID(vars["secret_id"])
+	if projectID <= 0 || secretID <= 0 {
+		log.Errorf("invalid id, secret_id: %d, project_id: %d", secretID, projectID)
+		return BadRequest("project_id and secret_id are not valid")
+	}
+
+	secret, err := c.SecretService.FindByID(secretID)
+	if err != nil {
+		log.Errorf("error fetching secret with ID %d: %s", secretID, err)
+		return FromError(err)
+	}
+
+	return Ok(secret)
+}
+
 func (c *SecretsController) CreateSecret(r *http.Request, vars map[string]string, body interface{}) *Response {
 	projectID, _ := models.ParseID(vars["project_id"])
 	_, err := c.ProjectsService.FindByID(projectID)
 	if err != nil {
-		log.Warnf("Project with id: %d not found", projectID)
+		log.Errorf("error fetching project with ID: %d", projectID)
 		return NotFound(fmt.Sprintf("Project with given `project_id: %d` not found", projectID))
 	}
 
 	secret, ok := body.(*models.Secret)
 	secret.ProjectID = projectID
 	if !ok || !secret.IsValidForInsertion() {
+		log.Errorf("invalid request body: %v", body)
 		return BadRequest("Invalid request body")
 	}
 
-	secret, err = c.SecretService.Save(secret)
+	// creates
+	secret, err = c.SecretService.Create(secret)
 	if err != nil {
-		log.Errorf("Failed create new secret with %v", err)
-		return InternalServerError(err.Error())
+		log.Errorf("Failed creating new secret: %s", err)
+		return FromError(err)
 	}
 
 	return Created(secret)
 }
 
 func (c *SecretsController) UpdateSecret(r *http.Request, vars map[string]string, body interface{}) *Response {
-	secret, ok := body.(*models.Secret)
+	updateRequest, ok := body.(*models.Secret)
 	if !ok {
 		return BadRequest("Invalid request body")
 	}
 	projectID, _ := models.ParseID(vars["project_id"])
 	secretID, _ := models.ParseID(vars["secret_id"])
 	if projectID <= 0 || secretID <= 0 {
-		log.Warnf("ID: %d or project_id not valid", secretID, projectID)
-		return BadRequest("project_id and secret_id is not valid")
-	}
-	existingSecret, err := c.SecretService.FindByIDAndProjectID(secretID, projectID)
-	if err != nil {
-		log.Errorf("Unable to find secret with %v", err)
-		return InternalServerError(err.Error())
-	}
-	if existingSecret == nil {
-		log.Warnf("Secret with id: %d and project_id not found", secretID, projectID)
-		return NotFound(fmt.Sprintf("Secret with given `secret_id: %d` and `project_id: %d` not found", secretID, projectID))
+		log.Errorf("invalid id, secret_id: %d, project_id: %d", secretID, projectID)
+		return BadRequest("project_id and secret_id are not valid")
 	}
 
-	existingSecret.CopyValueFrom(secret)
-	if !existingSecret.IsValidForMutation() {
-		log.Warnf("Unable to update secret because secret: %v is not valid", existingSecret)
-		return BadRequest("Invalid request body")
+	secret, err := c.SecretService.FindByID(secretID)
+	if err != nil {
+		return FromError(err)
 	}
 
-	existingSecret, err = c.SecretService.Save(existingSecret)
+	err = copier.CopyWithOption(secret, updateRequest, copier.Option{IgnoreEmpty: true})
 	if err != nil {
-		log.Errorf("Failed update secret with %v", err)
+		log.Errorf("Failed copy secret with %s", err)
 		return InternalServerError(err.Error())
 	}
-	return Ok(existingSecret)
+
+	updatedSecret, err := c.SecretService.Update(secret)
+	if err != nil {
+		log.Errorf("Failed update secret with %s", err)
+		return FromError(err)
+	}
+	return Ok(updatedSecret)
 }
 
 func (c *SecretsController) DeleteSecret(r *http.Request, vars map[string]string, _ interface{}) *Response {
 	projectID, _ := models.ParseID(vars["project_id"])
 	secretID, _ := models.ParseID(vars["secret_id"])
 	if projectID <= 0 || secretID <= 0 {
-		log.Warnf("ID: %d or project_id not valid", secretID, projectID)
-		return BadRequest("project_id and secret_id is not valid")
+		log.Errorf("invalid id, secret_id: %d, project_id: %d", secretID, projectID)
+		return BadRequest("project_id and secret_id are not valid")
 	}
 
-	if err := c.SecretService.Delete(secretID, projectID); err != nil {
-		log.Errorf("Failed delete secret with %v", err)
+	if err := c.SecretService.Delete(secretID); err != nil {
+		log.Errorf("error deleting secret with id %v", err)
 		return InternalServerError(err.Error())
 	}
 	return NoContent()
@@ -89,14 +106,14 @@ func (c *SecretsController) ListSecret(r *http.Request, vars map[string]string, 
 	projectID, _ := models.ParseID(vars["project_id"])
 	_, err := c.ProjectsService.FindByID(projectID)
 	if err != nil {
-		log.Warnf("Project with id: %d not found", projectID)
-		return NotFound(fmt.Sprintf("Project with given `project_id: %d` not found", projectID))
+		log.Errorf("error fetching project with ID %d: %s", projectID, err)
+		return FromError(err)
 	}
 
-	secrets, err := c.SecretService.ListSecret(projectID)
+	secrets, err := c.SecretService.List(projectID)
 	if err != nil {
-		log.Errorf("Failed retrieving secret from project id %s: %v", projectID, err)
-		return InternalServerError(err.Error())
+		log.Errorf("error retrieving secret from project id %s: %s", projectID, err)
+		return FromError(err)
 	}
 	return Ok(secrets)
 }
@@ -109,6 +126,13 @@ func (c *SecretsController) Routes() []Route {
 			nil,
 			c.ListSecret,
 			"ListSecret",
+		},
+		{
+			http.MethodGet,
+			"/projects/{project_id:[0-9]+}/secrets/{secret_id:[0-9]+}",
+			nil,
+			c.GetSecret,
+			"GetSecret",
 		},
 		{
 			http.MethodPost,

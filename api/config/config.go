@@ -6,18 +6,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/caraml-dev/mlp/api/models/v2"
 	"github.com/go-playground/validator/v10"
 	"github.com/iancoleman/strcase"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
+
+	"github.com/caraml-dev/mlp/api/models"
+	modelsv2 "github.com/caraml-dev/mlp/api/models/v2"
 )
 
 type Config struct {
 	APIHost       string `validate:"required"`
-	EncryptionKey string `validate:"required"`
 	Environment   string `validate:"required"`
 	Port          int    `validate:"required"`
 	SentryDSN     string
@@ -26,11 +27,22 @@ type Config struct {
 	Streams Streams `validate:"dive,required"`
 	Docs    Documentations
 
-	Applications  []models.Application `validate:"dive"`
-	Authorization *AuthorizationConfig `validate:"required"`
-	Database      *DatabaseConfig      `validate:"required"`
-	Mlflow        *MlflowConfig        `validate:"required"`
-	UI            *UIConfig
+	Applications         []modelsv2.Application `validate:"dive"`
+	Authorization        *AuthorizationConfig   `validate:"required"`
+	Database             *DatabaseConfig        `validate:"required"`
+	Mlflow               *MlflowConfig          `validate:"required"`
+	DefaultSecretStorage *SecretStorage         `validate:"required"`
+	UI                   *UIConfig
+}
+
+// SecretStorage represents the configuration for a secret storage.
+type SecretStorage struct {
+	// Name is the name of the secret storage.
+	Name string `validate:"required"`
+	// Type is the type of the secret storage.
+	Type string `validate:"oneof=internal vault"`
+	// Config is the configuration of the secret storage.
+	Config models.SecretStorageConfig
 }
 
 func NewDefaultConfig() *Config {
@@ -45,6 +57,17 @@ func NewDefaultConfig() *Config {
 
 func (c *Config) ListenAddress() string {
 	return fmt.Sprintf(":%d", c.Port)
+}
+
+// DefaultSecretStorageModel returns the default secret storage model from the given config.
+// The returned secret storage model is a globally-scoped secret storage.
+func (c *Config) DefaultSecretStorageModel() *models.SecretStorage {
+	return &models.SecretStorage{
+		Name:   c.DefaultSecretStorage.Name,
+		Type:   models.SecretStorageType(c.DefaultSecretStorage.Type),
+		Scope:  models.GlobalSecretStorageScope,
+		Config: c.DefaultSecretStorage.Config,
+	}
 }
 
 type Streams map[string][]string
@@ -178,5 +201,9 @@ var defaultConfig = &Config{
 	UI: &UIConfig{
 		IndexPath:  "index.html",
 		StaticPath: "ui/build",
+	},
+	DefaultSecretStorage: &SecretStorage{
+		Name: "internal",
+		Type: "internal",
 	},
 }

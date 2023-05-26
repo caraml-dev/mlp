@@ -2,7 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+
+	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
 )
 
 type Response struct {
@@ -65,4 +68,20 @@ func InternalServerError(msg string) *Response {
 
 func Forbidden(msg string) *Response {
 	return Error(http.StatusForbidden, msg)
+}
+
+func Conflict(msg string) *Response {
+	return Error(http.StatusConflict, msg)
+}
+
+func FromError(err error) *Response {
+	if errors.Is(err, &apperror.NotFoundError{}) {
+		return NotFound(err.Error())
+	} else if errors.Is(err, &apperror.AlreadyExistsError{}) {
+		return Conflict(err.Error())
+	} else if errors.Is(err, &apperror.InvalidArgumentError{}) {
+		return BadRequest(err.Error())
+	}
+
+	return InternalServerError(err.Error())
 }

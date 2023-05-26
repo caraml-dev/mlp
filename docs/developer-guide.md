@@ -75,7 +75,7 @@ make test-api
 ### Run end-to-end tests
 
 ```shell script
-make it-test-api-local
+make it-test-api
 ```
 
 ## Configure MLP for development

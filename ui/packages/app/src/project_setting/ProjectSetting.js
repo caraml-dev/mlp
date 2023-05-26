@@ -18,7 +18,7 @@ const sections = {
   },
   "secrets-management": {
     iconType: "lock",
-    name: "Secrets Management"
+    name: "Secrets"
   }
 };
 

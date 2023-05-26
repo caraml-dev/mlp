@@ -22,7 +22,7 @@ The MLP Server provides REST API used across MLP Products. It exposes a shared c
 
 1. [Google Oauth credential](https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow)
 
-    MLP uses Google Sign-in to authenticate the user to access the API and UI. After you get the client ID, specify it into `OAUTH_CLIENT_ID` in `.env.development` file.
+    MLP uses Google Sign-in to authenticate the user to access the API and UI. After you get the client ID, specify it into `REACT_APP_OAUTH_CLIENT_ID` in `.env.development` file.
 
 ### From Docker Compose
 
@@ -36,14 +36,19 @@ MLP will now be reachable at <http://localhost:8080>.
 
 ### From source
 
-To build and run MLP from the source code, you need to have [Go](https://golang.org/doc/install), [Node.js](https://nodejs.org/), and [Yarn](https://yarnpkg.com/) installed. You will also need a running Postgresql database. MLP uses Docker to make the task of setting up databases a little easier. You can run `make local-db` to starting up a Postgres Docker container.
+To build and run MLP from the source code, you need to have [Go](https://golang.org/doc/install), [Node.js](https://nodejs.org/), and [Yarn](https://yarnpkg.com/) installed. 
+You will also need a running Postgresql database, Keto, and Vault servers. 
+MLP uses Docker to make the task of setting up the dependencies a little easier. You can run `make local-env` to starting up all those dependencies.
 
 ```shell script
-mkdir -p $GOPATH/src/github.com/caraml-dev
-cd $GOPATH/src/github.com/caraml-dev
-git clone git@github.com/caraml-dev/mlp.git mlp
-cd mlp
-make local-db
+make local-env
+make run
+```
+
+OR
+
+```shell script
+# `make` will execute `make local-env` and `make run`
 make
 ```
 

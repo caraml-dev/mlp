@@ -1,6 +1,6 @@
 //go:build integration
 
-package storage
+package repository
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ import (
 	"github.com/caraml-dev/mlp/api/models"
 )
 
-func TestProjectsService_SaveAndGet(t *testing.T) {
+func TestProjectsRepository_SaveAndGet(t *testing.T) {
 	tests := []struct {
 		name    string
 		project models.Project
@@ -48,7 +48,7 @@ func TestProjectsService_SaveAndGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
-				projectStorage := NewProjectStorage(db)
+				projectStorage := NewProjectRepository(db)
 
 				saved, err := projectStorage.Save(&tt.project)
 				assert.NoError(t, err)
@@ -81,9 +81,9 @@ func TestProjectsService_SaveAndGet(t *testing.T) {
 	}
 }
 
-func TestProjectsService_List(t *testing.T) {
+func TestProjectsRepository_List(t *testing.T) {
 	database.WithTestDatabase(t, func(t *testing.T, db *gorm.DB) {
-		projectStorage := NewProjectStorage(db)
+		projectStorage := NewProjectRepository(db)
 
 		projects := []models.Project{
 			{

@@ -55,6 +55,15 @@ const SecretListTable = ({ secrets, projectId, fetchUpdates }) => {
       render: name => <EuiText size={defaultTextSize}>{name}</EuiText>
     },
     {
+      field: "secret_storage.name",
+      name: "Storage Name",
+      sortable: true,
+      width: "45%",
+      render: secret_storage => (
+        <EuiText size={defaultTextSize}>{secret_storage}</EuiText>
+      )
+    },
+    {
       field: "created_at",
       name: "Created",
       width: "20%",

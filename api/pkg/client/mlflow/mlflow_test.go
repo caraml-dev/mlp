@@ -8,11 +8,13 @@ import (
 	"testing"
 
 	"cloud.google.com/go/storage"
+
 	"github.com/caraml-dev/mlp/api/pkg/artifact"
 
-	"github.com/caraml-dev/mlp/api/pkg/artifact/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/caraml-dev/mlp/api/pkg/artifact/mocks"
 )
 
 var MultipleRunSuccessJSON = `{    

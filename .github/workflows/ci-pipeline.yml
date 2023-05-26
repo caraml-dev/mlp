@@ -99,26 +99,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOPATH: ${{ github.workspace }}/.go
-    services:
-      postgres:
-        image: postgres:14.5
-        env:
-          POSTGRES_DB: mlp
-          POSTGRES_USER: mlp
-          POSTGRES_PASSWORD: mlp
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      keto:
-        image: oryd/keto:v0.4
-        env:
-          DSN: memory
-        ports:
-          - 4466:4466
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
@@ -137,13 +117,7 @@ jobs:
         run: make lint-api
 
       - name: Run Integration Test
-        env:
-          DATABASE_HOST: localhost
-          DATABASE_NAME: mlp
-          DATABASE_USER: mlp
-          DATABASE_PASSWORD: mlp
-          KETO_URL: http://localhost:4466
-        run: make it-test-api-ci
+        run: make it-test-api
 
   e2e-test:
     runs-on: ubuntu-latest
@@ -249,7 +223,7 @@ jobs:
 
       - name: Run E2E tests
         env:
-          MLP_API_BASEPATH: http://mlp.127.0.0.1.nip.io/v1
+          MLP_API_BASEPATH: http://mlp.127.0.0.1.nip.io
         shell: bash
         run: |
           for example in api/client/examples/*; do
