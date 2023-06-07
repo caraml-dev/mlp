@@ -18,6 +18,10 @@ applications:
 authorization:
   enabled: true
   ketoServerURL: http://localhost:4466
+  caching:
+    enabled: true
+    keyExpirySeconds: 1000
+    cacheCleanUpIntervalSeconds: 2000
 
 ui:
   clockworkUIHomepage: http://clockwork.dev

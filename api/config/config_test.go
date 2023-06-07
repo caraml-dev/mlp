@@ -60,6 +60,10 @@ func TestLoad(t *testing.T) {
 				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled: false,
+					Caching: &config.InMemoryCacheConfig{
+						KeyExpirySeconds:            600,
+						CacheCleanUpIntervalSeconds: 900,
+					},
 				},
 				Database: &config.DatabaseConfig{
 					Host:            "localhost",
@@ -111,6 +115,10 @@ func TestLoad(t *testing.T) {
 				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled: false,
+					Caching: &config.InMemoryCacheConfig{
+						KeyExpirySeconds:            600,
+						CacheCleanUpIntervalSeconds: 900,
+					},
 				},
 				Database: &config.DatabaseConfig{
 					Host:            "localhost",
@@ -190,6 +198,11 @@ func TestLoad(t *testing.T) {
 				Authorization: &config.AuthorizationConfig{
 					Enabled:       true,
 					KetoServerURL: "http://localhost:4466",
+					Caching: &config.InMemoryCacheConfig{
+						Enabled:                     true,
+						KeyExpirySeconds:            1000,
+						CacheCleanUpIntervalSeconds: 2000,
+					},
 				},
 				Database: &config.DatabaseConfig{
 					Host:            "localhost",
@@ -275,6 +288,10 @@ func TestValidate(t *testing.T) {
 				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled: false,
+					Caching: &config.InMemoryCacheConfig{
+						KeyExpirySeconds:            600,
+						CacheCleanUpIntervalSeconds: 900,
+					},
 				},
 				Database: &config.DatabaseConfig{
 					Host:          "localhost",
@@ -311,6 +328,10 @@ func TestValidate(t *testing.T) {
 				Authorization: &config.AuthorizationConfig{
 					Enabled:       true,
 					KetoServerURL: "http://keto.mlp",
+					Caching: &config.InMemoryCacheConfig{
+						KeyExpirySeconds:            600,
+						CacheCleanUpIntervalSeconds: 900,
+					},
 				},
 				Database: &config.DatabaseConfig{
 					Host:          "localhost",
@@ -350,13 +371,17 @@ func TestValidate(t *testing.T) {
 					"Key: 'Config.Database.Password' Error:Field validation for 'Password' failed on the 'required' tag",
 			),
 		},
-		"missing auth server | failure": {
+		"missing authz server | failure": {
 			config: &config.Config{
 				APIHost:     "/v1",
 				Port:        8080,
 				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
 					Enabled: true,
+					Caching: &config.InMemoryCacheConfig{
+						KeyExpirySeconds:            600,
+						CacheCleanUpIntervalSeconds: 900,
+					},
 				},
 				Database: &config.DatabaseConfig{
 					Host:          "localhost",
@@ -388,6 +413,52 @@ func TestValidate(t *testing.T) {
 				"failed to validate configuration: " +
 					"Key: 'Config.Authorization.KetoServerURL' " +
 					"Error:Field validation for 'KetoServerURL' failed on the 'required_if' tag",
+			),
+		},
+		"missing authz cache key expiry | failure": {
+			config: &config.Config{
+				APIHost:     "/v1",
+				Port:        8080,
+				Environment: "dev",
+				Authorization: &config.AuthorizationConfig{
+					Enabled:       true,
+					KetoServerURL: "http://abc",
+					Caching: &config.InMemoryCacheConfig{
+						Enabled: true,
+					},
+				},
+				Database: &config.DatabaseConfig{
+					Host:          "localhost",
+					Port:          5432,
+					User:          "mlp",
+					Password:      "mlp",
+					Database:      "mlp",
+					MigrationPath: "file://db-migrations",
+				},
+				Mlflow: &config.MlflowConfig{
+					TrackingURL: "http://mlflow.tracking",
+				},
+				DefaultSecretStorage: &config.SecretStorage{
+					Name: "default-secret-storage",
+					Type: "vault",
+					Config: models.SecretStorageConfig{
+						VaultConfig: &models.VaultConfig{
+							URL:         "http://vault:8200",
+							Role:        "my-role",
+							MountPath:   "secret",
+							PathPrefix:  "caraml-secret/{{ .project }}/",
+							AuthMethod:  models.GCPAuthMethod,
+							GCPAuthType: models.GCEGCPAuthType,
+						},
+					},
+				},
+			},
+			error: errors.New(
+				"failed to validate configuration: " +
+					"Key: 'Config.Authorization.Caching.KeyExpirySeconds' " +
+					"Error:Field validation for 'KeyExpirySeconds' failed on the 'required_if' tag\n" +
+					"Key: 'Config.Authorization.Caching.CacheCleanUpIntervalSeconds' " +
+					"Error:Field validation for 'CacheCleanUpIntervalSeconds' failed on the 'required_if' tag",
 			),
 		},
 	}
