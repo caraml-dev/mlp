@@ -118,9 +118,8 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: ${{ env.GO_LINT_VERSION }}
-          working-directory: api
           skip-go-installation: true
-          args: --timeout 3m --verbose
+          args: --timeout 3m --verbose api/...
 
       - name: Run Integration Test
         run: make it-test-api
