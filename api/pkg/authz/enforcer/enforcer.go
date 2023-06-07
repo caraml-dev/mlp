@@ -12,7 +12,6 @@ import (
 	"github.com/ory/keto-client-go/client"
 	"github.com/ory/keto-client-go/client/engines"
 	"github.com/ory/keto-client-go/models"
-	cache "github.com/patrickmn/go-cache"
 
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer/types"
 	"github.com/caraml-dev/mlp/api/util"
@@ -72,7 +71,7 @@ type Enforcer interface {
 }
 
 type enforcer struct {
-	cache      *cache.Cache
+	cache      *InMemoryCache
 	ketoClient *engines.Client
 	product    string
 	flavor     Flavor
@@ -80,7 +79,10 @@ type enforcer struct {
 }
 
 func newEnforcer(
-	hostURL string, productName string, flavor Flavor, timeout time.Duration,
+	hostURL string,
+	productName string,
+	flavor Flavor,
+	timeout time.Duration,
 	cacheConfig *CacheConfig,
 ) (Enforcer, error) {
 	u, err := url.ParseRequestURI(hostURL)
@@ -100,10 +102,7 @@ func newEnforcer(
 		timeout:    timeout,
 	}
 	if cacheConfig != nil {
-		enforcer.cache = cache.New(
-			time.Duration(cacheConfig.KeyExpirySeconds)*time.Second,
-			time.Duration(cacheConfig.CacheCleanUpIntervalSeconds)*time.Second,
-		)
+		enforcer.cache = newInMemoryCache(cacheConfig.KeyExpirySeconds, cacheConfig.CacheCleanUpIntervalSeconds)
 	}
 	return enforcer, nil
 }
@@ -280,14 +279,10 @@ func (e *enforcer) isAllowed(user string, resource string, action string) (*bool
 		Flavor: string(e.flavor),
 	}
 
-	cacheKey := buildCacheKey(*input)
-
 	// If cache is set up, check there first
 	if e.isCacheEnabled() {
-		if cachedValue, found := e.cache.Get(cacheKey); found {
-			if allowed, ok := cachedValue.(*bool); ok {
-				return allowed, nil
-			}
+		if isAllowed, found := e.cache.LookUpPermission(*input); found {
+			return isAllowed, nil
 		}
 	}
 
@@ -295,23 +290,23 @@ func (e *enforcer) isAllowed(user string, resource string, action string) (*bool
 	if err != nil {
 		switch d := err.(type) {
 		case *engines.DoOryAccessControlPoliciesAllowForbidden:
-			allowed := d.GetPayload().Allowed
+			isAllowed := d.GetPayload().Allowed
 			// Save to cache and return
 			if e.isCacheEnabled() {
-				e.cache.Set(cacheKey, allowed, cache.DefaultExpiration)
+				e.cache.StorePermission(*input, isAllowed)
 			}
-			return allowed, nil
+			return isAllowed, nil
 		default:
 			return nil, err
 		}
 	}
 
+	isAllowed := res.GetPayload().Allowed
 	// Save to cache and return
-	allowed := res.GetPayload().Allowed
 	if e.isCacheEnabled() {
-		e.cache.Set(cacheKey, allowed, cache.DefaultExpiration)
+		e.cache.StorePermission(*input, isAllowed)
 	}
-	return allowed, nil
+	return isAllowed, nil
 }
 
 func (e *enforcer) formatUser(user string) string {
@@ -352,8 +347,4 @@ func (e *enforcer) stripResourcePrefix(resource string) string {
 
 func (e *enforcer) isCacheEnabled() bool {
 	return e.cache != nil
-}
-
-func buildCacheKey(input models.OryAccessControlPolicyAllowedInput) string {
-	return fmt.Sprintf("%s:%s:%s", input.Action, input.Subject, input.Resource)
 }
