@@ -19,9 +19,9 @@ type InMemoryCache struct {
 	// generated (using an incrementing counter) for each unique value. This will aid in
 	// generating smaller cache keys.
 	// The following maps store the mapping of the name -> internal id.
-	subjectMap  map[string]string
-	resourceMap map[string]string
 	actionMap   map[string]string
+	resourceMap map[string]string
+	subjectMap  map[string]string
 }
 
 func newInMemoryCache(keyExpirySeconds int, cacheCleanUpIntervalSeconds int) *InMemoryCache {
@@ -30,9 +30,9 @@ func newInMemoryCache(keyExpirySeconds int, cacheCleanUpIntervalSeconds int) *In
 			time.Duration(keyExpirySeconds)*time.Second,
 			time.Duration(cacheCleanUpIntervalSeconds)*time.Second,
 		),
-		subjectMap:  map[string]string{},
-		resourceMap: map[string]string{},
 		actionMap:   map[string]string{},
+		resourceMap: map[string]string{},
+		subjectMap:  map[string]string{},
 	}
 }
 
@@ -52,8 +52,8 @@ func (c *InMemoryCache) StorePermission(input models.OryAccessControlPolicyAllow
 func (c *InMemoryCache) buildCacheKey(input models.OryAccessControlPolicyAllowedInput) string {
 	return fmt.Sprintf("%s:%s:%s",
 		c.getActionID(input.Action),
-		c.getSubjectID(input.Subject),
 		c.getResourceID(input.Resource),
+		c.getSubjectID(input.Subject),
 	)
 }
 
