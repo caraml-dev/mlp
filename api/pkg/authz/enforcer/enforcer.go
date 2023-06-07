@@ -306,7 +306,12 @@ func (e *enforcer) isAllowed(user string, resource string, action string) (*bool
 		}
 	}
 
-	return res.GetPayload().Allowed, nil
+	// Save to cache and return
+	allowed := res.GetPayload().Allowed
+	if e.isCacheEnabled() {
+		e.cache.Set(cacheKey, allowed, cache.DefaultExpiration)
+	}
+	return allowed, nil
 }
 
 func (e *enforcer) formatUser(user string) string {

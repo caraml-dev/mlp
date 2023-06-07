@@ -88,7 +88,14 @@ type DatabaseConfig struct {
 
 type AuthorizationConfig struct {
 	Enabled       bool
-	KetoServerURL string `validate:"required_if=Enabled True"`
+	KetoServerURL string               `validate:"required_if=Enabled True"`
+	Caching       *InMemoryCacheConfig `validate:"required_if=Enabled True"`
+}
+
+type InMemoryCacheConfig struct {
+	Enabled                     bool
+	KeyExpirySeconds            int `validate:"required_if=Enabled True"`
+	CacheCleanUpIntervalSeconds int `validate:"required_if=Enabled True"`
 }
 
 type MlflowConfig struct {
@@ -188,6 +195,10 @@ var defaultConfig = &Config{
 
 	Authorization: &AuthorizationConfig{
 		Enabled: false,
+		Caching: &InMemoryCacheConfig{
+			KeyExpirySeconds:            600,
+			CacheCleanUpIntervalSeconds: 900,
+		},
 	},
 	Database: &DatabaseConfig{
 		Host:          "localhost",

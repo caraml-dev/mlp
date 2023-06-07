@@ -40,10 +40,14 @@ type AppContext struct {
 func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error) {
 	var authEnforcer enforcer.Enforcer
 	if cfg.Authorization.Enabled {
-		authEnforcer, err = enforcer.NewEnforcerBuilder().
-			URL(cfg.Authorization.KetoServerURL).
-			Product("mlp").
-			Build()
+		enforcerCfg := enforcer.NewEnforcerBuilder().URL(cfg.Authorization.KetoServerURL).Product("mlp")
+		if cfg.Authorization.Caching.Enabled {
+			enforcerCfg = enforcerCfg.WithCaching(
+				cfg.Authorization.Caching.KeyExpirySeconds,
+				cfg.Authorization.Caching.CacheCleanUpIntervalSeconds,
+			)
+		}
+		authEnforcer, err = enforcerCfg.Build()
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize authorization service: %v", err)
