@@ -21,7 +21,7 @@ on:
   workflow_dispatch:
 
 env:
-  GO_VERSION: 1.18
+  GO_VERSION: "1.20"
   NODE_VERSION: 16
   ARTIFACT_RETENTION_DAYS: 7
   CONTAINER_REGISTRY: ghcr.io

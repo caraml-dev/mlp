@@ -6,10 +6,11 @@ import (
 
 // Builder builder of enforcer.Enforcer
 type Builder struct {
-	url     string
-	product string
-	flavor  Flavor
-	timeout time.Duration
+	url         string
+	product     string
+	flavor      Flavor
+	timeout     time.Duration
+	cacheConfig *CacheConfig
 }
 
 const (
@@ -54,7 +55,15 @@ func (b *Builder) Timeout(timeout time.Duration) *Builder {
 	return b
 }
 
+func (b *Builder) WithCaching(keyExpirySeconds int, cacheCleanUpIntervalSeconds int) *Builder {
+	b.cacheConfig = &CacheConfig{
+		KeyExpirySeconds:            keyExpirySeconds,
+		CacheCleanUpIntervalSeconds: cacheCleanUpIntervalSeconds,
+	}
+	return b
+}
+
 // Build build an enforcer.Enforcer instance
 func (b *Builder) Build() (Enforcer, error) {
-	return newEnforcer(b.url, b.product, b.flavor, b.timeout)
+	return newEnforcer(b.url, b.product, b.flavor, b.timeout, b.cacheConfig)
 }

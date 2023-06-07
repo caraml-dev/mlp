@@ -12,6 +12,7 @@ import (
 	"github.com/ory/keto-client-go/client"
 	"github.com/ory/keto-client-go/client/engines"
 	"github.com/ory/keto-client-go/models"
+	cache "github.com/patrickmn/go-cache"
 
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer/types"
 	"github.com/caraml-dev/mlp/api/util"
@@ -42,6 +43,12 @@ const (
 	FlavorRegex Flavor = "regex"
 )
 
+// CacheConfig holds the configuration for the in-memory cache, if enabled
+type CacheConfig struct {
+	KeyExpirySeconds            int
+	CacheCleanUpIntervalSeconds int
+}
+
 // Enforcer thin client providing interface for authorizing users
 type Enforcer interface {
 	// Enforce check whether user is authorized to do certain action against a resource
@@ -65,13 +72,17 @@ type Enforcer interface {
 }
 
 type enforcer struct {
+	cache      *cache.Cache
 	ketoClient *engines.Client
 	product    string
 	flavor     Flavor
 	timeout    time.Duration
 }
 
-func newEnforcer(hostURL string, productName string, flavor Flavor, timeout time.Duration) (Enforcer, error) {
+func newEnforcer(
+	hostURL string, productName string, flavor Flavor, timeout time.Duration,
+	cacheConfig *CacheConfig,
+) (Enforcer, error) {
 	u, err := url.ParseRequestURI(hostURL)
 	if err != nil {
 		return nil, err
@@ -81,12 +92,20 @@ func newEnforcer(hostURL string, productName string, flavor Flavor, timeout time
 		BasePath: u.Path,
 		Schemes:  []string{u.Scheme},
 	})
-	return &enforcer{
+
+	enforcer := &enforcer{
 		ketoClient: client.Engines,
 		product:    productName,
 		flavor:     flavor,
 		timeout:    timeout,
-	}, nil
+	}
+	if cacheConfig != nil {
+		enforcer.cache = cache.New(
+			time.Duration(cacheConfig.KeyExpirySeconds)*time.Second,
+			time.Duration(cacheConfig.CacheCleanUpIntervalSeconds)*time.Second,
+		)
+	}
+	return enforcer, nil
 }
 
 // Enforce check whether user is authorized to do action against a resource
@@ -261,11 +280,27 @@ func (e *enforcer) isAllowed(user string, resource string, action string) (*bool
 		Flavor: string(e.flavor),
 	}
 
+	cacheKey := buildCacheKey(*input)
+
+	// If cache is set up, check there first
+	if e.isCacheEnabled() {
+		if cachedValue, found := e.cache.Get(cacheKey); found {
+			if allowed, ok := cachedValue.(*bool); ok {
+				return allowed, nil
+			}
+		}
+	}
+
 	res, err := e.ketoClient.DoOryAccessControlPoliciesAllow(params.WithTimeout(e.timeout))
 	if err != nil {
 		switch d := err.(type) {
 		case *engines.DoOryAccessControlPoliciesAllowForbidden:
-			return d.GetPayload().Allowed, nil
+			allowed := d.GetPayload().Allowed
+			// Save to cache and return
+			if e.isCacheEnabled() {
+				e.cache.Set(cacheKey, allowed, cache.DefaultExpiration)
+			}
+			return allowed, nil
 		default:
 			return nil, err
 		}
@@ -308,4 +343,12 @@ func (e *enforcer) formatPolicy(policy string) string {
 
 func (e *enforcer) stripResourcePrefix(resource string) string {
 	return strings.Replace(resource, fmt.Sprintf("resources:%s:", e.product), "", 1)
+}
+
+func (e *enforcer) isCacheEnabled() bool {
+	return e.cache != nil
+}
+
+func buildCacheKey(input models.OryAccessControlPolicyAllowedInput) string {
+	return fmt.Sprintf("%s:%s:%s", input.Action, input.Subject, input.Resource)
 }
