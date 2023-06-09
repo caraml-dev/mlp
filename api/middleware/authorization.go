@@ -65,8 +65,18 @@ func (a *Authorizer) AuthorizationMiddleware(next http.Handler) http.Handler {
 }
 
 func (a *Authorizer) getResource(r *http.Request) (string, error) {
-	resource := strings.Replace(strings.TrimPrefix(r.URL.Path, "/"), "/", ":", -1)
-	return resource, nil
+	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
+	// Current paths registered in MLP are of the following format:
+	// - /applications
+	// - /projects/{project_id}/**
+	// Given this, we only care about the permissions up-to 2 levels deep. The rationale is that
+	// if a user has READ/WRITE permissions on /projects/{project_id}, they would also have the same
+	// permissions on all its sub-resources. Thus, trimming the resource identifier to aid quicker
+	// authz matching and to efficiently make use of the in-memory authz cache, if enabled.
+	if len(parts) > 1 {
+		parts = parts[:2]
+	}
+	return strings.Join(parts, ":"), nil
 }
 
 func methodToAction(method string) string {

@@ -8,3 +8,6 @@
 
 # Binary directory
 bin/
+
+# Vendor directory
+vendor/

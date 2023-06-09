@@ -21,7 +21,8 @@ on:
   workflow_dispatch:
 
 env:
-  GO_VERSION: 1.18
+  GO_VERSION: "1.20"
+  GO_LINT_VERSION: v1.51.2
   NODE_VERSION: 16
   ARTIFACT_RETENTION_DAYS: 7
   CONTAINER_REGISTRY: ghcr.io
@@ -114,7 +115,11 @@ jobs:
           restore-keys: gomod-
 
       - name: Lint code
-        run: make lint-api
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: ${{ env.GO_LINT_VERSION }}
+          skip-go-installation: true
+          args: --timeout 3m --verbose api/...
 
       - name: Run Integration Test
         run: make it-test-api
