@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   EuiButton,
   EuiButtonEmpty,
+  EuiCallOut,
   EuiFieldText,
   EuiFlexGroup,
   EuiFlexItem,
@@ -14,6 +15,7 @@ import {
   EuiTitle,
   EuiToolTip
 } from "@elastic/eui";
+import config from "../../config";
 import { validateEmail } from "../../validation/validation";
 import { addToast, useMlpApi } from "@caraml-dev/ui-lib";
 import UserRoleSelection from "./UserRoleSelection";
@@ -123,6 +125,12 @@ const SubmitUserRoleForm = ({ userRole, project, fetchUpdates, toggleAdd }) => {
               </EuiFlexItem>
             </EuiFlexGroup>
           </EuiForm>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiCallOut
+            title={`Permission changes may take up to ${config.MAX_AUTHZ_CACHE_EXPIRY_MINUTES} minutes to take effect in all components.`}
+            iconType="iInCircle"
+          />
         </EuiFlexItem>
         <EuiFlexItem grow={false}>
           <EuiFlexGroup direction="row">
