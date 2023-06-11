@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/heptiolabs/healthcheck"
@@ -18,6 +20,7 @@ import (
 	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/database"
 	"github.com/caraml-dev/mlp/api/log"
+	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 )
 
 func main() {
@@ -65,7 +68,9 @@ func main() {
 		SentryDSN:     cfg.SentryDSN,
 		Streams:       cfg.Streams,
 		Docs:          cfg.Docs,
-		UIConfig:      cfg.UI,
+		MaxAuthzCacheExpiryMinutes: fmt.Sprintf("%.0f",
+			math.Ceil((time.Duration(enforcer.MaxKeyExpirySeconds) * time.Second).Minutes())),
+		UIConfig: cfg.UI,
 	}
 
 	router.Methods("GET").Path("/env.js").HandlerFunc(uiEnv.handler)
@@ -89,12 +94,13 @@ func mount(r *mux.Router, path string, handler http.Handler) {
 type uiEnvHandler struct {
 	*config.UIConfig
 
-	APIURL        string                `json:"REACT_APP_API_URL,omitempty"`
-	OauthClientID string                `json:"REACT_APP_OAUTH_CLIENT_ID,omitempty"`
-	Environment   string                `json:"REACT_APP_ENVIRONMENT,omitempty"`
-	SentryDSN     string                `json:"REACT_APP_SENTRY_DSN,omitempty"`
-	Streams       config.Streams        `json:"REACT_APP_STREAMS"`
-	Docs          config.Documentations `json:"REACT_APP_DOC_LINKS"`
+	APIURL                     string                `json:"REACT_APP_API_URL,omitempty"`
+	OauthClientID              string                `json:"REACT_APP_OAUTH_CLIENT_ID,omitempty"`
+	Environment                string                `json:"REACT_APP_ENVIRONMENT,omitempty"`
+	SentryDSN                  string                `json:"REACT_APP_SENTRY_DSN,omitempty"`
+	Streams                    config.Streams        `json:"REACT_APP_STREAMS"`
+	Docs                       config.Documentations `json:"REACT_APP_DOC_LINKS"`
+	MaxAuthzCacheExpiryMinutes string                `json:"REACT_APP_MAX_AUTHZ_CACHE_EXPIRY_MINUTES"`
 }
 
 func (h uiEnvHandler) handler(w http.ResponseWriter, r *http.Request) {
