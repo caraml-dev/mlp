@@ -61,16 +61,21 @@ func main() {
 	}
 	mount(router, "/v2", api.NewRouter(appCtx, v2Controllers))
 
+	var maxCacheExpiryMinutes string
+	if cfg.Authorization.Enabled && cfg.Authorization.Caching != nil && cfg.Authorization.Caching.Enabled {
+		maxCacheExpiryMinutes = fmt.Sprintf("%.0f",
+			math.Ceil((time.Duration(enforcer.MaxKeyExpirySeconds) * time.Second).Minutes()))
+	}
+
 	uiEnv := uiEnvHandler{
-		APIURL:        cfg.APIHost,
-		OauthClientID: cfg.OauthClientID,
-		Environment:   cfg.Environment,
-		SentryDSN:     cfg.SentryDSN,
-		Streams:       cfg.Streams,
-		Docs:          cfg.Docs,
-		MaxAuthzCacheExpiryMinutes: fmt.Sprintf("%.0f",
-			math.Ceil((time.Duration(enforcer.MaxKeyExpirySeconds) * time.Second).Minutes())),
-		UIConfig: cfg.UI,
+		APIURL:                     cfg.APIHost,
+		OauthClientID:              cfg.OauthClientID,
+		Environment:                cfg.Environment,
+		SentryDSN:                  cfg.SentryDSN,
+		Streams:                    cfg.Streams,
+		Docs:                       cfg.Docs,
+		MaxAuthzCacheExpiryMinutes: maxCacheExpiryMinutes,
+		UIConfig:                   cfg.UI,
 	}
 
 	router.Methods("GET").Path("/env.js").HandlerFunc(uiEnv.handler)
