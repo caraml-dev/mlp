@@ -100,7 +100,7 @@ type uiEnvHandler struct {
 	SentryDSN                  string                `json:"REACT_APP_SENTRY_DSN,omitempty"`
 	Streams                    config.Streams        `json:"REACT_APP_STREAMS"`
 	Docs                       config.Documentations `json:"REACT_APP_DOC_LINKS"`
-	MaxAuthzCacheExpiryMinutes string                `json:"REACT_APP_MAX_AUTHZ_CACHE_EXPIRY_MINUTES"`
+	MaxAuthzCacheExpiryMinutes string
 }
 
 func (h uiEnvHandler) handler(w http.ResponseWriter, r *http.Request) {
