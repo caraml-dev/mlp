@@ -62,6 +62,58 @@ var BootstrapPolicy = []testPolicy{
 	},
 }
 
+func TestNewEnforcer(t *testing.T) {
+	tests := map[string]struct {
+		hostURL     string
+		productName string
+		flavor      Flavor
+		timeout     time.Duration
+		cacheConfig *CacheConfig
+
+		expectedError string
+	}{
+		"success | no cache": {
+			hostURL:     "http://authz.com",
+			productName: "mlp",
+			flavor:      FlavorExact,
+			timeout:     time.Second,
+		},
+		"success | with cache": {
+			hostURL:     "http://authz.com",
+			productName: "mlp",
+			flavor:      FlavorExact,
+			timeout:     time.Second,
+			cacheConfig: &CacheConfig{
+				KeyExpirySeconds:            30,
+				CacheCleanUpIntervalSeconds: 60,
+			},
+		},
+		"failure | large cache expiry": {
+			hostURL:     "http://authz.com",
+			productName: "mlp",
+			flavor:      FlavorExact,
+			timeout:     time.Second,
+			cacheConfig: &CacheConfig{
+				KeyExpirySeconds:            3000,
+				CacheCleanUpIntervalSeconds: 60,
+			},
+			expectedError: "Configured KeyExpirySeconds is larger than the max permitted value of 600",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			_, err := newEnforcer(tt.hostURL, tt.productName, tt.flavor, tt.timeout, tt.cacheConfig)
+
+			if tt.expectedError != "" {
+				assert.EqualError(t, err, tt.expectedError)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestEnforcer_Enforce(t *testing.T) {
 	enforcer, err := NewEnforcerBuilder().URL(KetoURL).Product(ProductName).Build()
 	assert.NoError(t, err)

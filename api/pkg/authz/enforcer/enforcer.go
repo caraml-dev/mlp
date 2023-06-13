@@ -48,6 +48,9 @@ type CacheConfig struct {
 	CacheCleanUpIntervalSeconds int
 }
 
+// MaxKeyExpirySeconds is the max allowed value for the KeyExpirySeconds.
+const MaxKeyExpirySeconds = 600
+
 // Enforcer thin client providing interface for authorizing users
 type Enforcer interface {
 	// Enforce check whether user is authorized to do certain action against a resource
@@ -84,7 +87,7 @@ func newEnforcer(
 	flavor Flavor,
 	timeout time.Duration,
 	cacheConfig *CacheConfig,
-) (Enforcer, error) {
+) (*enforcer, error) {
 	u, err := url.ParseRequestURI(hostURL)
 	if err != nil {
 		return nil, err
@@ -102,6 +105,10 @@ func newEnforcer(
 		timeout:    timeout,
 	}
 	if cacheConfig != nil {
+		if cacheConfig.KeyExpirySeconds > MaxKeyExpirySeconds {
+			return nil, fmt.Errorf("Configured KeyExpirySeconds is larger than the max permitted value of %d",
+				MaxKeyExpirySeconds)
+		}
 		enforcer.cache = newInMemoryCache(cacheConfig.KeyExpirySeconds, cacheConfig.CacheCleanUpIntervalSeconds)
 	}
 	return enforcer, nil

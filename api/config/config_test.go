@@ -76,8 +76,9 @@ func TestLoad(t *testing.T) {
 					MaxIdleConns:    10,
 					MaxOpenConns:    20,
 				},
-				Mlflow: &config.MlflowConfig{},
-				Docs:   []config.Documentation{},
+				Mlflow:       &config.MlflowConfig{},
+				Docs:         []config.Documentation{},
+				Applications: []modelsv2.Application{},
 				Streams: map[string][]string{
 					"stream-1":     {"team-a", "team-b"},
 					"SecondStream": {"MyTeam"},
@@ -132,8 +133,9 @@ func TestLoad(t *testing.T) {
 					MaxIdleConns:    10,
 					MaxOpenConns:    20,
 				},
-				Mlflow: &config.MlflowConfig{},
-				Docs:   []config.Documentation{},
+				Mlflow:       &config.MlflowConfig{},
+				Docs:         []config.Documentation{},
+				Applications: []modelsv2.Application{},
 				Streams: map[string][]string{
 					"stream-1":     {"team-a", "team-b"},
 					"SecondStream": {"MyTeam"},

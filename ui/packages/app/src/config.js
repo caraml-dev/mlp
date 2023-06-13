@@ -19,12 +19,18 @@ const config = {
         "https://github.com/caraml-dev/merlin/blob/main/docs/getting-started/README.md",
       label: "Merlin User Guide"
     },
-    { href: "https://github.com/caraml-dev/turing", label: "Turing User Guide" },
+    {
+      href: "https://github.com/caraml-dev/turing",
+      label: "Turing User Guide"
+    },
     {
       href: "https://docs.feast.dev/user-guide/overview",
       label: "Feast User Guide"
     }
   ],
+  MAX_AUTHZ_CACHE_EXPIRY_MINUTES: parseInt(
+    getEnv("REACT_APP_MAX_AUTHZ_CACHE_EXPIRY_MINUTES") || "0"
+  ),
 
   CLOCKWORK_UI_HOMEPAGE: getEnv("REACT_APP_CLOCKWORK_UI_HOMEPAGE"),
   KUBEFLOW_UI_HOMEPAGE: getEnv("REACT_APP_KUBEFLOW_UI_HOMEPAGE")

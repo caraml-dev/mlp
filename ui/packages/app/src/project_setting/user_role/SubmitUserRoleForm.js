@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   EuiButton,
   EuiButtonEmpty,
+  EuiCallOut,
   EuiFieldText,
   EuiFlexGroup,
   EuiFlexItem,
@@ -14,6 +15,7 @@ import {
   EuiTitle,
   EuiToolTip
 } from "@elastic/eui";
+import config from "../../config";
 import { validateEmail } from "../../validation/validation";
 import { addToast, useMlpApi } from "@caraml-dev/ui-lib";
 import UserRoleSelection from "./UserRoleSelection";
@@ -77,6 +79,7 @@ const SubmitUserRoleForm = ({ userRole, project, fetchUpdates, toggleAdd }) => {
     onChange
   ]);
 
+  const isAuthzCacheEnabled = !!config.MAX_AUTHZ_CACHE_EXPIRY_MINUTES;
   return (
     <EuiPanel paddingSize="m">
       <EuiFlexGroup justifyContent="spaceAround" direction="column">
@@ -123,6 +126,21 @@ const SubmitUserRoleForm = ({ userRole, project, fetchUpdates, toggleAdd }) => {
               </EuiFlexItem>
             </EuiFlexGroup>
           </EuiForm>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          {isAuthzCacheEnabled && (
+            <EuiCallOut
+              title={`Permission changes may take up to ${
+                config.MAX_AUTHZ_CACHE_EXPIRY_MINUTES
+              }
+                ${
+                  config.MAX_AUTHZ_CACHE_EXPIRY_MINUTES > 1
+                    ? "minutes"
+                    : "minute"
+                } to take effect in all components.`}
+              iconType="iInCircle"
+            />
+          )}
         </EuiFlexItem>
         <EuiFlexItem grow={false}>
           <EuiFlexGroup direction="row">

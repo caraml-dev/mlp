@@ -190,9 +190,9 @@ var defaultConfig = &Config{
 	Environment: "dev",
 	Port:        8080,
 
-	Streams: Streams{},
-	Docs:    Documentations{},
-
+	Streams:      Streams{},
+	Docs:         Documentations{},
+	Applications: []modelsv2.Application{},
 	Authorization: &AuthorizationConfig{
 		Enabled: false,
 		Caching: &InMemoryCacheConfig{
