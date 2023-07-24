@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -75,12 +76,12 @@ func (s *APITestSuite) SetupTest() {
 	s.Require().NoError(err, "Failed to create app context")
 
 	// create project and otherProject
-	s.mainProject, err = appCtx.ProjectsService.CreateProject(&models.Project{
+	s.mainProject, err = appCtx.ProjectsService.CreateProject(context.Background(), &models.Project{
 		Name: "test-project",
 	})
 	s.Require().NoError(err, "Failed to create project")
 
-	s.otherProject, err = appCtx.ProjectsService.CreateProject(&models.Project{
+	s.otherProject, err = appCtx.ProjectsService.CreateProject(context.Background(), &models.Project{
 		Name: "other-project",
 	})
 	s.Require().NoError(err, "Failed to create other project")

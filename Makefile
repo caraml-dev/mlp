@@ -16,7 +16,7 @@ all: setup init-dep lint test clean build run
 setup:
 	@echo "> Setting up tools..."
 	@test -x $(shell go env GOPATH)/bin/golangci-lint || \
-		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/v1.48.0/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.48.0
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/v1.53.3/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.53.3
 
 .PHONY: init-dep
 init-dep: init-dep-ui init-dep-api

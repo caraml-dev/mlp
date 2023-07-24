@@ -1,46 +1,28 @@
 package enforcer
 
 import (
+	"context"
 	"fmt"
-	"net/url"
-	"regexp"
-	"sort"
-	"strings"
 	"sync"
-	"time"
 
-	"github.com/ory/keto-client-go/client"
-	"github.com/ory/keto-client-go/client/engines"
-	"github.com/ory/keto-client-go/models"
-
-	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer/types"
-	"github.com/caraml-dev/mlp/api/util"
+	ory "github.com/ory/keto-client-go"
+	"golang.org/x/exp/slices"
+	"golang.org/x/sync/errgroup"
 )
 
-const (
-	// ActionCreate action to create a resource
-	ActionCreate = "actions:create"
-	// ActionRead action to read a resource
-	ActionRead = "actions:read"
-	// ActionUpdate action to update a resource
-	ActionUpdate = "actions:update"
-	// ActionDelete action to delete a resource
-	ActionDelete = "actions:delete"
-	// ActionAll all action
-	ActionAll = "actions:**"
-)
-
-// Flavor flavor type
-type Flavor string
-
-const (
-	// FlavorExact keto flavor using "exact" semantics
-	FlavorExact Flavor = "exact"
-	// FlavorGlob keto flavor using "glob" pattern matching
-	FlavorGlob Flavor = "glob"
-	// FlavorRegex keto flavor using "regex" pattern matching
-	FlavorRegex Flavor = "regex"
-)
+// Enforcer interface to enforce authorization
+type Enforcer interface {
+	// IsUserGrantedPermission check whether user has the required permission, both directly and indirectly
+	IsUserGrantedPermission(ctx context.Context, user string, permission string) (bool, error)
+	// GetUserRoles get all roles directly associated with a user
+	GetUserRoles(ctx context.Context, user string) ([]string, error)
+	// GetRolePermissions get all permissions directly associated with a role
+	GetRolePermissions(ctx context.Context, role string) ([]string, error)
+	// GetRoleMembers get all members for a role
+	GetRoleMembers(ctx context.Context, role string) ([]string, error)
+	// UpdateAuthorization update authorization rules in batches
+	UpdateAuthorization(ctx context.Context, updateRequest AuthorizationUpdateRequest) error
+}
 
 // CacheConfig holds the configuration for the in-memory cache, if enabled
 type CacheConfig struct {
@@ -51,59 +33,34 @@ type CacheConfig struct {
 // MaxKeyExpirySeconds is the max allowed value for the KeyExpirySeconds.
 const MaxKeyExpirySeconds = 600
 
-// Enforcer thin client providing interface for authorizing users
-type Enforcer interface {
-	// Enforce check whether user is authorized to do certain action against a resource
-	Enforce(user string, resource string, action string) (*bool, error)
-	// FilterAuthorizedResource filter and return list of authorized resource for certain user
-	FilterAuthorizedResource(user string, resources []string, action string) ([]string, error)
-	// GetRole get role with name
-	GetRole(roleName string) (*types.Role, error)
-	// GetPolicy get policy with name
-	GetPolicy(policyName string) (*types.Policy, error)
-	// UpsertRole create or update a role containing member as specified by users argument
-	UpsertRole(roleName string, users []string) (*types.Role, error)
-	// UpsertPolicy create or update a policy to allow subjects do actions against the specified resources
-	UpsertPolicy(
-		policyName string,
-		roles []string,
-		users []string,
-		resources []string,
-		actions []string,
-	) (*types.Policy, error)
-}
-
 type enforcer struct {
-	cache      *InMemoryCache
-	ketoClient *engines.Client
-	product    string
-	flavor     Flavor
-	timeout    time.Duration
+	cache           *InMemoryCache
+	ketoReadClient  *ory.APIClient
+	ketoWriteClient *ory.APIClient
 }
 
 func newEnforcer(
-	hostURL string,
-	productName string,
-	flavor Flavor,
-	timeout time.Duration,
+	ketoRemoteRead string,
+	ketoRemoteWrite string,
 	cacheConfig *CacheConfig,
 ) (*enforcer, error) {
-	u, err := url.ParseRequestURI(hostURL)
-	if err != nil {
-		return nil, err
+	readConfiguration := ory.NewConfiguration()
+	readConfiguration.Servers = []ory.ServerConfiguration{
+		{
+			URL: ketoRemoteRead,
+		},
 	}
-	client := client.NewHTTPClientWithConfig(nil, &client.TransportConfig{
-		Host:     u.Host,
-		BasePath: u.Path,
-		Schemes:  []string{u.Scheme},
-	})
-
+	writeConfiguration := ory.NewConfiguration()
+	writeConfiguration.Servers = []ory.ServerConfiguration{
+		{
+			URL: ketoRemoteWrite,
+		},
+	}
 	enforcer := &enforcer{
-		ketoClient: client.Engines,
-		product:    productName,
-		flavor:     flavor,
-		timeout:    timeout,
+		ketoReadClient:  ory.NewAPIClient(readConfiguration),
+		ketoWriteClient: ory.NewAPIClient(writeConfiguration),
 	}
+
 	if cacheConfig != nil {
 		if cacheConfig.KeyExpirySeconds > MaxKeyExpirySeconds {
 			return nil, fmt.Errorf("Configured KeyExpirySeconds is larger than the max permitted value of %d",
@@ -114,244 +71,207 @@ func newEnforcer(
 	return enforcer, nil
 }
 
-// Enforce check whether user is authorized to do action against a resource
-func (e *enforcer) Enforce(user string, resource string, action string) (*bool, error) {
-	user = e.formatUser(user)
-	resource = e.formatResource(resource)
-
-	return e.isAllowed(user, resource, action)
+func (e *enforcer) IsUserGrantedPermission(ctx context.Context, user string, permission string) (bool, error) {
+	if e.isCacheEnabled() {
+		if isAllowed, found := e.cache.LookUpUserPermissions(user, permission); found {
+			return *isAllowed, nil
+		}
+	}
+	checkPermissionResult, _, err := e.ketoReadClient.PermissionApi.CheckPermission(ctx).
+		Namespace("Permission").
+		Object(permission).
+		Relation("granted").
+		SubjectSetNamespace("Subject").
+		SubjectSetObject(user).
+		SubjectSetRelation("").
+		Execute()
+	if err != nil {
+		return false, err
+	}
+	userHasPermission := checkPermissionResult.Allowed
+	if e.isCacheEnabled() {
+		e.cache.StoreUserPermissions(user, permission, userHasPermission)
+	}
+	return userHasPermission, nil
 }
 
-// GetRole get role with name
-func (e *enforcer) GetRole(roleName string) (*types.Role, error) {
-	fmtRole := e.formatRole(roleName)
-
-	params := &engines.GetOryAccessControlPolicyRoleParams{
-		Flavor: string(e.flavor),
-		ID:     fmtRole,
+func (e *enforcer) GetUserRoles(ctx context.Context, user string) ([]string, error) {
+	roleRelationships, _, err := e.ketoReadClient.RelationshipApi.GetRelationships(ctx).
+		Namespace("Role").
+		Relation("member").
+		SubjectSetNamespace("Subject").
+		SubjectSetRelation("").
+		SubjectSetObject(user).Execute()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user roles: %w", err)
 	}
-	res, err := e.ketoClient.GetOryAccessControlPolicyRole(params.WithTimeout(e.timeout))
+	roles := make([]string, 0)
+	for _, tuple := range roleRelationships.RelationTuples {
+		roles = append(roles, tuple.Object)
+	}
+
+	return roles, nil
+}
+
+func (e *enforcer) GetRolePermissions(ctx context.Context, role string) ([]string, error) {
+	permissionRelationships, _, err := e.ketoReadClient.RelationshipApi.GetRelationships(ctx).
+		Namespace("Permission").
+		Relation("granted").
+		SubjectSetNamespace("Role").
+		SubjectSetRelation("member").
+		SubjectSetObject(role).Execute()
 	if err != nil {
 		return nil, err
 	}
-	return &types.Role{
-		ID:      res.GetPayload().ID,
-		Members: res.GetPayload().Members,
-	}, nil
+	permissions := make([]string, 0)
+	for _, tuple := range permissionRelationships.RelationTuples {
+		permissions = append(permissions, tuple.Object)
+	}
+
+	return permissions, nil
 }
 
-// GetPolicy get policy with name
-func (e *enforcer) GetPolicy(policyName string) (*types.Policy, error) {
-	fmtPolicy := e.formatPolicy(policyName)
-	params := &engines.GetOryAccessControlPolicyParams{
-		Flavor: string(e.flavor),
-		ID:     fmtPolicy,
-	}
-	res, err := e.ketoClient.GetOryAccessControlPolicy(params.WithTimeout(e.timeout))
+func (e *enforcer) GetRoleMembers(ctx context.Context, role string) ([]string, error) {
+	expandedRole, _, err := e.ketoReadClient.PermissionApi.ExpandPermissions(ctx).
+		Namespace("Role").
+		Relation("member").
+		Object(role).
+		MaxDepth(2).Execute()
 	if err != nil {
 		return nil, err
 	}
-	payload := res.GetPayload()
-	return &types.Policy{
-		ID:        payload.ID,
-		Actions:   payload.Actions,
-		Resources: payload.Resources,
-		Subjects:  payload.Subjects,
-	}, nil
+	members := make([]string, 0)
+	for _, child := range expandedRole.GetChildren() {
+		members = append(members, child.Tuple.SubjectSet.Object)
+	}
+
+	return members, nil
 }
 
-// FilterAuthorizedResource filter and return list of authorized resource for certain user
-func (e *enforcer) FilterAuthorizedResource(user string, resources []string, action string) ([]string, error) {
-	user = e.formatUser(user)
+func newRolePermissionPatch(action string, permission string, role string) ory.RelationshipPatch {
+	return ory.RelationshipPatch{
+		Action: &action,
+		RelationTuple: &ory.Relationship{
+			Namespace:  "Permission",
+			Object:     permission,
+			Relation:   "granted",
+			SubjectSet: ory.NewSubjectSet("Role", role, "member"),
+		},
+	}
+}
 
-	var wg sync.WaitGroup
-	allowedResourcesConcurrent := util.ConcurrentSlice{}
-	errorsConcurrent := util.ConcurrentSlice{}
-	for _, resource := range resources {
-		wg.Add(1)
-		go func(u string, r string, a string) {
-			defer wg.Done()
-			r = e.formatResource(r)
+func newRoleMemberPatch(action string, role string, member string) ory.RelationshipPatch {
+	return ory.RelationshipPatch{
+		Action: &action,
+		RelationTuple: &ory.Relationship{
+			Namespace:  "Role",
+			Object:     role,
+			Relation:   "member",
+			SubjectSet: ory.NewSubjectSet("Subject", member, ""),
+		},
+	}
+}
 
-			allowed, err := e.isAllowed(u, r, a)
+func (e *enforcer) UpdateAuthorization(ctx context.Context, updateRequest AuthorizationUpdateRequest) error {
+	var existingRolePermissions sync.Map
+	var existingRoleMembers sync.Map
+	getRelationsWorkersGroup := new(errgroup.Group)
+	for role := range updateRequest.RolePermissions {
+		updatedRole := role
+		getRelationsWorkersGroup.Go(func() error {
+			permissions, err := e.GetRolePermissions(ctx, updatedRole)
 			if err != nil {
-				errorsConcurrent.Append(err)
-				return
+				return err
 			}
-			if *allowed {
-				allowedResourcesConcurrent.Append(e.stripResourcePrefix(r))
+			existingRolePermissions.Store(updatedRole, permissions)
+			return nil
+		})
+	}
+	for role := range updateRequest.RoleMembers {
+		updatedRole := role
+		getRelationsWorkersGroup.Go(func() error {
+			members, err := e.GetRoleMembers(ctx, updatedRole)
+			if err != nil {
+				return err
 			}
-		}(user, resource, action)
+			existingRoleMembers.Store(updatedRole, members)
+			return nil
+		})
 	}
-	wg.Wait()
-
-	errors := errorsConcurrent.GetItems()
-	if len(errors) > 0 {
-		return nil, errors[0].(error)
-	}
-
-	allowedResources := make([]string, 0)
-	for _, item := range allowedResourcesConcurrent.GetItems() {
-		allowedResources = append(allowedResources, item.(string))
-	}
-	sort.Strings(allowedResources)
-	return allowedResources, nil
-}
-
-// UpsertRole create or update a role containing member as specified by users argument
-func (e *enforcer) UpsertRole(roleName string, users []string) (*types.Role, error) {
-	fmtRoleName := e.formatRole(roleName)
-	fmtUser := make([]string, 0)
-	for _, user := range users {
-		fmtUser = append(fmtUser, e.formatUser(user))
-	}
-
-	input := &models.OryAccessControlPolicyRole{
-		ID:      fmtRoleName,
-		Members: fmtUser,
-	}
-	params := &engines.UpsertOryAccessControlPolicyRoleParams{
-		Body:   input,
-		Flavor: string(e.flavor),
-	}
-	res, err := e.ketoClient.UpsertOryAccessControlPolicyRole(params.WithTimeout(e.timeout))
+	err := getRelationsWorkersGroup.Wait()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &types.Role{
-		ID:      res.GetPayload().ID,
-		Members: res.GetPayload().Members,
-	}, nil
-}
+	patches := make([]ory.RelationshipPatch, 0)
+	existingRolePermissions.Range(func(key, value interface{}) bool {
+		role := key.(string)
+		permissions := value.([]string)
+		for _, permission := range permissions {
+			if !slices.Contains(updateRequest.RolePermissions[role], permission) {
+				patches = append(patches, newRolePermissionPatch("delete", permission, role))
+			}
+		}
+		return true
+	})
 
-// CreatePolicy create a policy to allow subject do an operation against the specified resource
-func (e *enforcer) UpsertPolicy(
-	policyName string,
-	roles []string,
-	users []string,
-	resources []string,
-	actions []string,
-) (*types.Policy, error) {
-	fmtPolicy := e.formatPolicy(policyName)
-
-	fmtResources := make([]string, 0)
-	for _, res := range resources {
-		fmtResources = append(fmtResources, e.formatResource(res))
-	}
-
-	fmtRoles := make([]string, 0)
-	for _, role := range roles {
-		fmtRoles = append(fmtRoles, e.formatRole(role))
-	}
-
-	fmtUsers := make([]string, 0)
-	for _, user := range users {
-		fmtUsers = append(fmtUsers, e.formatUser(user))
-	}
-
-	input := &models.OryAccessControlPolicy{
-		Actions:   actions,
-		Effect:    "allow",
-		ID:        fmtPolicy,
-		Resources: fmtResources,
-		Subjects:  append(fmtRoles, fmtUsers...),
-	}
-	params := &engines.UpsertOryAccessControlPolicyParams{
-		Body:   input,
-		Flavor: string(e.flavor),
-	}
-	res, err := e.ketoClient.UpsertOryAccessControlPolicy(params.WithTimeout(e.timeout))
-	if err != nil {
-		return nil, err
-	}
-
-	payload := res.GetPayload()
-
-	return &types.Policy{
-		ID:        payload.ID,
-		Subjects:  payload.Subjects,
-		Resources: payload.Resources,
-		Actions:   payload.Actions,
-	}, nil
-}
-
-func (e *enforcer) isAllowed(user string, resource string, action string) (*bool, error) {
-	input := &models.OryAccessControlPolicyAllowedInput{
-		Action:   action,
-		Subject:  user,
-		Resource: resource,
-	}
-	params := &engines.DoOryAccessControlPoliciesAllowParams{
-		Body:   input,
-		Flavor: string(e.flavor),
-	}
-
-	// If cache is set up, check there first
-	if e.isCacheEnabled() {
-		if isAllowed, found := e.cache.LookUpPermission(*input); found {
-			return isAllowed, nil
+	for role, permissions := range updateRequest.RolePermissions {
+		for _, permission := range permissions {
+			result, found := existingRolePermissions.Load(role)
+			existingPermissions := result.([]string)
+			if found && !slices.Contains(existingPermissions, permission) {
+				patches = append(patches, newRolePermissionPatch("insert", permission, role))
+			}
 		}
 	}
 
-	res, err := e.ketoClient.DoOryAccessControlPoliciesAllow(params.WithTimeout(e.timeout))
-	if err != nil {
-		switch d := err.(type) {
-		case *engines.DoOryAccessControlPoliciesAllowForbidden:
-			isAllowed := d.GetPayload().Allowed
-			// Save to cache and return
-			if e.isCacheEnabled() {
-				e.cache.StorePermission(*input, isAllowed)
+	existingRoleMembers.Range(func(key, value interface{}) bool {
+		role := key.(string)
+		members := value.([]string)
+		for _, member := range members {
+			if !slices.Contains(updateRequest.RoleMembers[role], member) {
+				patches = append(patches, newRoleMemberPatch("delete", role, member))
 			}
-			return isAllowed, nil
-		default:
-			return nil, err
+		}
+		return true
+	})
+
+	for role, members := range updateRequest.RoleMembers {
+		for _, member := range members {
+			result, found := existingRoleMembers.Load(role)
+			existingMembers := result.([]string)
+			if found && !slices.Contains(existingMembers, member) {
+				patches = append(patches, newRoleMemberPatch("insert", role, member))
+			}
 		}
 	}
 
-	isAllowed := res.GetPayload().Allowed
-	// Save to cache and return
-	if e.isCacheEnabled() {
-		e.cache.StorePermission(*input, isAllowed)
-	}
-	return isAllowed, nil
-}
-
-func (e *enforcer) formatUser(user string) string {
-	match, _ := regexp.MatchString("users:.*", user)
-	if match {
-		return user
-	}
-	return fmt.Sprintf("users:%s", user)
-}
-
-func (e *enforcer) formatResource(resource string) string {
-	match, _ := regexp.MatchString(fmt.Sprintf("resources:%s:.*", e.product), resource)
-	if match {
-		return resource
-	}
-	return fmt.Sprintf("resources:%s:%s", e.product, resource)
-}
-
-func (e *enforcer) formatRole(role string) string {
-	match, _ := regexp.MatchString(fmt.Sprintf("roles:%s:.*", e.product), role)
-	if match {
-		return role
-	}
-	return fmt.Sprintf("roles:%s:%s", e.product, role)
-}
-
-func (e *enforcer) formatPolicy(policy string) string {
-	match, _ := regexp.MatchString(fmt.Sprintf("policies:%s:.*", e.product), policy)
-	if match {
-		return policy
-	}
-	return fmt.Sprintf("policies:%s:%s", e.product, policy)
-}
-
-func (e *enforcer) stripResourcePrefix(resource string) string {
-	return strings.Replace(resource, fmt.Sprintf("resources:%s:", e.product), "", 1)
+	_, err = e.ketoWriteClient.RelationshipApi.PatchRelationships(ctx).RelationshipPatch(patches).Execute()
+	return err
 }
 
 func (e *enforcer) isCacheEnabled() bool {
 	return e.cache != nil
+}
+
+func NewAuthorizationUpdateRequest() AuthorizationUpdateRequest {
+	return AuthorizationUpdateRequest{
+		RolePermissions: make(map[string][]string),
+		RoleMembers:     make(map[string][]string),
+	}
+}
+
+type AuthorizationUpdateRequest struct {
+	RolePermissions map[string][]string
+	RoleMembers     map[string][]string
+}
+
+func (a AuthorizationUpdateRequest) UpdateRolePermissions(role string,
+	permissions []string) AuthorizationUpdateRequest {
+	a.RolePermissions[role] = permissions
+	return a
+}
+
+func (a AuthorizationUpdateRequest) UpdateRoleMembers(role string, members []string) AuthorizationUpdateRequest {
+	a.RoleMembers[role] = members
+	return a
 }

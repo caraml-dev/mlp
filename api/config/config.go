@@ -87,9 +87,11 @@ type DatabaseConfig struct {
 }
 
 type AuthorizationConfig struct {
-	Enabled       bool
-	KetoServerURL string               `validate:"required_if=Enabled True"`
-	Caching       *InMemoryCacheConfig `validate:"required_if=Enabled True"`
+	Enabled         bool
+	KetoRemoteRead  string               `validate:"required_if=Enabled True"`
+	KetoRemoteWrite string               `validate:"required_if=Enabled True"`
+	Caching         *InMemoryCacheConfig `validate:"required_if=Enabled True"`
+	UseMiddleware   bool
 }
 
 type InMemoryCacheConfig struct {
@@ -199,6 +201,7 @@ var defaultConfig = &Config{
 			KeyExpirySeconds:            600,
 			CacheCleanUpIntervalSeconds: 900,
 		},
+		UseMiddleware: false,
 	},
 	Database: &DatabaseConfig{
 		Host:          "localhost",

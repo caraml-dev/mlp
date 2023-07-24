@@ -1,29 +1,33 @@
 package service
 
 import (
-	"fmt"
+	"context"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+
+	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
-	enforcerMock "github.com/caraml-dev/mlp/api/pkg/authz/enforcer/mocks"
-	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer/types"
-
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/repository/mocks"
+
+	enforcerMock "github.com/caraml-dev/mlp/api/pkg/authz/enforcer/mocks"
 )
 
 const MLFlowTrackingURL = "http://localhost:5555"
 
 func TestProjectsService_CreateProject(t *testing.T) {
 	tests := []struct {
-		name         string
-		arg          *models.Project
-		authEnabled  bool
-		expResult    *models.Project
-		wantError    bool
-		wantErrorMsg string
+		name          string
+		arg           *models.Project
+		authEnabled   bool
+		expResult     *models.Project
+		expAuthUpdate *enforcer.AuthorizationUpdateRequest
+		wantError     bool
+		wantErrorMsg  string
 	}{
 		{
 			"success: auth enabled",
@@ -40,6 +44,20 @@ func TestProjectsService_CreateProject(t *testing.T) {
 				MLFlowTrackingURL: MLFlowTrackingURL,
 				Administrators:    []string{"user@email.com"},
 				Readers:           nil,
+			},
+			&enforcer.AuthorizationUpdateRequest{
+				RolePermissions: map[string][]string{
+					"mlp.administrator": {"mlp.projects.1.get", "mlp.projects.1.put", "mlp.projects.1.post",
+						"mlp.projects.1.patch", "mlp.projects.1.delete"},
+					"mlp.projects.reader":   {"mlp.projects.1.get"},
+					"mlp.projects.1.reader": {"mlp.projects.1.get"},
+					"mlp.projects.1.administrator": {"mlp.projects.1.get", "mlp.projects.1.put", "mlp.projects.1.post",
+						"mlp.projects.1.patch", "mlp.projects.1.delete"},
+				},
+				RoleMembers: map[string][]string{
+					"mlp.projects.1.reader":        {},
+					"mlp.projects.1.administrator": {"user@email.com"},
+				},
 			},
 			false,
 			"",
@@ -60,6 +78,7 @@ func TestProjectsService_CreateProject(t *testing.T) {
 				Administrators:    []string{"user@email.com"},
 				Readers:           nil,
 			},
+			nil,
 			false,
 			"",
 		},
@@ -73,6 +92,7 @@ func TestProjectsService_CreateProject(t *testing.T) {
 			},
 			false,
 			nil,
+			nil,
 			true,
 			"unable to use reserved project name: infrastructure",
 		},
@@ -82,112 +102,89 @@ func TestProjectsService_CreateProject(t *testing.T) {
 			storage := &mocks.ProjectRepository{}
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
 
-			projectResource := fmt.Sprintf(ProjectResources, tt.arg.ID)
-			projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.ID)
-			projectNameResource := fmt.Sprintf(ProjectResources, tt.arg.Name)
-
 			authEnforcer := &enforcerMock.Enforcer{}
-			if tt.authEnabled {
-				authEnforcer.On(
-					"UpsertRole",
-					fmt.Sprintf("%s-administrators", tt.arg.Name),
-					[]string(tt.arg.Administrators),
-				).Return(&types.Role{
-					ID:      "admin-role",
-					Members: tt.arg.Administrators,
-				}, nil)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
+			require.NoError(t, err)
 
-				authEnforcer.On(
-					"UpsertRole",
-					fmt.Sprintf("%s-readers", tt.arg.Name),
-					[]string(tt.arg.Readers),
-				).Return(&types.Role{
-					ID:      "reader-role",
-					Members: tt.arg.Readers,
-				}, nil)
-				authEnforcer.On(
-					"UpsertPolicy",
-					fmt.Sprintf("%s-administrators-policy", tt.arg.Name),
-					[]string{"admin-role"},
-					[]string{},
-					[]string{projectResource, projectSubResource, projectNameResource},
-					[]string{enforcer.ActionAll},
-				).Return(&types.Policy{
-					ID:        "admin-policy",
-					Subjects:  []string{"admin-role"},
-					Resources: []string{projectResource, projectSubResource, projectNameResource},
-					Actions:   []string{enforcer.ActionAll},
-				}, nil)
-				authEnforcer.On(
-					"UpsertPolicy",
-					fmt.Sprintf("%s-readers-policy", tt.arg.Name),
-					[]string{"reader-role"},
-					[]string{},
-					[]string{projectResource, projectSubResource, projectNameResource},
-					[]string{enforcer.ActionRead},
-				).Return(&types.Policy{
-					ID:        "reader-policy",
-					Subjects:  []string{"readers-role"},
-					Resources: []string{projectResource, projectSubResource, projectNameResource},
-					Actions:   []string{enforcer.ActionRead},
-				}, nil)
+			if tt.expAuthUpdate != nil {
+				authEnforcer.On("UpdateAuthorization", mock.Anything, *tt.expAuthUpdate).Return(nil)
 			}
 
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
-			assert.NoError(t, err)
-
-			res, err := projectsService.CreateProject(tt.arg)
+			res, err := projectsService.CreateProject(context.Background(), tt.arg)
 			if tt.wantError {
-				assert.Error(t, err)
-				assert.Equal(t, tt.wantErrorMsg, err.Error())
+				require.Error(t, err)
+				require.Equal(t, tt.wantErrorMsg, err.Error())
 				return
 			}
 
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expResult, res)
+			require.NoError(t, err)
+			require.Equal(t, tt.expResult, res)
 
 			storage.AssertExpectations(t)
-			authEnforcer.AssertExpectations(t)
+
+			if tt.expAuthUpdate != nil {
+				authEnforcer.AssertExpectations(t)
+			}
 		})
 	}
 }
 
 func TestProjectsService_UpdateProject(t *testing.T) {
 	tests := []struct {
-		name        string
-		arg         *models.Project
-		authEnabled bool
-		expResult   *models.Project
+		name          string
+		arg           *models.Project
+		authEnabled   bool
+		expResult     *models.Project
+		expAuthUpdate *enforcer.AuthorizationUpdateRequest
 	}{
 		{
 			"success: auth enabled",
 			&models.Project{
+				ID:             1,
 				Name:           "my-project",
 				Administrators: []string{"user@email.com"},
 				Readers:        nil,
 			},
 			true,
 			&models.Project{
+				ID:                1,
 				Name:              "my-project",
 				MLFlowTrackingURL: MLFlowTrackingURL,
 				Administrators:    []string{"user@email.com"},
 				Readers:           nil,
 			},
+			&enforcer.AuthorizationUpdateRequest{
+				RolePermissions: map[string][]string{
+					"mlp.administrator": {"mlp.projects.1.get", "mlp.projects.1.put", "mlp.projects.1.post",
+						"mlp.projects.1.patch", "mlp.projects.1.delete"},
+					"mlp.projects.reader":   {"mlp.projects.1.get"},
+					"mlp.projects.1.reader": {"mlp.projects.1.get"},
+					"mlp.projects.1.administrator": {"mlp.projects.1.get", "mlp.projects.1.put", "mlp.projects.1.post",
+						"mlp.projects.1.patch", "mlp.projects.1.delete"},
+				},
+				RoleMembers: map[string][]string{
+					"mlp.projects.1.reader":        {},
+					"mlp.projects.1.administrator": {"user@email.com"},
+				},
+			},
 		},
 		{
 			"success: auth disabled",
 			&models.Project{
+				ID:             1,
 				Name:           "my-project",
 				Administrators: []string{"user@email.com"},
 				Readers:        nil,
 			},
 			false,
 			&models.Project{
+				ID:                1,
 				Name:              "my-project",
 				MLFlowTrackingURL: MLFlowTrackingURL,
 				Administrators:    []string{"user@email.com"},
 				Readers:           nil,
 			},
+			nil,
 		},
 	}
 	for _, tt := range tests {
@@ -196,62 +193,16 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
 
 			authEnforcer := &enforcerMock.Enforcer{}
-			if tt.authEnabled {
-
-				projectResource := fmt.Sprintf(ProjectResources, tt.arg.ID)
-				projectSubResource := fmt.Sprintf(ProjectSubResources, tt.arg.ID)
-				projectNameResource := fmt.Sprintf(ProjectResources, tt.arg.Name)
-
-				authEnforcer.On(
-					"UpsertRole",
-					fmt.Sprintf("%s-administrators", tt.arg.Name),
-					[]string(tt.arg.Administrators),
-				).Return(&types.Role{
-					ID:      "admin-role",
-					Members: tt.arg.Administrators,
-				}, nil)
-				authEnforcer.On(
-					"UpsertRole",
-					fmt.Sprintf("%s-readers", tt.arg.Name),
-					[]string(tt.arg.Readers),
-				).Return(&types.Role{
-					ID:      "reader-role",
-					Members: tt.arg.Readers,
-				}, nil)
-				authEnforcer.On(
-					"UpsertPolicy",
-					fmt.Sprintf("%s-administrators-policy", tt.arg.Name),
-					[]string{"admin-role"},
-					[]string{},
-					[]string{projectResource, projectSubResource, projectNameResource},
-					[]string{enforcer.ActionAll},
-				).Return(&types.Policy{
-					ID:        "admin-policy",
-					Subjects:  []string{"admin-role"},
-					Resources: []string{projectResource, projectSubResource, projectNameResource},
-					Actions:   []string{enforcer.ActionAll},
-				}, nil)
-				authEnforcer.On(
-					"UpsertPolicy",
-					fmt.Sprintf("%s-readers-policy", tt.arg.Name),
-					[]string{"reader-role"},
-					[]string{},
-					[]string{projectResource, projectSubResource, projectNameResource},
-					[]string{enforcer.ActionRead},
-				).Return(&types.Policy{
-					ID:        "reader-policy",
-					Subjects:  []string{"readers-role"},
-					Resources: []string{projectResource, projectSubResource, projectNameResource},
-					Actions:   []string{enforcer.ActionRead},
-				}, nil)
+			if tt.expAuthUpdate != nil {
+				authEnforcer.On("UpdateAuthorization", mock.Anything, *tt.expAuthUpdate).Return(nil)
 			}
 
 			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
 			assert.NoError(t, err)
 
-			res, err := projectsService.UpdateProject(tt.arg)
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expResult, res)
+			res, err := projectsService.UpdateProject(context.Background(), tt.arg)
+			require.NoError(t, err)
+			require.Equal(t, tt.expResult, res)
 
 			storage.AssertExpectations(t)
 			authEnforcer.AssertExpectations(t)
@@ -260,28 +211,100 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 }
 
 func TestProjectsService_ListProjects(t *testing.T) {
-	projectFilter := "my-project"
+	project1 := &models.Project{
+		ID:                1,
+		Name:              "project-1",
+		MLFlowTrackingURL: MLFlowTrackingURL,
+		Administrators:    []string{"admin-1@email.com"},
+		Readers:           []string{"reader-1@email.com"},
+	}
+	project2 := &models.Project{
+		ID:                2,
+		Name:              "project-2",
+		MLFlowTrackingURL: MLFlowTrackingURL,
+		Administrators:    []string{"admin-2@email.com"},
+		Readers:           []string{"reader-2@email.com"},
+	}
+	allProjects := []*models.Project{project1, project2}
+	storage := &mocks.ProjectRepository{}
+	storage.On("ListProjects", "project-").Return(allProjects, nil)
 
-	exp := []*models.Project{
+	tests := []struct {
+		name          string
+		projectFilter string
+		authEnabled   bool
+		expResult     []*models.Project
+		user          string
+		userRoles     []string
+	}{
 		{
-			Name:              "my-project",
-			MLFlowTrackingURL: MLFlowTrackingURL,
-			Administrators:    []string{"user@email.com"},
-			Readers:           nil,
+			"filter only by project name when auth is disabled",
+			"project-",
+			false,
+			allProjects,
+			"anonymous@email.com",
+			nil,
+		},
+		{
+			"filter by permission and project name when auth is enabled",
+			"project-",
+			true,
+			[]*models.Project{},
+			"anonymous-user@email.com",
+			[]string{},
+		},
+		{
+			"allow project admin to read project, regardless of user roles return by enforcer",
+			"project-",
+			true,
+			[]*models.Project{project1},
+			"admin-1@email.com",
+			[]string{"some roles"},
+		},
+		{
+			"allow project reader to read project, regardless of user roles return by enforcer",
+			"project-",
+			true,
+			[]*models.Project{project2},
+			"reader-2@email.com",
+			[]string{"some roles"},
+		},
+		{
+			"allow mlp administrators to read all projects",
+			"project-",
+			true,
+			allProjects,
+			"mlp-admin@email.com",
+			[]string{"mlp.administrator"},
+		},
+		{
+			"allow project readers to read all projects",
+			"project-",
+			true,
+			allProjects,
+			"project-reader@email.com",
+			[]string{"mlp.projects.reader"},
 		},
 	}
-	storage := &mocks.ProjectRepository{}
-	storage.On("ListProjects", projectFilter).Return(exp, nil)
 
-	authEnforcer := &enforcerMock.Enforcer{}
-	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false)
-	assert.NoError(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			authEnforcer := &enforcerMock.Enforcer{}
+			if tt.authEnabled {
+				authEnforcer.On("GetUserRoles", mock.Anything, tt.user).Return(tt.userRoles, nil)
+			}
 
-	res, err := projectsService.ListProjects(projectFilter)
-	assert.NoError(t, err)
-	assert.Equal(t, exp, res)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
+			assert.NoError(t, err)
 
-	storage.AssertExpectations(t)
+			res, err := projectsService.ListProjects(context.Background(), "project-", tt.user)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expResult, res)
+
+			storage.AssertExpectations(t)
+			authEnforcer.AssertExpectations(t)
+		})
+	}
 }
 
 func TestProjectsService_FindById(t *testing.T) {
