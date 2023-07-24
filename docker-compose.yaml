@@ -12,6 +12,7 @@ services:
     env_file: .env.development
     environment:
       - DATABASE_HOST=postgres
+    restart: on-failure
 
   postgres:
     image: bitnami/postgresql:14.5.0

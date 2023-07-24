@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/heptiolabs/healthcheck"
 	"github.com/rs/cors"
-	flag "github.com/spf13/pflag"
+	"github.com/spf13/cobra"
 
 	"github.com/caraml-dev/mlp/api/api"
 	apiV2 "github.com/caraml-dev/mlp/api/api/v2"
@@ -23,15 +23,17 @@ import (
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 )
 
-func main() {
-	configFiles := flag.StringSliceP("config", "c", []string{}, "Path to a configuration files")
-	flag.Parse()
-
-	cfg, err := config.LoadAndValidate(*configFiles...)
-	if err != nil {
-		log.Panicf("failed initializing config: %v", err)
+var (
+	serveCmd = &cobra.Command{
+		Use:   "serve",
+		Short: "Start MLP API server",
+		Run: func(cmd *cobra.Command, args []string) {
+			startServer(globalConfig)
+		},
 	}
+)
 
+func startServer(cfg *config.Config) {
 	// init db
 	db, err := database.InitDB(cfg.Database)
 	if err != nil {

@@ -86,7 +86,7 @@ build-ui: clean-ui
 .PHONY: build-api
 build-api: clean-bin
 	@echo "> Building API binary ..."
-	@cd ${API_PATH} && go build -o ../bin/${BIN_NAME} ./cmd/main.go
+	@cd ${API_PATH} && go build -o ../bin/${BIN_NAME} main.go
 
 .PHONY: build-api-image
 build-api-image: version
@@ -111,7 +111,7 @@ build-image: version
 .PHONY: run
 run: local-env
 	@echo "> Running application ..."
-	@go run api/cmd/main.go --config config-dev.yaml
+	@go run api/main.go serve --config config-dev.yaml
 
 .PHONY: start-ui
 start-ui:
