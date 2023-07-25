@@ -14,7 +14,11 @@ var (
 		Use:   "mlp",
 		Short: "CaraML Machine Learning Platform Console",
 		Long: "CaraML Machine Learning Platform Console, which provides a web UI to interact with different CaraML " +
-			"services.",
+			"services. If no subcommand are provided, serve command will be run as default.",
+		// Run serve command by default if non is specified
+		Run: func(cmd *cobra.Command, args []string) {
+			serveCmd.Run(cmd, args)
+		},
 	}
 )
 
