@@ -128,14 +128,14 @@ func projectAdminRole(project *models.Project) string {
 
 func rolesWithReadOnlyAccess(project *models.Project) []string {
 	predefinedRoles := []string{
-		"mlp.projects.reader",
+		enforcer.ProjectReaderRole,
 	}
 	return append(predefinedRoles, projectReaderRole(project))
 }
 
 func rolesWithAdminAccess(project *models.Project) []string {
 	predefinedRoles := []string{
-		"mlp.administrator",
+		enforcer.MLPAdminRole,
 	}
 	return append(predefinedRoles, projectAdminRole(project))
 }
@@ -190,7 +190,7 @@ func (service *projectsService) filterAuthorizedProjects(ctx context.Context, pr
 		return nil, err
 	}
 	for _, role := range roles {
-		if slices.Contains([]string{"mlp.administrator", "mlp.projects.reader"}, role) {
+		if slices.Contains([]string{enforcer.MLPAdminRole, enforcer.ProjectReaderRole}, role) {
 			return projects, nil
 		}
 	}
