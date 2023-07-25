@@ -6,10 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInMemoryCache_LookUpUserPermissions(t *testing.T) {
+func TestInMemoryCache_LookUpUserPermission(t *testing.T) {
 	cache := newInMemoryCache(600, 600)
-	cache.StoreUserPermissions("user1@email.com", "mlp.projects.1.get", true)
-	cache.StoreUserPermissions("user1@email.com", "mlp.projects.1.post", false)
+	cache.StoreUserPermission("user1@email.com", "mlp.projects.1.get", true)
+	cache.StoreUserPermission("user1@email.com", "mlp.projects.1.post", false)
 	trueValue, falseValue := true, false
 	tests := map[string]struct {
 		user          string
@@ -45,7 +45,7 @@ func TestInMemoryCache_LookUpUserPermissions(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			cachedVal, found := cache.LookUpUserPermissions(tt.user, tt.permission)
+			cachedVal, found := cache.LookUpUserPermission(tt.user, tt.permission)
 			assert.Equal(t, tt.expectedVal, cachedVal)
 			assert.Equal(t, tt.expectedFound, found)
 		})

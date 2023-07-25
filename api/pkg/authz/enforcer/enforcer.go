@@ -73,7 +73,7 @@ func newEnforcer(
 
 func (e *enforcer) IsUserGrantedPermission(ctx context.Context, user string, permission string) (bool, error) {
 	if e.isCacheEnabled() {
-		if isAllowed, found := e.cache.LookUpUserPermissions(user, permission); found {
+		if isAllowed, found := e.cache.LookUpUserPermission(user, permission); found {
 			return *isAllowed, nil
 		}
 	}
@@ -90,7 +90,7 @@ func (e *enforcer) IsUserGrantedPermission(ctx context.Context, user string, per
 	}
 	userHasPermission := checkPermissionResult.Allowed
 	if e.isCacheEnabled() {
-		e.cache.StoreUserPermissions(user, permission, userHasPermission)
+		e.cache.StoreUserPermission(user, permission, userHasPermission)
 	}
 	return userHasPermission, nil
 }

@@ -20,9 +20,9 @@ func newInMemoryCache(keyExpirySeconds int, cacheCleanUpIntervalSeconds int) *In
 	}
 }
 
-// LookUpUserPermissions returns the cached permission check result for a user / permission pair.
+// LookUpUserPermission returns the cached permission check result for a user / permission pair.
 // The returned value indicates whether the result is cached.
-func (c *InMemoryCache) LookUpUserPermissions(user string, permission string) (*bool, bool) {
+func (c *InMemoryCache) LookUpUserPermission(user string, permission string) (*bool, bool) {
 	if cachedValue, ok := c.store.Get(c.buildCacheKey(user, permission)); ok {
 		if allowed, ok := cachedValue.(*bool); ok {
 			return allowed, true
@@ -31,8 +31,8 @@ func (c *InMemoryCache) LookUpUserPermissions(user string, permission string) (*
 	return nil, false
 }
 
-// StoreUserPermissions stores the permission check result for a user / permission pair.
-func (c *InMemoryCache) StoreUserPermissions(user string, permission string, result bool) {
+// StoreUserPermission stores the permission check result for a user / permission pair.
+func (c *InMemoryCache) StoreUserPermission(user string, permission string, result bool) {
 	c.store.Set(c.buildCacheKey(user, permission), &result, cache.DefaultExpiration)
 }
 
