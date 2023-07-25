@@ -253,6 +253,9 @@ func (e *enforcer) isCacheEnabled() bool {
 	return e.cache != nil
 }
 
+// NewAuthorizationUpdateRequest create a new AuthorizationUpdateRequest. Multiple operations can be chained together
+// using the SetRolePermissions and SetRoleMembers methods. No changes will be made until the AuthorizationUpdateRequest
+// object is passed to the Enforcer, in which all the previously chained operations will be executed in batch.
 func NewAuthorizationUpdateRequest() AuthorizationUpdateRequest {
 	return AuthorizationUpdateRequest{
 		RolePermissions: make(map[string][]string),
@@ -265,13 +268,15 @@ type AuthorizationUpdateRequest struct {
 	RoleMembers     map[string][]string
 }
 
-func (a AuthorizationUpdateRequest) UpdateRolePermissions(role string,
+// SetRolePermissions set the permissions for a role. If the role already has permissions, they will be replaced.
+func (a AuthorizationUpdateRequest) SetRolePermissions(role string,
 	permissions []string) AuthorizationUpdateRequest {
 	a.RolePermissions[role] = permissions
 	return a
 }
 
-func (a AuthorizationUpdateRequest) UpdateRoleMembers(role string, members []string) AuthorizationUpdateRequest {
+// SetRoleMembers set the members for a role. If the role already has members, they will be replaced.
+func (a AuthorizationUpdateRequest) SetRoleMembers(role string, members []string) AuthorizationUpdateRequest {
 	a.RoleMembers[role] = members
 	return a
 }

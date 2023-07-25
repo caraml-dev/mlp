@@ -159,21 +159,21 @@ func adminPermissions(project *models.Project) []string {
 func (service *projectsService) updateAuthorizationPolicy(ctx context.Context, project *models.Project) error {
 	updateRequest := enforcer.NewAuthorizationUpdateRequest()
 	for _, role := range rolesWithReadOnlyAccess(project) {
-		updateRequest.UpdateRolePermissions(role, readPermissions(project))
+		updateRequest.SetRolePermissions(role, readPermissions(project))
 	}
 	if project.Administrators != nil {
-		updateRequest.UpdateRoleMembers(projectAdminRole(project), project.Administrators)
+		updateRequest.SetRoleMembers(projectAdminRole(project), project.Administrators)
 	} else {
-		updateRequest.UpdateRoleMembers(projectAdminRole(project), []string{})
+		updateRequest.SetRoleMembers(projectAdminRole(project), []string{})
 	}
 
 	for _, role := range rolesWithAdminAccess(project) {
-		updateRequest.UpdateRolePermissions(role, adminPermissions(project))
+		updateRequest.SetRolePermissions(role, adminPermissions(project))
 	}
 	if project.Readers != nil {
-		updateRequest.UpdateRoleMembers(projectReaderRole(project), project.Readers)
+		updateRequest.SetRoleMembers(projectReaderRole(project), project.Readers)
 	} else {
-		updateRequest.UpdateRoleMembers(projectReaderRole(project), []string{})
+		updateRequest.SetRoleMembers(projectReaderRole(project), []string{})
 	}
 
 	return service.authEnforcer.UpdateAuthorization(ctx, updateRequest)

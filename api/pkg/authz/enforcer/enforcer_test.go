@@ -74,8 +74,8 @@ func TestEnforcer_HasPermission(t *testing.T) {
 	clearRelations(readClient, writeClient)
 
 	newRoleAndPermissionsRequest := NewAuthorizationUpdateRequest()
-	newRoleAndPermissionsRequest.UpdateRolePermissions("page.1.admin", []string{"page.1.get", "page.1.put"})
-	newRoleAndPermissionsRequest.UpdateRoleMembers("page.1.admin", []string{"user-1@example.com"})
+	newRoleAndPermissionsRequest.SetRolePermissions("page.1.admin", []string{"page.1.get", "page.1.put"})
+	newRoleAndPermissionsRequest.SetRoleMembers("page.1.admin", []string{"user-1@example.com"})
 	err = ketoEnforcer.UpdateAuthorization(context.Background(), newRoleAndPermissionsRequest)
 	require.NoError(t, err)
 
@@ -118,8 +118,8 @@ func TestEnforcer_HasPermission(t *testing.T) {
 		})
 	}
 	updateRoleAndPermissionsRequest := NewAuthorizationUpdateRequest()
-	updateRoleAndPermissionsRequest.UpdateRolePermissions("page.1.admin", []string{"page.1.get", "page.1.delete"})
-	updateRoleAndPermissionsRequest.UpdateRoleMembers("page.1.admin", []string{"admin-1@example.com"})
+	updateRoleAndPermissionsRequest.SetRolePermissions("page.1.admin", []string{"page.1.get", "page.1.delete"})
+	updateRoleAndPermissionsRequest.SetRoleMembers("page.1.admin", []string{"admin-1@example.com"})
 	err = ketoEnforcer.UpdateAuthorization(context.Background(), updateRoleAndPermissionsRequest)
 	testsAfterUpdate := []struct {
 		name       string
@@ -165,7 +165,7 @@ func TestEnforcer_GetUserRoles(t *testing.T) {
 	clearRelations(readClient, writeClient)
 	updateRequest := NewAuthorizationUpdateRequest()
 	for i := 1; i < 4; i++ {
-		updateRequest.UpdateRoleMembers(fmt.Sprintf("pages.%d.reader", i), []string{"user-1@example.com"})
+		updateRequest.SetRoleMembers(fmt.Sprintf("pages.%d.reader", i), []string{"user-1@example.com"})
 	}
 	err = ketoEnforcer.UpdateAuthorization(context.Background(), updateRequest)
 	require.NoError(t, err)
@@ -208,7 +208,7 @@ func TestEnforcer_GetRolePermissions(t *testing.T) {
 	writeClient := newKetoClient(ketoRemoteWrite)
 	clearRelations(readClient, writeClient)
 	updateRequest := NewAuthorizationUpdateRequest()
-	updateRequest.UpdateRolePermissions("pages.1.reader", []string{"pages.1.get", "pages.1.post"})
+	updateRequest.SetRolePermissions("pages.1.reader", []string{"pages.1.get", "pages.1.post"})
 	err = ketoEnforcer.UpdateAuthorization(context.Background(), updateRequest)
 	require.NoError(t, err)
 	tests := []struct {
@@ -248,7 +248,7 @@ func TestEnforcer_GetRoleMembers(t *testing.T) {
 	writeClient := newKetoClient(ketoRemoteWrite)
 	clearRelations(readClient, writeClient)
 	updateRequest := NewAuthorizationUpdateRequest()
-	updateRequest.UpdateRolePermissions("pages.1.reader", []string{"pages.1.get", "pages.1.post"})
+	updateRequest.SetRolePermissions("pages.1.reader", []string{"pages.1.get", "pages.1.post"})
 	err = ketoEnforcer.UpdateAuthorization(context.Background(), updateRequest)
 	require.NoError(t, err)
 	tests := []struct {
