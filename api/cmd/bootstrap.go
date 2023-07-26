@@ -47,7 +47,10 @@ func init() {
 }
 
 func loadRoleMemberFromInputFile(path string) (*BootstrapRoleMembers, error) {
-	bootstrapRoleMembers := &BootstrapRoleMembers{}
+	bootstrapRoleMembers := &BootstrapRoleMembers{
+		ProjectReaders: []string{},
+		MLPAdmins:      []string{},
+	}
 	k := koanf.New(".")
 	err := k.Load(file.Provider(path), yaml.Parser())
 	if err != nil {

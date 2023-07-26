@@ -132,6 +132,9 @@ func (e *enforcer) GetRolePermissions(ctx context.Context, role string) ([]strin
 }
 
 func (e *enforcer) GetRoleMembers(ctx context.Context, role string) ([]string, error) {
+	// The permission tree includes the role as the parent node, and the members as the children nodes.
+	// Hence, we need at least the depth of 2 to get the members. We don't go beyond 2 as we currently
+	// do not implement nested roles.
 	expandedRole, _, err := e.ketoReadClient.PermissionApi.ExpandPermissions(ctx).
 		Namespace("Role").
 		Relation("member").
