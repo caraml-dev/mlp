@@ -71,7 +71,7 @@ func startKetoBootstrap(globalCfg *config.Config, bootstrapOpts *BootstrapRoleMe
 		return err
 	}
 	updateRequest := enforcer.NewAuthorizationUpdateRequest()
-	updateRequest.SetRoleMembers(enforcer.ProjectReaderRole, bootstrapOpts.ProjectReaders)
+	updateRequest.SetRoleMembers(enforcer.MLPProjectsReaderRole, bootstrapOpts.ProjectReaders)
 	updateRequest.SetRoleMembers(enforcer.MLPAdminRole, bootstrapOpts.MLPAdmins)
 	err = authEnforcer.UpdateAuthorization(context.Background(), updateRequest)
 	if err != nil {

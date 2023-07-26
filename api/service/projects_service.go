@@ -118,28 +118,6 @@ func (service *projectsService) save(project *models.Project) (*models.Project, 
 	return service.projectRepository.Save(project)
 }
 
-func projectReaderRole(project *models.Project) string {
-	return fmt.Sprintf("mlp.projects.%d.reader", project.ID)
-}
-
-func projectAdminRole(project *models.Project) string {
-	return fmt.Sprintf("mlp.projects.%d.administrator", project.ID)
-}
-
-func rolesWithReadOnlyAccess(project *models.Project) []string {
-	predefinedRoles := []string{
-		enforcer.ProjectReaderRole,
-	}
-	return append(predefinedRoles, projectReaderRole(project))
-}
-
-func rolesWithAdminAccess(project *models.Project) []string {
-	predefinedRoles := []string{
-		enforcer.MLPAdminRole,
-	}
-	return append(predefinedRoles, projectAdminRole(project))
-}
-
 func readPermissions(project *models.Project) []string {
 	permissions := make([]string, 0)
 	for _, method := range []string{"get"} {
@@ -158,22 +136,45 @@ func adminPermissions(project *models.Project) []string {
 
 func (service *projectsService) updateAuthorizationPolicy(ctx context.Context, project *models.Project) error {
 	updateRequest := enforcer.NewAuthorizationUpdateRequest()
-	for _, role := range rolesWithReadOnlyAccess(project) {
+	rolesWithReadOnlyAccess, err := enforcer.ParseProjectRoles([]string{
+		enforcer.MLPProjectsReaderRole,
+		enforcer.MLPProjectReaderRole,
+	}, project)
+	if err != nil {
+		return err
+	}
+	for _, role := range rolesWithReadOnlyAccess {
 		updateRequest.SetRolePermissions(role, readPermissions(project))
 	}
+	projectAdminRole, err := enforcer.ParseProjectRole(enforcer.MLPProjectAdminRole, project)
+	if err != nil {
+		return err
+	}
 	if project.Administrators != nil {
-		updateRequest.SetRoleMembers(projectAdminRole(project), project.Administrators)
+		updateRequest.SetRoleMembers(projectAdminRole, project.Administrators)
 	} else {
-		updateRequest.SetRoleMembers(projectAdminRole(project), []string{})
+		updateRequest.SetRoleMembers(projectAdminRole, []string{})
 	}
 
-	for _, role := range rolesWithAdminAccess(project) {
+	rolesWithAdminAccess, err := enforcer.ParseProjectRoles([]string{
+		enforcer.MLPAdminRole,
+		enforcer.MLPProjectAdminRole,
+	}, project)
+	if err != nil {
+		return err
+	}
+	for _, role := range rolesWithAdminAccess {
 		updateRequest.SetRolePermissions(role, adminPermissions(project))
 	}
+	projectReaderRole, err := enforcer.ParseProjectRole(enforcer.MLPProjectReaderRole, project)
+	if err != nil {
+		return err
+	}
 	if project.Readers != nil {
-		updateRequest.SetRoleMembers(projectReaderRole(project), project.Readers)
+		updateRequest.SetRoleMembers(projectReaderRole, project.Readers)
 	} else {
-		updateRequest.SetRoleMembers(projectReaderRole(project), []string{})
+		updateRequest.SetRoleMembers(projectReaderRole, []string{})
+
 	}
 
 	return service.authEnforcer.UpdateAuthorization(ctx, updateRequest)
@@ -191,7 +192,7 @@ func (service *projectsService) filterAuthorizedProjects(ctx context.Context, pr
 		return nil, err
 	}
 	for _, role := range roles {
-		if slices.Contains([]string{enforcer.MLPAdminRole, enforcer.ProjectReaderRole}, role) {
+		if slices.Contains([]string{enforcer.MLPAdminRole, enforcer.MLPProjectsReaderRole}, role) {
 			return projects, nil
 		}
 	}
