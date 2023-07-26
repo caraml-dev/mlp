@@ -196,9 +196,6 @@ func (service *projectsService) filterAuthorizedProjects(ctx context.Context, pr
 			return projects, nil
 		}
 	}
-	if err != nil {
-		return nil, err
-	}
 	authorizedProjects := make([]*models.Project, 0)
 	for _, project := range projects {
 		if (project.Administrators != nil && slices.Contains(project.Administrators, user)) ||

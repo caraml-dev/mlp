@@ -22,10 +22,6 @@ func (c *ProjectsController) ListProjects(r *http.Request, vars map[string]strin
 		return FromError(err)
 	}
 
-	if err != nil {
-		return InternalServerError(err.Error())
-	}
-
 	return Ok(projects)
 }
 
