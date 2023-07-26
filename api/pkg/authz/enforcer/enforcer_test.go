@@ -241,6 +241,49 @@ func TestEnforcer_GetRolePermissions(t *testing.T) {
 	}
 }
 
+func TestEnforcer_GetUserPermissions(t *testing.T) {
+	ketoEnforcer, err := NewEnforcerBuilder().Build()
+	require.NoError(t, err)
+	readClient := newKetoClient(ketoRemoteRead)
+	writeClient := newKetoClient(ketoRemoteWrite)
+	clearRelations(readClient, writeClient)
+	updateRequest := NewAuthorizationUpdateRequest()
+	updateRequest.SetRolePermissions("pages.1.reader", []string{"pages.1.get"})
+	updateRequest.SetRolePermissions("pages.1.admin", []string{"pages.1.get", "pages.1.post"})
+	updateRequest.SetRoleMembers("pages.1.reader", []string{"user-1@example.com"})
+	updateRequest.SetRoleMembers("pages.1.admin", []string{"user-1@example.com"})
+	err = ketoEnforcer.UpdateAuthorization(context.Background(), updateRequest)
+	require.NoError(t, err)
+	tests := []struct {
+		name                string
+		user                string
+		expectedPermissions []string
+	}{
+		{
+			"user-1 has reader and admin permissions for page 1",
+			"user-1@example.com",
+			[]string{
+				"pages.1.get",
+				"pages.1.post",
+			},
+		},
+		{
+			"unknown user has no no permissions",
+			"anonymous@example.com",
+			[]string{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := ketoEnforcer.GetUserPermissions(context.Background(), tt.user)
+			require.NoError(t, err)
+			sort.Strings(tt.expectedPermissions)
+			sort.Strings(res)
+			require.Equal(t, tt.expectedPermissions, res)
+		})
+	}
+}
+
 func TestEnforcer_GetRoleMembers(t *testing.T) {
 	ketoEnforcer, err := NewEnforcerBuilder().Build()
 	require.NoError(t, err)

@@ -179,6 +179,7 @@ func (service *projectsService) updateAuthorizationPolicy(ctx context.Context, p
 	return service.authEnforcer.UpdateAuthorization(ctx, updateRequest)
 }
 
+// TODO: Evaluate if we should retrieve all permissions granted to a user as opposed to just roles
 func (service *projectsService) filterAuthorizedProjects(ctx context.Context, projects []*models.Project,
 	user string) ([]*models.Project, error) {
 	if user == "" {

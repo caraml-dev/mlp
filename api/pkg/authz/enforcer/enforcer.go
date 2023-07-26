@@ -18,6 +18,8 @@ type Enforcer interface {
 	GetUserRoles(ctx context.Context, user string) ([]string, error)
 	// GetRolePermissions get all permissions directly associated with a role
 	GetRolePermissions(ctx context.Context, role string) ([]string, error)
+	// GetUserPermissions get all permissions associated with a user
+	GetUserPermissions(ctx context.Context, user string) ([]string, error)
 	// GetRoleMembers get all members for a role
 	GetRoleMembers(ctx context.Context, role string) ([]string, error)
 	// UpdateAuthorization update authorization rules in batches
@@ -128,6 +130,38 @@ func (e *enforcer) GetRolePermissions(ctx context.Context, role string) ([]strin
 		permissions = append(permissions, tuple.Object)
 	}
 
+	return permissions, nil
+}
+
+func (e *enforcer) GetUserPermissions(ctx context.Context, user string) ([]string, error) {
+	roles, err := e.GetUserRoles(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	permissionSet := sync.Map{}
+	getPermissionsWorkersGroup := new(errgroup.Group)
+	for _, role := range roles {
+		role := role
+		getPermissionsWorkersGroup.Go(func() error {
+			permissions, err := e.GetRolePermissions(ctx, role)
+			for _, permission := range permissions {
+				permissionSet.Store(permission, true)
+			}
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+	err = getPermissionsWorkersGroup.Wait()
+	if err != nil {
+		return nil, err
+	}
+	permissions := make([]string, 0)
+	permissionSet.Range(func(key, value interface{}) bool {
+		permissions = append(permissions, key.(string))
+		return true
+	})
 	return permissions, nil
 }
 
