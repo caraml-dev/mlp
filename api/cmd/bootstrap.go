@@ -9,27 +9,28 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 )
 
-type BootstrapRoleMembers struct {
-	ProjectReaders []string
-	MLPAdmins      []string
+type BootstrapConfig struct {
+	KetoRemoteRead  string
+	KetoRemoteWrite string
+	ProjectReaders  []string
+	MLPAdmins       []string
 }
 
 var (
-	bootstrapRoleMembersInputFile string
-	bootstrapCmd                  = &cobra.Command{
+	bootstrapConfigFile string
+	bootstrapCmd        = &cobra.Command{
 		Use:   "bootstrap",
 		Short: "Start bootstrap job to populate Keto",
 		Run: func(cmd *cobra.Command, args []string) {
-			bootstrapRoleMembers, err := loadRoleMemberFromInputFile(bootstrapRoleMembersInputFile)
+			bootstrapConfig, err := loadBootstrapConfig(bootstrapConfigFile)
 			if err != nil {
 				log.Panicf("unable to load role members from input file: %v", err)
 			}
-			err = startKetoBootstrap(globalConfig, bootstrapRoleMembers)
+			err = startKetoBootstrap(bootstrapConfig)
 			if err != nil {
 				log.Panicf("unable to bootstrap keto: %v", err)
 			}
@@ -38,16 +39,16 @@ var (
 )
 
 func init() {
-	bootstrapCmd.Flags().StringVarP(&bootstrapRoleMembersInputFile, "role-members", "r", "",
-		"Path to an input file that map roles to members")
-	err := bootstrapCmd.MarkFlagRequired("role-members")
+	bootstrapCmd.Flags().StringVarP(&bootstrapConfigFile, "config", "c", "",
+		"Path to keto bootstrap configuration")
+	err := bootstrapCmd.MarkFlagRequired("config")
 	if err != nil {
 		log.Panicf("unable to mark flag as required: %v", err)
 	}
 }
 
-func loadRoleMemberFromInputFile(path string) (*BootstrapRoleMembers, error) {
-	bootstrapRoleMembers := &BootstrapRoleMembers{
+func loadBootstrapConfig(path string) (*BootstrapConfig, error) {
+	bootstrapCfg := &BootstrapConfig{
 		ProjectReaders: []string{},
 		MLPAdmins:      []string{},
 	}
@@ -56,26 +57,22 @@ func loadRoleMemberFromInputFile(path string) (*BootstrapRoleMembers, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = k.Unmarshal("", bootstrapRoleMembers)
+	err = k.Unmarshal("", bootstrapCfg)
 	if err != nil {
 		return nil, err
 	}
-	return bootstrapRoleMembers, nil
+	return bootstrapCfg, nil
 }
 
-func startKetoBootstrap(globalCfg *config.Config, bootstrapOpts *BootstrapRoleMembers) error {
+func startKetoBootstrap(bootstrapCfg *BootstrapConfig) error {
 	authEnforcer, err := enforcer.NewEnforcerBuilder().
-		KetoEndpoints(globalCfg.Authorization.KetoRemoteRead, globalCfg.Authorization.KetoRemoteWrite).
+		KetoEndpoints(bootstrapCfg.KetoRemoteRead, bootstrapCfg.KetoRemoteWrite).
 		Build()
 	if err != nil {
 		return err
 	}
 	updateRequest := enforcer.NewAuthorizationUpdateRequest()
-	updateRequest.SetRoleMembers(enforcer.MLPProjectsReaderRole, bootstrapOpts.ProjectReaders)
-	updateRequest.SetRoleMembers(enforcer.MLPAdminRole, bootstrapOpts.MLPAdmins)
-	err = authEnforcer.UpdateAuthorization(context.Background(), updateRequest)
-	if err != nil {
-		return err
-	}
-	return nil
+	updateRequest.SetRoleMembers(enforcer.MLPProjectsReaderRole, bootstrapCfg.ProjectReaders)
+	updateRequest.SetRoleMembers(enforcer.MLPAdminRole, bootstrapCfg.MLPAdmins)
+	return authEnforcer.UpdateAuthorization(context.Background(), updateRequest)
 }

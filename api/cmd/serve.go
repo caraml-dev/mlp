@@ -24,14 +24,25 @@ import (
 )
 
 var (
-	serveCmd = &cobra.Command{
+	configFiles []string
+	serveCmd    = &cobra.Command{
 		Use:   "serve",
 		Short: "Start MLP API server",
 		Run: func(cmd *cobra.Command, args []string) {
-			startServer(globalConfig)
+			serveConfig, err := config.LoadAndValidate(configFiles...)
+			if err != nil {
+				log.Fatalf("failed initializing config: %v", err)
+			}
+			startServer(serveConfig)
 		},
 	}
 )
+
+func init() {
+	serveCmd.Flags().StringSliceVarP(&configFiles, "config", "c", []string{},
+		"Comma separated list of config files to load. The last config file will take precedence over the "+
+			"previous ones.")
+}
 
 func startServer(cfg *config.Config) {
 	// init db
