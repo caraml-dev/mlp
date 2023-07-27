@@ -198,13 +198,15 @@ func TestLoad(t *testing.T) {
 					},
 				},
 				Authorization: &config.AuthorizationConfig{
-					Enabled:       true,
-					KetoServerURL: "http://localhost:4466",
+					Enabled:         true,
+					KetoRemoteRead:  "http://localhost:4466",
+					KetoRemoteWrite: "http://localhost:4467",
 					Caching: &config.InMemoryCacheConfig{
 						Enabled:                     true,
 						KeyExpirySeconds:            1000,
 						CacheCleanUpIntervalSeconds: 2000,
 					},
+					UseMiddleware: true,
 				},
 				Database: &config.DatabaseConfig{
 					Host:            "localhost",
@@ -328,8 +330,9 @@ func TestValidate(t *testing.T) {
 				Port:        8080,
 				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
-					Enabled:       true,
-					KetoServerURL: "http://keto.mlp",
+					Enabled:         true,
+					KetoRemoteRead:  "http://keto.mlp",
+					KetoRemoteWrite: "http://keto.mlp",
 					Caching: &config.InMemoryCacheConfig{
 						KeyExpirySeconds:            600,
 						CacheCleanUpIntervalSeconds: 900,
@@ -379,7 +382,8 @@ func TestValidate(t *testing.T) {
 				Port:        8080,
 				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
-					Enabled: true,
+					Enabled:         true,
+					KetoRemoteWrite: "localhost:4467",
 					Caching: &config.InMemoryCacheConfig{
 						KeyExpirySeconds:            600,
 						CacheCleanUpIntervalSeconds: 900,
@@ -413,8 +417,8 @@ func TestValidate(t *testing.T) {
 			},
 			error: errors.New(
 				"failed to validate configuration: " +
-					"Key: 'Config.Authorization.KetoServerURL' " +
-					"Error:Field validation for 'KetoServerURL' failed on the 'required_if' tag",
+					"Key: 'Config.Authorization.KetoRemoteRead' " +
+					"Error:Field validation for 'KetoRemoteRead' failed on the 'required_if' tag",
 			),
 		},
 		"missing authz cache key expiry | failure": {
@@ -423,8 +427,9 @@ func TestValidate(t *testing.T) {
 				Port:        8080,
 				Environment: "dev",
 				Authorization: &config.AuthorizationConfig{
-					Enabled:       true,
-					KetoServerURL: "http://abc",
+					Enabled:         true,
+					KetoRemoteRead:  "http://abc",
+					KetoRemoteWrite: "http://abc",
 					Caching: &config.InMemoryCacheConfig{
 						Enabled: true,
 					},

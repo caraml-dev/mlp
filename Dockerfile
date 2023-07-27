@@ -17,7 +17,7 @@ COPY api api/
 COPY go.mod .
 COPY go.sum .
 COPY db-migrations ./db-migrations
-RUN go build -o bin/mlp-api ./api/cmd/main.go
+RUN go build -o bin/mlp-api ./api/main.go
 
 # ============================================================
 # Build stage 3: Run the app
@@ -28,3 +28,4 @@ COPY --from=go-builder /src/api/bin/mlp-api /usr/bin/mlp
 COPY --from=go-builder /src/api/db-migrations ./db-migrations
 
 ENTRYPOINT ["sh", "-c", "mlp \"$@\"", "--"]
+CMD ["serve"]

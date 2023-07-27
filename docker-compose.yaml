@@ -12,6 +12,7 @@ services:
     env_file: .env.development
     environment:
       - DATABASE_HOST=postgres
+    restart: on-failure
 
   postgres:
     image: bitnami/postgresql:14.5.0
@@ -23,13 +24,15 @@ services:
       - POSTGRESQL_DATABASE=mlp
 
   keto:
-    image: oryd/keto:v0.4
+    image: oryd/keto:v0.11
     ports:
       - 4466:4466
-    environment:
-      - DSN=memory
-    command:
-      - serve
+      - 4467:4467
+    command: serve -c /home/ory/keto.yaml
+    volumes:
+      - type: bind
+        source: ./config-keto-dev.yaml
+        target: /home/ory/keto.yaml
 
   vault:
     image: hashicorp/vault

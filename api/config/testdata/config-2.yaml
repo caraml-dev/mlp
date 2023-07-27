@@ -17,11 +17,13 @@ applications:
 
 authorization:
   enabled: true
-  ketoServerURL: http://localhost:4466
+  ketoRemoteRead: http://localhost:4466
+  ketoRemoteWrite: http://localhost:4467
   caching:
     enabled: true
     keyExpirySeconds: 1000
     cacheCleanUpIntervalSeconds: 2000
+  useMiddleware: true
 
 ui:
   clockworkUIHomepage: http://clockwork.dev

@@ -2,26 +2,13 @@ package enforcer
 
 import (
 	"fmt"
-	"strconv"
-	"sync"
 	"time"
 
-	"github.com/ory/keto-client-go/models"
 	cache "github.com/patrickmn/go-cache"
 )
 
 type InMemoryCache struct {
 	store *cache.Cache
-
-	mapLock sync.Mutex
-
-	// Instead of caching the full names of the subject, resource and action, ids will be
-	// generated (using an incrementing counter) for each unique value. This will aid in
-	// generating smaller cache keys.
-	// The following maps store the mapping of the name -> internal id.
-	actionMap   map[string]string
-	resourceMap map[string]string
-	subjectMap  map[string]string
 }
 
 func newInMemoryCache(keyExpirySeconds int, cacheCleanUpIntervalSeconds int) *InMemoryCache {
@@ -30,14 +17,13 @@ func newInMemoryCache(keyExpirySeconds int, cacheCleanUpIntervalSeconds int) *In
 			time.Duration(keyExpirySeconds)*time.Second,
 			time.Duration(cacheCleanUpIntervalSeconds)*time.Second,
 		),
-		actionMap:   map[string]string{},
-		resourceMap: map[string]string{},
-		subjectMap:  map[string]string{},
 	}
 }
 
-func (c *InMemoryCache) LookUpPermission(input models.OryAccessControlPolicyAllowedInput) (*bool, bool) {
-	if cachedValue, ok := c.store.Get(c.buildCacheKey(input)); ok {
+// LookUpUserPermission returns the cached permission check result for a user / permission pair.
+// The returned value indicates whether the result is cached.
+func (c *InMemoryCache) LookUpUserPermission(user string, permission string) (*bool, bool) {
+	if cachedValue, ok := c.store.Get(c.buildCacheKey(user, permission)); ok {
 		if allowed, ok := cachedValue.(*bool); ok {
 			return allowed, true
 		}
@@ -45,58 +31,11 @@ func (c *InMemoryCache) LookUpPermission(input models.OryAccessControlPolicyAllo
 	return nil, false
 }
 
-func (c *InMemoryCache) StorePermission(input models.OryAccessControlPolicyAllowedInput, isAllowed *bool) {
-	c.store.Set(c.buildCacheKey(input), isAllowed, cache.DefaultExpiration)
+// StoreUserPermission stores the permission check result for a user / permission pair.
+func (c *InMemoryCache) StoreUserPermission(user string, permission string, result bool) {
+	c.store.Set(c.buildCacheKey(user, permission), &result, cache.DefaultExpiration)
 }
 
-func (c *InMemoryCache) buildCacheKey(input models.OryAccessControlPolicyAllowedInput) string {
-	return fmt.Sprintf("%s:%s:%s",
-		c.getActionID(input.Action),
-		c.getResourceID(input.Resource),
-		c.getSubjectID(input.Subject),
-	)
-}
-
-func (c *InMemoryCache) getSubjectID(name string) string {
-	c.mapLock.Lock()
-	defer c.mapLock.Unlock()
-
-	if val, ok := c.subjectMap[name]; ok {
-		return val
-	}
-	newID := strconv.Itoa(countMapKeys(c.subjectMap) + 1)
-	c.subjectMap[name] = newID
-	return newID
-}
-
-func (c *InMemoryCache) getResourceID(name string) string {
-	c.mapLock.Lock()
-	defer c.mapLock.Unlock()
-
-	if val, ok := c.resourceMap[name]; ok {
-		return val
-	}
-	newID := strconv.Itoa(countMapKeys(c.resourceMap) + 1)
-	c.resourceMap[name] = newID
-	return newID
-}
-
-func (c *InMemoryCache) getActionID(name string) string {
-	c.mapLock.Lock()
-	defer c.mapLock.Unlock()
-
-	if val, ok := c.actionMap[name]; ok {
-		return val
-	}
-	newID := strconv.Itoa(countMapKeys(c.actionMap) + 1)
-	c.actionMap[name] = newID
-	return newID
-}
-
-func countMapKeys(m map[string]string) int {
-	count := 0
-	for range m {
-		count++
-	}
-	return count
+func (c *InMemoryCache) buildCacheKey(user string, permission string) string {
+	return fmt.Sprintf("%s-%s", user, permission)
 }

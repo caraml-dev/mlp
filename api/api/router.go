@@ -33,14 +33,16 @@ type AppContext struct {
 	SecretStorageService service.SecretStorageService
 	DefaultSecretStorage *models.SecretStorage
 
-	AuthorizationEnabled bool
-	Enforcer             enforcer.Enforcer
+	AuthorizationEnabled       bool
+	UseAuthorizationMiddleware bool
+	Enforcer                   enforcer.Enforcer
 }
 
 func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error) {
 	var authEnforcer enforcer.Enforcer
 	if cfg.Authorization.Enabled {
-		enforcerCfg := enforcer.NewEnforcerBuilder().URL(cfg.Authorization.KetoServerURL).Product("mlp")
+		enforcerCfg := enforcer.NewEnforcerBuilder()
+		enforcerCfg.KetoEndpoints(cfg.Authorization.KetoRemoteRead, cfg.Authorization.KetoRemoteWrite)
 		if cfg.Authorization.Caching.Enabled {
 			enforcerCfg = enforcerCfg.WithCaching(
 				cfg.Authorization.Caching.KeyExpirySeconds,
@@ -94,13 +96,14 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		projectRepository, storageClientRegistry, defaultSecretStorage)
 
 	return &AppContext{
-		ApplicationService:   applicationService,
-		ProjectsService:      projectsService,
-		SecretService:        secretService,
-		SecretStorageService: secretStorageService,
-		AuthorizationEnabled: cfg.Authorization.Enabled,
-		Enforcer:             authEnforcer,
-		DefaultSecretStorage: defaultSecretStorage,
+		ApplicationService:         applicationService,
+		ProjectsService:            projectsService,
+		SecretService:              secretService,
+		SecretStorageService:       secretStorageService,
+		AuthorizationEnabled:       cfg.Authorization.Enabled,
+		UseAuthorizationMiddleware: cfg.Authorization.UseMiddleware,
+		Enforcer:                   authEnforcer,
+		DefaultSecretStorage:       defaultSecretStorage,
 	}, nil
 }
 
@@ -180,7 +183,7 @@ func NewRouter(appCtx *AppContext, controllers []Controller) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	validator := validation.NewValidator()
 
-	if appCtx.AuthorizationEnabled {
+	if appCtx.AuthorizationEnabled && appCtx.UseAuthorizationMiddleware {
 		authzMiddleware := middleware.NewAuthorizer(appCtx.Enforcer)
 		router.Use(authzMiddleware.AuthorizationMiddleware)
 	}

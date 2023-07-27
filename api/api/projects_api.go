@@ -8,7 +8,6 @@ import (
 
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
-	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
 )
 
@@ -17,16 +16,10 @@ type ProjectsController struct {
 }
 
 func (c *ProjectsController) ListProjects(r *http.Request, vars map[string]string, _ interface{}) *Response {
-	projects, err := c.ProjectsService.ListProjects(vars["name"])
+	projects, err := c.ProjectsService.ListProjects(r.Context(), vars["name"], vars["user"])
 	if err != nil {
 		log.Errorf("error fetching projects: %s", err)
 		return FromError(err)
-	}
-
-	user := vars["user"]
-	projects, err = c.filterAuthorizedProjects(user, projects, enforcer.ActionRead)
-	if err != nil {
-		return InternalServerError(err.Error())
 	}
 
 	return Ok(projects)
@@ -57,7 +50,7 @@ func (c *ProjectsController) CreateProject(r *http.Request, vars map[string]stri
 
 	user := vars["user"]
 	project.Administrators = addRequester(user, project.Administrators)
-	project, err = c.ProjectsService.CreateProject(project)
+	project, err = c.ProjectsService.CreateProject(r.Context(), project)
 	if err != nil {
 		log.Errorf("error creating project %s: %s", project.Name, err)
 		return FromError(err)
@@ -85,7 +78,7 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 	project.Team = newProject.Team
 	project.Stream = newProject.Stream
 	project.Labels = newProject.Labels
-	project, err = c.ProjectsService.UpdateProject(project)
+	project, err = c.ProjectsService.UpdateProject(r.Context(), project)
 	if err != nil {
 		log.Errorf("error updating project %s: %s", project.Name, err)
 		return FromError(err)
@@ -103,36 +96,6 @@ func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string,
 	}
 
 	return Ok(project)
-}
-
-func (c *ProjectsController) filterAuthorizedProjects(
-	user string,
-	projects []*models.Project,
-	action string,
-) ([]*models.Project, error) {
-	if c.AuthorizationEnabled {
-		projectIds := make([]string, 0)
-		allowedProjects := make([]*models.Project, 0)
-		projectMap := make(map[string]*models.Project)
-		for _, project := range projects {
-			projectID := fmt.Sprintf("projects:%s", project.ID)
-			projectIds = append(projectIds, projectID)
-			projectMap[projectID] = project
-		}
-
-		allowedProjectIds, err := c.Enforcer.FilterAuthorizedResource(user, projectIds, action)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, projectID := range allowedProjectIds {
-			allowedProjects = append(allowedProjects, projectMap[projectID])
-		}
-
-		return allowedProjects, nil
-	}
-
-	return projects, nil
 }
 
 func (c *ProjectsController) Routes() []Route {
