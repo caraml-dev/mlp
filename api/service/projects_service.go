@@ -144,7 +144,7 @@ func (service *projectsService) updateAuthorizationPolicy(ctx context.Context, p
 		return err
 	}
 	for _, role := range rolesWithReadOnlyAccess {
-		updateRequest.SetRolePermissions(role, readPermissions(project))
+		updateRequest.AddRolePermissions(role, readPermissions(project))
 	}
 	projectAdminRole, err := enforcer.ParseProjectRole(enforcer.MLPProjectAdminRole, project)
 	if err != nil {
@@ -164,7 +164,7 @@ func (service *projectsService) updateAuthorizationPolicy(ctx context.Context, p
 		return err
 	}
 	for _, role := range rolesWithAdminAccess {
-		updateRequest.SetRolePermissions(role, adminPermissions(project))
+		updateRequest.AddRolePermissions(role, adminPermissions(project))
 	}
 	projectReaderRole, err := enforcer.ParseProjectRole(enforcer.MLPProjectReaderRole, project)
 	if err != nil {

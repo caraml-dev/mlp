@@ -240,16 +240,6 @@ func (e *enforcer) UpdateAuthorization(ctx context.Context, updateRequest Author
 		return err
 	}
 	patches := make([]ory.RelationshipPatch, 0)
-	existingRolePermissions.Range(func(key, value interface{}) bool {
-		role := key.(string)
-		permissions := value.([]string)
-		for _, permission := range permissions {
-			if !slices.Contains(updateRequest.RolePermissions[role], permission) {
-				patches = append(patches, newRolePermissionPatch("delete", permission, role))
-			}
-		}
-		return true
-	})
 
 	for role, permissions := range updateRequest.RolePermissions {
 		for _, permission := range permissions {
@@ -291,7 +281,7 @@ func (e *enforcer) isCacheEnabled() bool {
 }
 
 // NewAuthorizationUpdateRequest create a new AuthorizationUpdateRequest. Multiple operations can be chained together
-// using the SetRolePermissions and SetRoleMembers methods. No changes will be made until the AuthorizationUpdateRequest
+// using the AddRolePermissions and SetRoleMembers methods. No changes will be made until the AuthorizationUpdateRequest
 // object is passed to the Enforcer, in which all the previously chained operations will be executed in batch.
 func NewAuthorizationUpdateRequest() AuthorizationUpdateRequest {
 	return AuthorizationUpdateRequest{
@@ -305,8 +295,8 @@ type AuthorizationUpdateRequest struct {
 	RoleMembers     map[string][]string
 }
 
-// SetRolePermissions set the permissions for a role. If the role already has permissions, they will be replaced.
-func (a AuthorizationUpdateRequest) SetRolePermissions(role string,
+// AddRolePermissions add permissions to a role, without duplication. Existing permissions will still be in place.
+func (a AuthorizationUpdateRequest) AddRolePermissions(role string,
 	permissions []string) AuthorizationUpdateRequest {
 	a.RolePermissions[role] = permissions
 	return a
