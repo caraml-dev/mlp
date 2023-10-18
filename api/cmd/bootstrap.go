@@ -74,5 +74,6 @@ func startKetoBootstrap(bootstrapCfg *BootstrapConfig) error {
 	updateRequest := enforcer.NewAuthorizationUpdateRequest()
 	updateRequest.SetRoleMembers(enforcer.MLPProjectsReaderRole, bootstrapCfg.ProjectReaders)
 	updateRequest.SetRoleMembers(enforcer.MLPAdminRole, bootstrapCfg.MLPAdmins)
+	updateRequest.AddRolePermissions(enforcer.MLPAdminRole, []string{"mlp.projects.post"})
 	return authEnforcer.UpdateAuthorization(context.Background(), updateRequest)
 }
