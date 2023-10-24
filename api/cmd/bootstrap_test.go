@@ -17,7 +17,7 @@ func TestStartKetoBootsrap(t *testing.T) {
 		expectedUpdateAuthorizationRequest enforcer.AuthorizationUpdateRequest
 	}{
 		{
-			"admin role must have project post permission",
+			"admin role must have project post permission even there are no project readers",
 			[]string{},
 			[]string{"admin1"},
 			enforcer.AuthorizationUpdateRequest{
@@ -31,7 +31,7 @@ func TestStartKetoBootsrap(t *testing.T) {
 			},
 		},
 		{
-			"admin role should have project post permission",
+			"admin role should have project post permission, even there are no mlp admins or project readers",
 			[]string{},
 			[]string{},
 			enforcer.AuthorizationUpdateRequest{
@@ -41,6 +41,34 @@ func TestStartKetoBootsrap(t *testing.T) {
 				RoleMembers: map[string][]string{
 					"mlp.projects.reader": {},
 					"mlp.administrator":   {},
+				},
+			},
+		},
+		{
+			"only admin role should have project post permission, even there are no mlp admins and even there are project readers",
+			[]string{"readers1", "readers2"},
+			[]string{},
+			enforcer.AuthorizationUpdateRequest{
+				RolePermissions: map[string][]string{
+					"mlp.administrator": {"mlp.projects.post"},
+				},
+				RoleMembers: map[string][]string{
+					"mlp.projects.reader": {"readers1", "readers2"},
+					"mlp.administrator":   {},
+				},
+			},
+		},
+		{
+			"only admin role should have project post permission, even there are project readers",
+			[]string{"readers1", "readers2"},
+			[]string{"admin1"},
+			enforcer.AuthorizationUpdateRequest{
+				RolePermissions: map[string][]string{
+					"mlp.administrator": {"mlp.projects.post"},
+				},
+				RoleMembers: map[string][]string{
+					"mlp.projects.reader": {"readers1", "readers2"},
+					"mlp.administrator":   {"admin1"},
 				},
 			},
 		},
