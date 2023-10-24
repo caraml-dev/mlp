@@ -17,7 +17,7 @@ func TestStartKetoBootsrap(t *testing.T) {
 		expectedUpdateAuthorizationRequest enforcer.AuthorizationUpdateRequest
 	}{
 		{
-			"admin role must have project post permission even there are no project readers",
+			"admin role must have project post even there are no project readers",
 			[]string{},
 			[]string{"admin1"},
 			enforcer.AuthorizationUpdateRequest{
@@ -31,7 +31,7 @@ func TestStartKetoBootsrap(t *testing.T) {
 			},
 		},
 		{
-			"admin role should have project post permission, even there are no mlp admins or project readers",
+			"admin role should have project post, even there are no mlp admins or project readers",
 			[]string{},
 			[]string{},
 			enforcer.AuthorizationUpdateRequest{
@@ -45,7 +45,7 @@ func TestStartKetoBootsrap(t *testing.T) {
 			},
 		},
 		{
-			"only admin role should have project post permission, even there are no mlp admins and even there are project readers",
+			"only admin role should have project post, even no mlp admins and project readers exist",
 			[]string{"readers1", "readers2"},
 			[]string{},
 			enforcer.AuthorizationUpdateRequest{
@@ -59,7 +59,7 @@ func TestStartKetoBootsrap(t *testing.T) {
 			},
 		},
 		{
-			"only admin role should have project post permission, even there are project readers",
+			"only admin role should have project post, even project readers exist",
 			[]string{"readers1", "readers2"},
 			[]string{"admin1"},
 			enforcer.AuthorizationUpdateRequest{
