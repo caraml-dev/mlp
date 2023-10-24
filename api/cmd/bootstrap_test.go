@@ -1,84 +1,58 @@
 package cmd
 
 import (
-	"context"
 	"testing"
 
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
+	enforcerMock "github.com/caraml-dev/mlp/api/pkg/authz/enforcer/mocks"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
 func TestStartKetoBootsrap(t *testing.T) {
-	bootstrapCfg := &BootstrapConfig{
-		KetoRemoteRead:  "http://localhost:4466",
-		KetoRemoteWrite: "http://localhost:4467",
-		ProjectReaders:  []string{},
-		MLPAdmins:       []string{"admin@email.com"}}
-
 	tests := []struct {
-		name            string
-		permission      string
-		user            string
-		bootstrapEnable bool
-		result          bool
+		name                               string
+		projectReaders                     []string
+		mlpAdmins                          []string
+		expectedUpdateAuthorizationRequest enforcer.AuthorizationUpdateRequest
 	}{
 		{
-			"disable: user-1 request create project",
-			"mlp.projects.post",
-			"user-1@example.com",
-			true,
-			false, // user-1 can't create project
+			"admin role must have project post permission",
+			[]string{},
+			[]string{"admin1"},
+			enforcer.AuthorizationUpdateRequest{
+				RolePermissions: map[string][]string{
+					"mlp.administrator": {"mlp.projects.post"},
+				},
+				RoleMembers: map[string][]string{
+					"mlp.projects.reader": {},
+					"mlp.administrator":   {"admin1"},
+				},
+			},
 		},
 		{
-			"allow: admin request create project",
-			"mlp.projects.post",
-			"admin@email.com",
-			true,
-			true, // admin can create project
-		},
-		{
-			"allow: user-1 request create project",
-			"mlp.projects.post",
-			"user-1@example.com",
-			false,
-			true, // user-1 can't create project
-		},
-		{
-			"allow: admin request create project",
-			"mlp.projects.post",
-			"admin@email.com",
-			false,
-			true, // admin can create project
+			"admin role should have project post permission",
+			[]string{},
+			[]string{},
+			enforcer.AuthorizationUpdateRequest{
+				RolePermissions: map[string][]string{
+					"mlp.administrator": {"mlp.projects.post"},
+				},
+				RoleMembers: map[string][]string{
+					"mlp.projects.reader": {},
+					"mlp.administrator":   {},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			authEnforcer := &enforcerMock.Enforcer{}
 
-			// if bootstrap enabled run bootstrap
-			if tt.bootstrapEnable {
-				err := startKetoBootstrap(bootstrapCfg)
-				require.NoError(t, err)
-			} else {
-				// else updateRequest := enforcer.NewAuthorizationUpdateRequest()
-				ketoEnforcer, err := enforcer.NewEnforcerBuilder().Build()
-				require.NoError(t, err)
-
-				newRoleAndPermissionsRequest := enforcer.NewAuthorizationUpdateRequest()
-				newRoleAndPermissionsRequest.AddRolePermissions("page.1.admin", []string{"mlp.projects.post"})
-				newRoleAndPermissionsRequest.SetRoleMembers("page.1.admin", []string{tt.user})
-				err = ketoEnforcer.UpdateAuthorization(context.Background(), newRoleAndPermissionsRequest)
-				require.NoError(t, err)
-
-			}
-
-			authEnforcer, err := enforcer.NewEnforcerBuilder().
-				KetoEndpoints(bootstrapCfg.KetoRemoteRead, bootstrapCfg.KetoRemoteWrite).
-				Build()
+			authEnforcer.On("UpdateAuthorization", mock.Anything, tt.expectedUpdateAuthorizationRequest).Return(nil)
+			err := startKetoBootstrap(authEnforcer, tt.projectReaders, tt.mlpAdmins)
+			authEnforcer.AssertExpectations(t)
 			require.NoError(t, err)
-
-			res, err := authEnforcer.IsUserGrantedPermission(context.Background(), tt.user, tt.permission)
-			require.NoError(t, err)
-			require.Equal(t, tt.result, res)
 		})
 	}
 }

@@ -30,7 +30,14 @@ var (
 			if err != nil {
 				log.Panicf("unable to load role members from input file: %v", err)
 			}
-			err = startKetoBootstrap(bootstrapConfig)
+			authEnforcer, err := enforcer.NewEnforcerBuilder().
+				KetoEndpoints(bootstrapConfig.KetoRemoteRead, bootstrapConfig.KetoRemoteWrite).
+				Build()
+			if err != nil {
+				log.Panicf("unable to create keto enforcer: %v", err)
+			}
+
+			err = startKetoBootstrap(authEnforcer, bootstrapConfig.ProjectReaders, bootstrapConfig.MLPAdmins)
 			if err != nil {
 				log.Panicf("unable to bootstrap keto: %v", err)
 			}
@@ -64,19 +71,11 @@ func loadBootstrapConfig(path string) (*BootstrapConfig, error) {
 	return bootstrapCfg, nil
 }
 
-func startKetoBootstrap(bootstrapCfg *BootstrapConfig) error {
-	authEnforcer, err := enforcer.NewEnforcerBuilder().
-		KetoEndpoints(bootstrapCfg.KetoRemoteRead, bootstrapCfg.KetoRemoteWrite).
-		Build()
-	if err != nil {
-		return err
-	}
-
-	defaultPermissions := []string{"mlp.projects.post"}
-
+func startKetoBootstrap(authEnforcer enforcer.Enforcer, projectReaders []string, mlpAdmins []string) error {
+	defaultMLPAdminPermissions := []string{"mlp.projects.post"}
 	updateRequest := enforcer.NewAuthorizationUpdateRequest()
-	updateRequest.SetRoleMembers(enforcer.MLPProjectsReaderRole, bootstrapCfg.ProjectReaders)
-	updateRequest.SetRoleMembers(enforcer.MLPAdminRole, bootstrapCfg.MLPAdmins)
-	updateRequest.AddRolePermissions(enforcer.MLPAdminRole, defaultPermissions)
+	updateRequest.SetRoleMembers(enforcer.MLPProjectsReaderRole, projectReaders)
+	updateRequest.SetRoleMembers(enforcer.MLPAdminRole, mlpAdmins)
+	updateRequest.AddRolePermissions(enforcer.MLPAdminRole, defaultMLPAdminPermissions)
 	return authEnforcer.UpdateAuthorization(context.Background(), updateRequest)
 }
