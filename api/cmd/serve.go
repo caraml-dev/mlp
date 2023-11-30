@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -8,12 +9,16 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
+	"github.com/gojekfarm/iap_auth/pkg/iap"
 	"github.com/gorilla/mux"
 	"github.com/heptiolabs/healthcheck"
 	"github.com/rs/cors"
 	"github.com/spf13/cobra"
+	"golang.org/x/oauth2"
 
 	"github.com/caraml-dev/mlp/api/api"
 	apiV2 "github.com/caraml-dev/mlp/api/api/v2"
@@ -45,6 +50,8 @@ func init() {
 }
 
 func startServer(cfg *config.Config) {
+	log.Infof("starting MLP API server with config: %+v", cfg.Alert)
+
 	// init db
 	db, err := database.InitDB(cfg.Database)
 	if err != nil {
@@ -52,7 +59,33 @@ func startServer(cfg *config.Config) {
 	}
 	defer db.Close()
 
-	appCtx, err := api.NewAppContext(db, cfg)
+	hc := oauth2.NewClient(context.Background(), nil)
+	tokenfn := func() string {
+		iap, err := iap.New(hc, cfg.Alert.ServiceAccountCredentials, cfg.Alert.ClientID)
+		if err != nil {
+			return "INVALID"
+		}
+		token, err := iap.Token()
+		if err != nil {
+			return "INVALID"
+		}
+		return token
+	}
+
+	var atomictoken atomic.Value
+	atomictoken.Store(tokenfn())
+
+	ticker := time.NewTicker(cfg.Alert.TickPeriod)
+	var mu sync.Mutex
+	go func() {
+		for range ticker.C {
+			mu.Lock()
+			atomictoken.Store(tokenfn())
+			mu.Unlock()
+		}
+	}()
+
+	appCtx, err := api.NewAppContext(&atomictoken, db, cfg)
 	if err != nil {
 		log.Panicf("unable to initialize application context: %v", err)
 	}
@@ -62,6 +95,7 @@ func startServer(cfg *config.Config) {
 	mount(router, "/v1/internal", healthcheck.NewHandler())
 
 	v1Controllers := []api.Controller{
+		&api.AlertController{AppContext: appCtx},
 		&api.ApplicationsController{AppContext: appCtx},
 		&api.ProjectsController{AppContext: appCtx},
 		&api.SecretsController{AppContext: appCtx},

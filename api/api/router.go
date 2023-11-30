@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"sync/atomic"
 
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
@@ -14,6 +15,7 @@ import (
 	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/middleware"
 	"github.com/caraml-dev/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/pkg/alert"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	"github.com/caraml-dev/mlp/api/pkg/instrumentation/newrelic"
 	"github.com/caraml-dev/mlp/api/pkg/secretstorage"
@@ -27,6 +29,7 @@ type Controller interface {
 }
 
 type AppContext struct {
+	AlertService         service.AlertService
 	ApplicationService   service.ApplicationService
 	ProjectsService      service.ProjectsService
 	SecretService        service.SecretService
@@ -38,7 +41,7 @@ type AppContext struct {
 	Enforcer                   enforcer.Enforcer
 }
 
-func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error) {
+func NewAppContext(atomicToken *atomic.Value, db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error) {
 	var authEnforcer enforcer.Enforcer
 	if cfg.Authorization.Enabled {
 		enforcerCfg := enforcer.NewEnforcerBuilder()
@@ -56,6 +59,12 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		}
 	}
 
+	alertClient := alert.New(cfg.Alert, atomicToken)
+	alertService, err := service.NewAlertService(alertClient)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize alerts service: %v", err)
+	}
+
 	applicationService, err := service.NewApplicationService(db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize applications service: %v", err)
@@ -66,7 +75,6 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		repository.NewProjectRepository(db),
 		authEnforcer,
 		cfg.Authorization.Enabled)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize projects service: %v", err)
 	}
@@ -96,6 +104,7 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		projectRepository, storageClientRegistry, defaultSecretStorage)
 
 	return &AppContext{
+		AlertService:               alertService,
 		ApplicationService:         applicationService,
 		ProjectsService:            projectsService,
 		SecretService:              secretService,
@@ -110,9 +119,9 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 func initializeDefaultSecretStorage(
 	secretStorageRepository repository.SecretStorageRepository,
 	secretStorageService service.SecretStorageService,
-	cfg *config.Config) (*models.SecretStorage, error) {
+	cfg *config.Config,
+) (*models.SecretStorage, error) {
 	defaultSecretStorage, err := secretStorageRepository.GetGlobal(cfg.DefaultSecretStorageModel().Name)
-
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("failed to initialize default secret storage: %v", err)

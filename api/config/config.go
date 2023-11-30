@@ -33,6 +33,26 @@ type Config struct {
 	Mlflow               *MlflowConfig          `validate:"required"`
 	DefaultSecretStorage *SecretStorage         `validate:"required"`
 	UI                   *UIConfig
+	Alert                *AlertConfig
+}
+
+type AlertConfig struct {
+	Type                      string `validate:"oneof=http"`
+	ServiceAccountCredentials string
+	ClientID                  string
+	Host                      string
+	CreateMethod              string
+	CreateEndpoint            string
+	CreateContentType         string
+	CreateBodyTemplate        string
+	CreateAdditionalHeaders   map[string]string
+	UpdateMethod              string
+	UpdateEndpoint            string
+	UpdateContentType         string
+	UpdateBodyTemplate        string
+	UpdateAdditionalHeaders   map[string]string
+	ListEndpoint              string
+	TickPeriod                time.Duration
 }
 
 // SecretStorage represents the configuration for a secret storage.

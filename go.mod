@@ -12,6 +12,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator v9.30.0+incompatible
 	github.com/go-playground/validator/v10 v10.11.1
+	github.com/gojekfarm/iap_auth v0.1.3
 	github.com/golang-migrate/migrate/v4 v4.11.0
 	github.com/google/go-cmp v0.5.9
 	github.com/gorilla/mux v1.7.4
