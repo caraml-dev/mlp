@@ -82,11 +82,11 @@ func (_m *Service) ReadArtifact(ctx context.Context, url string) ([]byte, error)
 }
 
 // WriteArtifact provides a mock function with given fields: ctx, url, content
-func (_m *Service) WriteArtifact(ctx context.Context, url string, content string) error {
+func (_m *Service) WriteArtifact(ctx context.Context, url string, content []byte) error {
 	ret := _m.Called(ctx, url, content)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, []byte) error); ok {
 		r0 = rf(ctx, url, content)
 	} else {
 		r0 = ret.Error(0)

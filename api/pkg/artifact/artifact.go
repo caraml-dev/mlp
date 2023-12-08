@@ -27,7 +27,7 @@ type Service interface {
 	ParseURL(gsURL string) (*URL, error)
 
 	ReadArtifact(ctx context.Context, url string) ([]byte, error)
-	WriteArtifact(ctx context.Context, url, content string) error
+	WriteArtifact(ctx context.Context, url string, content []byte) error
 	DeleteArtifact(ctx context.Context, url string) error
 }
 
@@ -88,14 +88,14 @@ func (gac *GcsArtifactClient) ReadArtifact(ctx context.Context, url string) ([]b
 	return bytes, nil
 }
 
-func (gac *GcsArtifactClient) WriteArtifact(ctx context.Context, url, content string) error {
+func (gac *GcsArtifactClient) WriteArtifact(ctx context.Context, url string, content []byte) error {
 	u, err := gac.ParseURL(url)
 	if err != nil {
 		return err
 	}
 	w := gac.API.Bucket(u.Bucket).Object(u.Object).NewWriter(ctx)
 
-	if _, err := fmt.Fprint(w, content); err != nil {
+	if _, err := fmt.Fprintf(w, "%s", content); err != nil {
 		return err
 	}
 
@@ -147,7 +147,7 @@ func (nac *NopArtifactClient) ReadArtifact(ctx context.Context, url string) ([]b
 	return nil, nil
 }
 
-func (nac *NopArtifactClient) WriteArtifact(ctx context.Context, url, content string) error {
+func (nac *NopArtifactClient) WriteArtifact(ctx context.Context, url string, content []byte) error {
 	return nil
 }
 
