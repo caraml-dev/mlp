@@ -19,7 +19,7 @@ type URL struct {
 	Bucket string
 
 	// Object is the name and or path of the object stored in the bucket. It
-	// should not start with a foward slash.
+	// should not start with a forward slash.
 	Object string
 }
 
