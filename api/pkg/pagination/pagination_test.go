@@ -64,15 +64,15 @@ func TestValidatePaginationParams(t *testing.T) {
 	}{
 		"zero page size": {
 			pageSize:      &zero,
-			expectedError: "Page size must be within range (0 < page_size <= 50) or unset.",
+			expectedError: "page size must be within range (0 < page_size <= 50) or unset",
 		},
 		"large page size": {
 			pageSize:      &hundred,
-			expectedError: "Page size must be within range (0 < page_size <= 50) or unset.",
+			expectedError: "page size must be within range (0 < page_size <= 50) or unset",
 		},
 		"zero page": {
 			page:          &zero,
-			expectedError: "Page must be > 0 or unset.",
+			expectedError: "page must be > 0 or unset",
 		},
 		"success - all values unset": {},
 		"success - all values set": {
