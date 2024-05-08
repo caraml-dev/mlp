@@ -210,11 +210,14 @@ function convertRequestToJSONPayload(request, project) {
     copyOfProject[fieldRole] = roleUsers;
   });
 
-  return {
+  const payload = {
     name: copyOfProject.name,
     administrators: copyOfProject.administrators,
     readers: copyOfProject.readers,
     stream: copyOfProject.stream,
     team: copyOfProject.team
   };
+  return copyOfProject.labels
+    ? { ...payload, labels: copyOfProject.labels }
+    : payload;
 }
