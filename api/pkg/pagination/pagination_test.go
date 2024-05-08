@@ -14,24 +14,24 @@ func TestNewPaginationOptions(t *testing.T) {
 	tests := map[string]struct {
 		page     *int32
 		pageSize *int32
-		expected PaginationOptions
+		expected Options
 	}{
 		"defaults": {
-			expected: PaginationOptions{
+			expected: Options{
 				Page:     &one,
 				PageSize: &ten,
 			},
 		},
 		"missing page": {
 			pageSize: &three,
-			expected: PaginationOptions{
+			expected: Options{
 				Page:     &one,
 				PageSize: &three,
 			},
 		},
 		"missing page size": {
 			page: &two,
-			expected: PaginationOptions{
+			expected: Options{
 				Page:     &two,
 				PageSize: &ten,
 			},
@@ -39,7 +39,7 @@ func TestNewPaginationOptions(t *testing.T) {
 		"new values": {
 			page:     &two,
 			pageSize: &three,
-			expected: PaginationOptions{
+			expected: Options{
 				Page:     &two,
 				PageSize: &three,
 			},
@@ -124,7 +124,7 @@ func TestPaging(t *testing.T) {
 
 	for idx, data := range tests {
 		t.Run(fmt.Sprintf("case %d", idx), func(t *testing.T) {
-			actual := ToPaging(PaginationOptions{Page: &data.page, PageSize: &data.pageSize}, data.count)
+			actual := ToPaging(Options{Page: &data.page, PageSize: &data.pageSize}, data.count)
 			assert.Equal(t, data.expected, *actual)
 		})
 	}

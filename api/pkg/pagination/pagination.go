@@ -12,8 +12,8 @@ type Paging struct {
 	Total int32
 }
 
-// PaginationOptions can be used to supply pagination filter options to APIs.
-type PaginationOptions struct {
+// Options can be used to supply pagination filter options to APIs.
+type Options struct {
 	Page     *int32 `json:"page,omitempty"`
 	PageSize *int32 `json:"page_size,omitempty"`
 }
@@ -33,7 +33,7 @@ func NewPaginator(defaultPage int32, defaultPageSize int32, maxPageSize int32) P
 	}
 }
 
-func (p Paginator) NewPaginationOptions(page *int32, pageSize *int32) PaginationOptions {
+func (p Paginator) NewPaginationOptions(page *int32, pageSize *int32) Options {
 	if page == nil {
 		page = &p.DefaultPage
 	}
@@ -41,7 +41,7 @@ func (p Paginator) NewPaginationOptions(page *int32, pageSize *int32) Pagination
 		pageSize = &p.DefaultPageSize
 	}
 
-	return PaginationOptions{
+	return Options{
 		Page:     page,
 		PageSize: pageSize,
 	}
@@ -59,7 +59,7 @@ func (p Paginator) ValidatePaginationParams(page *int32, pageSize *int32) error 
 	return nil
 }
 
-func ToPaging(opts PaginationOptions, count int) *Paging {
+func ToPaging(opts Options, count int) *Paging {
 	return &Paging{
 		Page:  *opts.Page,
 		Pages: int32(math.Ceil(float64(count) / float64(*opts.PageSize))),
