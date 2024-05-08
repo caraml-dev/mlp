@@ -209,12 +209,12 @@ function convertRequestToJSONPayload(request, project) {
     }
     copyOfProject[fieldRole] = roleUsers;
   });
-
   return {
     name: copyOfProject.name,
     administrators: copyOfProject.administrators,
     readers: copyOfProject.readers,
     stream: copyOfProject.stream,
-    team: copyOfProject.team
+    team: copyOfProject.team,
+    labels: copyOfProject.labels
   };
 }
