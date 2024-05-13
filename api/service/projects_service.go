@@ -53,6 +53,7 @@ type projectsService struct {
 	defaultMlflowTrackingServer string
 	authEnforcer                enforcer.Enforcer
 	authEnabled                 bool
+	webhooksEnabled             bool
 }
 
 func (service *projectsService) CreateProject(ctx context.Context, project *models.Project) (*models.Project, error) {
@@ -63,7 +64,6 @@ func (service *projectsService) CreateProject(ctx context.Context, project *mode
 	if strings.TrimSpace(project.MLFlowTrackingURL) == "" {
 		project.MLFlowTrackingURL = service.defaultMlflowTrackingServer
 	}
-
 	project, err := service.save(project)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create new project")
@@ -75,6 +75,8 @@ func (service *projectsService) CreateProject(ctx context.Context, project *mode
 			return nil, fmt.Errorf("error while creating authorization policy for project %s", project.Name)
 		}
 	}
+
+	// TODO: call onProjectCreated webhook here and do service.save() onSuccess
 
 	return project, nil
 }
