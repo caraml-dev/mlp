@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -13,6 +14,7 @@ import (
 
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
+	"github.com/caraml-dev/mlp/api/pkg/webhooks"
 )
 
 type ProjectsService interface {
@@ -35,7 +37,7 @@ func NewProjectsService(
 	mlflowURL string,
 	projectRepository repository.ProjectRepository,
 	authEnforcer enforcer.Enforcer,
-	authEnabled bool) (ProjectsService, error) {
+	authEnabled bool, webhookManager webhooks.WebhookManagerI) (ProjectsService, error) {
 	if strings.TrimSpace(mlflowURL) == "" {
 		return nil, errors.New("default mlflow tracking url should be provided")
 	}
@@ -45,6 +47,7 @@ func NewProjectsService(
 		defaultMlflowTrackingServer: mlflowURL,
 		authEnforcer:                authEnforcer,
 		authEnabled:                 authEnabled,
+		webhookManager:              webhookManager,
 	}, nil
 }
 
@@ -53,7 +56,7 @@ type projectsService struct {
 	defaultMlflowTrackingServer string
 	authEnforcer                enforcer.Enforcer
 	authEnabled                 bool
-	webhooksEnabled             bool
+	webhookManager              webhooks.WebhookManagerI
 }
 
 func (service *projectsService) CreateProject(ctx context.Context, project *models.Project) (*models.Project, error) {
@@ -64,6 +67,7 @@ func (service *projectsService) CreateProject(ctx context.Context, project *mode
 	if strings.TrimSpace(project.MLFlowTrackingURL) == "" {
 		project.MLFlowTrackingURL = service.defaultMlflowTrackingServer
 	}
+
 	project, err := service.save(project)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create new project")
@@ -76,8 +80,22 @@ func (service *projectsService) CreateProject(ctx context.Context, project *mode
 		}
 	}
 
-	// TODO: call onProjectCreated webhook here and do service.save() onSuccess
-
+	if service.webhookManager != nil {
+		err = service.webhookManager.InvokeWebhooks(ctx, ProjectCreatedEvent, project, func(p []byte) error {
+			var project models.Project
+			if err := json.Unmarshal(p, &project); err != nil {
+				return err
+			}
+			_, err := service.save(&project)
+			if err != nil {
+				return err
+			}
+			return nil
+		}, webhooks.NoOpErrorHandler)
+		if err != nil {
+			return project, fmt.Errorf("Project successfully created, but webhooks were not invoked successfully %s", err.Error())
+		}
+	}
 	return project, nil
 }
 

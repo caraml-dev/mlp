@@ -34,7 +34,7 @@ type Config struct {
 	Mlflow               *MlflowConfig          `validate:"required"`
 	DefaultSecretStorage *SecretStorage         `validate:"required"`
 	UI                   *UIConfig
-	Webhooks             map[webhooks.EventType][]webhooks.WebhookConfig
+	Webhooks             *WebhookConfig
 }
 
 // SecretStorage represents the configuration for a secret storage.
@@ -45,6 +45,11 @@ type SecretStorage struct {
 	Type string `validate:"oneof=internal vault"`
 	// Config is the configuration of the secret storage.
 	Config models.SecretStorageConfig
+}
+
+type WebhookConfig struct {
+	Enabled bool
+	Config  map[webhooks.EventType][]webhooks.WebhookConfig `validate:"required_if=Enabled True"`
 }
 
 func NewDefaultConfig() *Config {

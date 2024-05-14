@@ -17,6 +17,7 @@ import (
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	"github.com/caraml-dev/mlp/api/pkg/instrumentation/newrelic"
 	"github.com/caraml-dev/mlp/api/pkg/secretstorage"
+	"github.com/caraml-dev/mlp/api/pkg/webhooks"
 	"github.com/caraml-dev/mlp/api/repository"
 	"github.com/caraml-dev/mlp/api/service"
 	"github.com/caraml-dev/mlp/api/validation"
@@ -61,11 +62,16 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		return nil, fmt.Errorf("failed to initialize applications service: %v", err)
 	}
 
+	projectsWebhookManager, err := initializeWebhooks(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize projects webhook manager: %v", err)
+	}
+
 	projectsService, err := service.NewProjectsService(
 		cfg.Mlflow.TrackingURL,
 		repository.NewProjectRepository(db),
 		authEnforcer,
-		cfg.Authorization.Enabled)
+		cfg.Authorization.Enabled, projectsWebhookManager)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize projects service: %v", err)
@@ -131,6 +137,18 @@ func initializeDefaultSecretStorage(
 	}
 
 	return secretStorageService.UpdateGlobal(defaultSecretStorage)
+}
+
+func initializeWebhooks(cfg *config.Config) (webhooks.WebhookManagerI, error) {
+	if cfg.Webhooks == nil || !cfg.Webhooks.Enabled {
+		return nil, nil
+	}
+	wi, err := webhooks.ParseWebhookConfig(service.EventList, cfg.Webhooks.Config)
+	if err != nil {
+		return nil, err
+	}
+	return wi, nil
+
 }
 
 // type Handler func(r *http.Request, vars map[string]string, body interface{}) *Response
