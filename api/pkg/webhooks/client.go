@@ -1,3 +1,43 @@
+// package webhooks provides a webhook manager that can be used to invoke webhooks for different events.
+
+/*
+Usage:
+1. In the caller package (eg, mlp, merlin), define the list of events that requires webhooks. For example:
+
+```go
+const (
+	ProjectCreatedEvent wh.EventType = "OnProjectCreated"
+	ProjectUpdatedEvent wh.EventType = "OnProjectUpdated"
+)
+
+var EventList = []wh.EventType{
+	ProjectCreatedEvent,
+	ProjectUpdatedEvent,
+}
+```
+
+2. Define the event to webhook configuration. Optionally, the configuration can be provided in a yaml file and parsed via the `Config` struct. In the config file, define the event to webhook mapping for those events as required. For example, if projects need extra labels from an external source, we define the webhook config for the `OnProjectCreated` event
+
+```go
+webhooks:
+  enabled: true
+  config:
+    OnProjectCreated:
+      - url: http://localhost:8081/project_created
+        method: POST
+        onError: abort
+```
+
+3. Call InitializeWebhooks() to get a WebhookManager instance.
+   This method will initialize the webhook clients for each event type based on the mapping provided
+
+```go
+projectsWebhookManager, err := webhooks.InitializeWebhooks(cfg.Webhooks, service.EventList)
+```
+
+4. Call `InvokeWebhooks()` method in the caller code based on the event
+*/
+
 package webhooks
 
 import (
@@ -28,6 +68,7 @@ type webhookManager struct {
 	webhookClients map[EventType][]WebhookClient
 }
 
+// Config is a helper struct to define the webhook config in a configuration file
 type Config struct {
 	Enabled bool
 	Config  map[EventType][]WebhookConfig `validate:"required_if=Enabled True"`
@@ -209,6 +250,8 @@ func validateWebhookResponse(content []byte) error {
 	return fmt.Errorf("webhook response is not a valid json object and not empty")
 }
 
+// InitializeWebhooks is a helper method to initialize a webhook manager based on the eventList
+// provided. It returns an error if the configuration is invalid
 func InitializeWebhooks(cfg *Config, eventList []EventType) (WebhookManager, error) {
 	if cfg == nil || cfg.Enabled {
 		return nil, nil
