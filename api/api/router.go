@@ -62,7 +62,7 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		return nil, fmt.Errorf("failed to initialize applications service: %v", err)
 	}
 
-	projectsWebhookManager, err := initializeWebhooks(cfg)
+	projectsWebhookManager, err := webhooks.InitializeWebhooks(cfg.Webhooks, service.EventList)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize projects webhook manager: %v", err)
 	}
@@ -137,18 +137,6 @@ func initializeDefaultSecretStorage(
 	}
 
 	return secretStorageService.UpdateGlobal(defaultSecretStorage)
-}
-
-func initializeWebhooks(cfg *config.Config) (webhooks.WebhookManager, error) {
-	if cfg.Webhooks == nil || !cfg.Webhooks.Enabled {
-		return nil, nil
-	}
-	wi, err := webhooks.ParseWebhookConfig(service.EventList, cfg.Webhooks.Config)
-	if err != nil {
-		return nil, err
-	}
-	return wi, nil
-
 }
 
 // type Handler func(r *http.Request, vars map[string]string, body interface{}) *Response
