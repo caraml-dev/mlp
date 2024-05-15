@@ -20,14 +20,13 @@ const (
 	onErrorAbort   = "abort"
 )
 
-type WebhookManagerI interface {
+type WebhookManager interface {
 	InvokeWebhooks(context.Context, EventType, interface{}, func([]byte) error, func(error) error) error
 }
 
-type WebhookManager struct {
-	WebhookClients map[EventType][]WebhookClient
+type webhookManager struct {
+	webhookClients map[EventType][]WebhookClient
 }
-
 
 // InvokeWebhooks iterates through sync webhooks and async webhooks
 // For sync webhooks, preserve order.
@@ -37,10 +36,10 @@ type WebhookManager struct {
 // For sync clients, the payload into a subsequent webhook is the result of the previous webhook
 // as long as the call is successful and not empty
 // The webhook's response is not constrained, and is up to the use case
-func (w *WebhookManager) InvokeWebhooks(ctx context.Context, event EventType, p interface{}, onSuccess func([]byte) error, onError func(error) error) error {
+func (w *webhookManager) InvokeWebhooks(ctx context.Context, event EventType, p interface{}, onSuccess func([]byte) error, onError func(error) error) error {
 	var asyncClients []WebhookClient
 	var syncClients []WebhookClient
-	whc, ok := w.WebhookClients[event]
+	whc, ok := w.webhookClients[event]
 	if !ok {
 		return fmt.Errorf("Could not find event %s", event)
 	}
@@ -128,6 +127,9 @@ func (g *SimpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byt
 	if err != nil {
 		return nil, err
 	}
+	if err := validateWebhookResponse(content); err != nil {
+		return nil, err
+	}
 	// check http status code
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("response status code %d not 200", resp.StatusCode)
@@ -152,7 +154,7 @@ func (g *SimpleWebhookClient) AbortOnFail() bool {
 	return g.OnError == onErrorAbort
 }
 
-func ParseWebhookConfig(eventList []EventType, webhookConfigMap map[EventType][]WebhookConfig) (*WebhookManager, error) {
+func ParseWebhookConfig(eventList []EventType, webhookConfigMap map[EventType][]WebhookConfig) (WebhookManager, error) {
 	eventToWHMap := make(map[EventType][]WebhookClient)
 	for _, eventType := range eventList {
 		if webhookConfigList, ok := webhookConfigMap[eventType]; ok {
@@ -168,7 +170,7 @@ func ParseWebhookConfig(eventList []EventType, webhookConfigMap map[EventType][]
 			eventToWHMap[eventType] = result
 		}
 	}
-	return &WebhookManager{WebhookClients: eventToWHMap}, nil
+	return &webhookManager{webhookClients: eventToWHMap}, nil
 }
 
 func validateWebhookConfig(webhookConfig *WebhookConfig) error {
@@ -185,4 +187,18 @@ func validateWebhookConfig(webhookConfig *WebhookConfig) error {
 		webhookConfig.OnError = onErrorDefault
 	}
 	return nil
+}
+
+// validateWebhookResponse ensures that the response from a webhook is either
+// a valid json object or empty str
+// This is only required for synchronous webhooks, where the webhook's response
+// may be used as input to the next webhook or in the callback function
+func validateWebhookResponse(content []byte) error {
+	if len(content) == 0 {
+		return nil
+	}
+	if json.Valid(content) {
+		return nil
+	}
+	return fmt.Errorf("webhook response is not a valid json object and not empty")
 }

@@ -139,7 +139,7 @@ func initializeDefaultSecretStorage(
 	return secretStorageService.UpdateGlobal(defaultSecretStorage)
 }
 
-func initializeWebhooks(cfg *config.Config) (webhooks.WebhookManagerI, error) {
+func initializeWebhooks(cfg *config.Config) (webhooks.WebhookManager, error) {
 	if cfg.Webhooks == nil || !cfg.Webhooks.Enabled {
 		return nil, nil
 	}
