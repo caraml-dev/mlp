@@ -13,7 +13,10 @@ import { addToast, EuiComboBoxSelect, useMlpApi } from "@caraml-dev/ui-lib";
 import { ProjectFormContext } from "./context";
 import { EmailTextArea } from "./EmailTextArea";
 import { Labels } from "./Labels";
-import { isDNS1123Label } from "../../validation/validation";
+import {
+  isDNS1123Label,
+  isValidK8sLabelValue
+} from "../../validation/validation";
 import config from "../../config";
 import { useNavigate } from "react-router-dom";
 
@@ -61,10 +64,10 @@ const ProjectForm = () => {
   const [isValidStream, setIsValidStream] = useState(false);
   const onStreamChange = selectedStream => {
     if (selectedStream !== project.stream) {
-      let isValid = isDNS1123Label(selectedStream);
+      let isValid = isValidK8sLabelValue(selectedStream);
       if (!isValid) {
         setStreamError(
-          "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-)"
+          "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-), or underscore (_) or period (.)"
         );
       }
       setIsValidStream(isValid);
@@ -76,10 +79,10 @@ const ProjectForm = () => {
   const [isValidTeam, setIsValidTeam] = useState(false);
   const onTeamChange = selectedTeam => {
     if (selectedTeam !== project.team) {
-      let isValid = isDNS1123Label(selectedTeam);
+      let isValid = isValidK8sLabelValue(selectedTeam);
       if (!isValid) {
         setTeamError(
-          "Team name is invalid. It should contain only lowercase alphanumeric and dash (-)"
+          "Team name is invalid. It should contain only lowercase alphanumeric and dash (-), or underscore (_) or period (.)"
         );
       }
       setIsValidTeam(isValid);
@@ -193,24 +196,41 @@ const ProjectForm = () => {
               title={<h3>Stream</h3>}
               description="Product stream the project belongs to">
               <EuiFormRow isInvalid={!isValidStream} error={streamError}>
-                <EuiComboBoxSelect
-                  value={project.stream}
-                  options={streamOptions}
-                  onChange={onStreamChange}
-                  onCreateOption={onStreamChange}
-                />
+                {config.ALLOW_CUSTOM_STREAM ? (
+                  <EuiComboBoxSelect
+                    value={project.stream}
+                    options={streamOptions}
+                    onChange={onStreamChange}
+                    onCreateOption={onStreamChange}
+                  />
+                ) : (
+                  <EuiComboBoxSelect
+                    value={project.stream}
+                    options={streamOptions}
+                    onChange={onStreamChange}
+                  />
+                )}
               </EuiFormRow>
             </EuiDescribedFormGroup>
             <EuiDescribedFormGroup
               title={<h3>Team</h3>}
               description="Owner of the project">
               <EuiFormRow isInvalid={!isValidTeam} error={teamError}>
-                <EuiComboBoxSelect
-                  value={project.team}
-                  options={teamOptions}
-                  onChange={onTeamChange}
-                  onCreateOption={onTeamChange}
-                />
+                {config.ALLOW_CUSTOM_TEAM ? (
+                  <EuiComboBoxSelect
+                    value={project.team}
+                    options={teamOptions}
+                    onChange={onTeamChange}
+                    onCreateOption={onTeamChange}
+                  />
+                ) : (
+                  <EuiComboBoxSelect
+                    value={project.team}
+                    options={teamOptions}
+                    onChange={onTeamChange}
+                    onCreateOption={onTeamChange}
+                  />
+                )}
               </EuiFormRow>
             </EuiDescribedFormGroup>
             <EuiDescribedFormGroup
