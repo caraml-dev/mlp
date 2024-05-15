@@ -114,8 +114,6 @@ type uiEnvHandler struct {
 	Streams                    config.Streams        `json:"REACT_APP_STREAMS"`
 	Docs                       config.Documentations `json:"REACT_APP_DOC_LINKS"`
 	MaxAuthzCacheExpiryMinutes string                `json:"REACT_APP_MAX_AUTHZ_CACHE_EXPIRY_MINUTES"`
-	AllowCustomStream          bool                  `json:"REACT_APP_CUSTOM_STREAM"`
-	AllowCustomTeam            bool                  `json:"REACT_APP_CUSTOM_TEAM"`
 }
 
 func (h uiEnvHandler) handler(w http.ResponseWriter, r *http.Request) {

@@ -118,6 +118,9 @@ type UIConfig struct {
 
 	ClockworkUIHomepage string `json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
 	KubeflowUIHomepage  string `json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`
+
+	AllowCustomStream bool `json:"REACT_APP_ALLOW_CUSTOM_STREAM"`
+	AllowCustomTeam   bool `json:"REACT_APP_ALLOW_CUSTOM_TEAM"`
 }
 
 // Transform env variables to the format consumed by koanf.
@@ -213,8 +216,10 @@ var defaultConfig = &Config{
 		TrackingURL: "",
 	},
 	UI: &UIConfig{
-		IndexPath:  "index.html",
-		StaticPath: "ui/build",
+		IndexPath:         "index.html",
+		StaticPath:        "ui/build",
+		AllowCustomTeam:   true,
+		AllowCustomStream: true,
 	},
 	DefaultSecretStorage: &SecretStorage{
 		Name: "internal",

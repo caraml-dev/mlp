@@ -85,8 +85,10 @@ func TestLoad(t *testing.T) {
 					"EmptyStream":  {},
 				},
 				UI: &config.UIConfig{
-					StaticPath: "ui/build",
-					IndexPath:  "index.html",
+					StaticPath:        "ui/build",
+					IndexPath:         "index.html",
+					AllowCustomTeam:   true,
+					AllowCustomStream: true,
 				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",
@@ -142,8 +144,10 @@ func TestLoad(t *testing.T) {
 					"EmptyStream":  {},
 				},
 				UI: &config.UIConfig{
-					StaticPath: "ui/build",
-					IndexPath:  "index.html",
+					StaticPath:        "ui/build",
+					IndexPath:         "index.html",
+					AllowCustomTeam:   true,
+					AllowCustomStream: true,
 				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",
@@ -240,6 +244,8 @@ func TestLoad(t *testing.T) {
 
 					ClockworkUIHomepage: "http://clockwork.dev",
 					KubeflowUIHomepage:  "http://kubeflow.org",
+					AllowCustomTeam:     true,
+					AllowCustomStream:   true,
 				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",
