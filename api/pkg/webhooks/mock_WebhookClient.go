@@ -31,6 +31,42 @@ func (_m *MockWebhookClient) AbortOnFail() bool {
 	return r0
 }
 
+// GetName provides a mock function with given fields:
+func (_m *MockWebhookClient) GetName() string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetName")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// GetUseDataFrom provides a mock function with given fields:
+func (_m *MockWebhookClient) GetUseDataFrom() string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUseDataFrom")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Invoke provides a mock function with given fields: _a0, _a1
 func (_m *MockWebhookClient) Invoke(_a0 context.Context, _a1 []byte) ([]byte, error) {
 	ret := _m.Called(_a0, _a1)
@@ -85,6 +121,24 @@ func (_m *MockWebhookClient) IsAsync() bool {
 
 	if len(ret) == 0 {
 		panic("no return value specified for IsAsync")
+	}
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
+// IsFinalResponse provides a mock function with given fields:
+func (_m *MockWebhookClient) IsFinalResponse() bool {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for IsFinalResponse")
 	}
 
 	var r0 bool
