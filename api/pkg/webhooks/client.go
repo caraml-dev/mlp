@@ -49,6 +49,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/caraml-dev/mlp/api/log"
 )
 
@@ -56,8 +57,8 @@ type EventType string
 type ServiceType string
 
 const (
-	onErrorDefault = "ignore"
-	onErrorAbort   = "abort"
+	onErrorIgnore = "ignore"
+	onErrorAbort  = "abort"
 )
 
 type WebhookManager interface {
@@ -86,11 +87,12 @@ type Config struct {
 func (w *webhookManager) InvokeWebhooks(ctx context.Context, event EventType, p interface{}, onSuccess func([]byte) error, onError func(error) error) error {
 	var asyncClients []WebhookClient
 	var syncClients []WebhookClient
+	var finalPayload []byte
 	whc, ok := w.webhookClients[event]
 	if !ok {
 		return fmt.Errorf("Could not find event %s", event)
 	}
-	payload, err := json.Marshal(p)
+	originalPayload, err := json.Marshal(p)
 	if err != nil {
 		return err
 	}
@@ -103,29 +105,38 @@ func (w *webhookManager) InvokeWebhooks(ctx context.Context, event EventType, p 
 	}
 
 	// create copy of original payload
-	tmpPayload := make([]byte, len(payload))
-	copy(tmpPayload, payload)
+	responsePayloadLookup := make(map[string][]byte)
 
 	for _, client := range syncClients {
-		p, err := client.Invoke(ctx, tmpPayload)
-		if err == nil || len(p) > 0 {
-			// only update tmpPayload if no error and
-			// payload len is not 0
-			tmpPayload = p
+		var tmpPayload []byte
+		if client.GetUseDataFrom() == "" {
+			tmpPayload = originalPayload
+		} else if tmpPayload, ok = responsePayloadLookup[client.GetUseDataFrom()]; !ok {
+			return fmt.Errorf("webhook name %s not found, this could be because an error in a downstream webhook", client.GetUseDataFrom())
 		}
-		if err != nil && client.AbortOnFail() {
+		p, err := client.Invoke(ctx, tmpPayload)
+		if err == nil {
+			responsePayloadLookup[client.GetName()] = p
+			if client.IsFinalResponse() {
+				finalPayload = p
+			}
+			continue
+		}
+		// if err is not nil, check if client is set to abort
+		if client.AbortOnFail() {
 			return onError(err)
 		}
+
 	}
 	for _, client := range asyncClients {
 		// TODO: figure out how to handle errors, especially if each async func is invoked
 		// in a separate goroutine
-		if err := client.InvokeAsync(ctx, payload); err != nil {
+		if err := client.InvokeAsync(ctx, originalPayload); err != nil {
 			return onError(err)
 		}
 	}
 	// tmpPayload here is the last response.
-	if err := onSuccess(tmpPayload); err != nil {
+	if err := onSuccess(finalPayload); err != nil {
 		return nil
 	}
 
@@ -137,6 +148,9 @@ type WebhookClient interface {
 	InvokeAsync(context.Context, []byte) error
 	IsAsync() bool
 	AbortOnFail() bool
+	IsFinalResponse() bool
+	GetUseDataFrom() string
+	GetName() string
 }
 
 type SimpleWebhookClient struct {
@@ -144,42 +158,57 @@ type SimpleWebhookClient struct {
 }
 
 type WebhookConfig struct {
-	URL         string `yaml:"url" validate:"required,url"`
-	Method      string `yaml:"method"`
-	AuthEnabled bool   `yaml:"authEnabled"`
-	AuthToken   string `yaml:"authToken" validate:"required_if=AuthEnabled True"`
-	OnError     string `yaml:"onError"`
-	Async       bool   `yaml:"async"`
+	Name          string `yaml:"name" validate:"required"`
+	URL           string `yaml:"url" validate:"required,url"`
+	Method        string `yaml:"method"`
+	AuthEnabled   bool   `yaml:"authEnabled"`
+	AuthToken     string `yaml:"authToken" validate:"required_if=AuthEnabled True"`
+	OnError       string `yaml:"onError"`
+	Async         bool   `yaml:"async"`
+	NumRetries    int    `yaml:"numRetries"`
+	Timeout       *int   `yaml:"timeout"`
+	UseDataFrom   string `yaml:"useDataFrom"`
+	FinalResponse bool   `yaml:"finalResponse"`
 }
 
 func NoOpErrorHandler(err error) error { return err }
 
 func (g *SimpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byte, error) {
 	// create http request to webhook
-	client := http.Client{
-		Timeout: 10 * time.Second,
-	}
-	req, err := http.NewRequestWithContext(ctx, g.Method, g.URL, bytes.NewBuffer(payload))
-	// TODO: Add option for authentication headers
+	var content []byte
+	err := retry.Do(
+		func() error {
+			client := http.Client{
+				Timeout: time.Duration(*g.Timeout) * time.Second,
+			}
+			req, err := http.NewRequestWithContext(ctx, g.Method, g.URL, bytes.NewBuffer(payload))
+			// TODO: Add option for authentication headers
+			if err != nil {
+				return err
+			}
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Errorf("Error making client request %s", err)
+				return err
+			}
+			defer resp.Body.Close()
+			content, err = io.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+			if err := validateWebhookResponse(content); err != nil {
+				return err
+			}
+			// check http status code
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("response status code %d not 200", resp.StatusCode)
+			}
+			return nil
+
+		}, retry.Attempts(uint(g.NumRetries)),
+	)
 	if err != nil {
 		return nil, err
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Errorf("Error making client request %s", err)
-		return nil, err
-	}
-	defer resp.Body.Close()
-	content, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if err := validateWebhookResponse(content); err != nil {
-		return nil, err
-	}
-	// check http status code
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("response status code %d not 200", resp.StatusCode)
 	}
 	return content, nil
 }
@@ -201,7 +230,19 @@ func (g *SimpleWebhookClient) AbortOnFail() bool {
 	return g.OnError == onErrorAbort
 }
 
-func parseWebhookConfig(eventList []EventType, webhookConfigMap map[EventType][]WebhookConfig) (WebhookManager, error) {
+func (g *SimpleWebhookClient) IsFinalResponse() bool {
+	return g.FinalResponse
+}
+
+func (g *SimpleWebhookClient) GetUseDataFrom() string {
+	return g.UseDataFrom
+}
+
+func (g *SimpleWebhookClient) GetName() string {
+	return g.Name
+}
+
+func parseAndValidateConfig(eventList []EventType, webhookConfigMap map[EventType][]WebhookConfig) (WebhookManager, error) {
 	eventToWHMap := make(map[EventType][]WebhookClient)
 	for _, eventType := range eventList {
 		if webhookConfigList, ok := webhookConfigMap[eventType]; ok {
@@ -215,6 +256,17 @@ func parseWebhookConfig(eventList []EventType, webhookConfigMap map[EventType][]
 				})
 			}
 			eventToWHMap[eventType] = result
+		}
+	}
+	for _, webhookClients := range eventToWHMap {
+		syncClients := make([]WebhookClient, 0)
+		for _, client := range webhookClients {
+			if !client.IsAsync() {
+				syncClients = append(syncClients, client)
+			}
+		}
+		if err := validateSyncClients(syncClients); err != nil {
+			return nil, err
 		}
 	}
 	return &webhookManager{webhookClients: eventToWHMap}, nil
@@ -231,7 +283,14 @@ func validateWebhookConfig(webhookConfig *WebhookConfig) error {
 		return fmt.Errorf("missing webhook auth token")
 	}
 	if webhookConfig.OnError == "" {
-		webhookConfig.OnError = onErrorDefault
+		webhookConfig.OnError = onErrorAbort
+	}
+	if webhookConfig.NumRetries < -1 {
+		return fmt.Errorf("numRetries must be a positive integer or -1")
+	}
+	if webhookConfig.Timeout == nil {
+		def := 10
+		webhookConfig.Timeout = &def
 	}
 	return nil
 }
@@ -250,13 +309,51 @@ func validateWebhookResponse(content []byte) error {
 	return fmt.Errorf("webhook response is not a valid json object and not empty")
 }
 
+func validateSyncClients(webhookClients []WebhookClient) error {
+	// ensure that only 1 sync client has finalResponse set to true
+	isFinalResponseSet := false
+	for _, client := range webhookClients {
+		if client.IsFinalResponse() {
+			if isFinalResponseSet {
+				return fmt.Errorf("only 1 sync client can have finalResponse set to true")
+			} else {
+				isFinalResponseSet = true
+			}
+		}
+	}
+	// Ensure that all useDataFrom fields exist
+	webhookNames := make(map[string]int)
+	for idx, client := range webhookClients {
+		if _, ok := webhookNames[client.GetUseDataFrom()]; ok {
+			return fmt.Errorf("duplicate webhook name")
+		} else {
+			webhookNames[client.GetName()] = idx
+		}
+	}
+	// Ensure that webhook order is correct if they have dependencies
+	for idx, client := range webhookClients {
+		if client.GetUseDataFrom() == "" {
+			continue
+		}
+		if useIdx, ok := webhookNames[client.GetUseDataFrom()]; !ok {
+			return fmt.Errorf("webhook name %s not found", client.GetUseDataFrom())
+		} else {
+			if useIdx > idx {
+				return fmt.Errorf("webhook name %s must be defined before %s", client.GetUseDataFrom(), client.GetName())
+			}
+		}
+	}
+
+	return nil
+}
+
 // InitializeWebhooks is a helper method to initialize a webhook manager based on the eventList
 // provided. It returns an error if the configuration is invalid
 func InitializeWebhooks(cfg *Config, eventList []EventType) (WebhookManager, error) {
-	if cfg == nil || cfg.Enabled {
+	if cfg == nil || !cfg.Enabled {
 		return nil, nil
 	}
-	wi, err := parseWebhookConfig(eventList, cfg.Config)
+	wi, err := parseAndValidateConfig(eventList, cfg.Config)
 	if err != nil {
 		return nil, err
 	}

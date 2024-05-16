@@ -93,7 +93,7 @@ func (service *projectsService) CreateProject(ctx context.Context, project *mode
 			return nil
 		}, webhooks.NoOpErrorHandler)
 		if err != nil {
-			return project, fmt.Errorf("Project successfully created, but webhooks were not invoked successfully %s", err.Error())
+			return project, fmt.Errorf("error while invoking %s webhooks were not invoked successfully %s", ProjectCreatedEvent, err.Error())
 		}
 	}
 	return project, nil
