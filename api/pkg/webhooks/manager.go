@@ -118,7 +118,7 @@ func parseAndValidateConfig(eventList []EventType, webhookConfigMap map[EventTyp
 
 func validateWebhookConfig(webhookConfig *WebhookConfig) error {
 	if webhookConfig.Name == "" {
-			return fmt.Errorf("missing webhook name")
+		return fmt.Errorf("missing webhook name")
 	}
 	if webhookConfig.URL == "" {
 		return fmt.Errorf("missing webhook URL")

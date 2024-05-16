@@ -5,16 +5,19 @@ import (
 	"fmt"
 	"testing"
 
-	"encoding/json"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 // Mocking onSuccess and onError functions
-var onSuccess = func(response []byte) error {
-	return nil
+var onSuccess = func(t *testing.T, expected []byte) func(response []byte) error {
+	return func(input []byte) error {
+		if diff := cmp.Diff(input, expected); diff != "" {
+			t.Errorf("unexpected response (-got +want):\n%s", diff)
+		}
+		return nil
+	}
 }
 var onError = func(err error) error {
 	fmt.Printf("err: %s", err.Error())
@@ -61,10 +64,10 @@ func TestInitializeWebhooks(t *testing.T) {
 				Config: map[EventType][]WebhookConfig{
 					"event1": {
 						{
-							Name:  "webhook1",
-							URL:   "http://example.com",
-							Method: "POST",
-							AuthEnabled: false,
+							Name:          "webhook1",
+							URL:           "http://example.com",
+							Method:        "POST",
+							AuthEnabled:   false,
 							FinalResponse: true,
 						},
 					},
@@ -80,10 +83,10 @@ func TestInitializeWebhooks(t *testing.T) {
 				Config: map[EventType][]WebhookConfig{
 					"event1": {
 						{
-							Name:  "",
-							URL:   "http://example.com",
-							Method: "POST",
-							AuthEnabled: false,
+							Name:          "",
+							URL:           "http://example.com",
+							Method:        "POST",
+							AuthEnabled:   false,
 							FinalResponse: true,
 						},
 					},
@@ -99,10 +102,10 @@ func TestInitializeWebhooks(t *testing.T) {
 				Config: map[EventType][]WebhookConfig{
 					"event1": {
 						{
-							Name:  "webhook1",
-							URL:   "",
-							Method: "POST",
-							AuthEnabled: false,
+							Name:          "webhook1",
+							URL:           "",
+							Method:        "POST",
+							AuthEnabled:   false,
 							FinalResponse: true,
 						},
 					},
@@ -118,11 +121,11 @@ func TestInitializeWebhooks(t *testing.T) {
 				Config: map[EventType][]WebhookConfig{
 					"event1": {
 						{
-							Name:        "webhook1",
-							URL:         "http://example.com",
-							Method:      "POST",
-							AuthEnabled: true,
-							AuthToken:   "",
+							Name:          "webhook1",
+							URL:           "http://example.com",
+							Method:        "POST",
+							AuthEnabled:   true,
+							AuthToken:     "",
 							FinalResponse: true,
 						},
 					},
@@ -138,15 +141,15 @@ func TestInitializeWebhooks(t *testing.T) {
 				Config: map[EventType][]WebhookConfig{
 					"event1": {
 						{
-							Name:        "webhook1",
-							URL:         "http://example.com",
-							Method:      "POST",
+							Name:          "webhook1",
+							URL:           "http://example.com",
+							Method:        "POST",
 							FinalResponse: true,
 						},
 						{
-							Name:        "webhook2",
-							URL:         "http://example.com",
-							Method:      "POST",
+							Name:   "webhook2",
+							URL:    "http://example.com",
+							Method: "POST",
 						},
 					},
 				},
@@ -161,15 +164,15 @@ func TestInitializeWebhooks(t *testing.T) {
 				Config: map[EventType][]WebhookConfig{
 					"event1": {
 						{
-							Name:        "webhook1",
-							URL:         "http://example.com",
-							Method:      "POST",
+							Name:          "webhook1",
+							URL:           "http://example.com",
+							Method:        "POST",
 							FinalResponse: true,
 						},
 						{
-							Name:        "webhook2",
-							URL:         "http://example.com",
-							Method:      "POST",
+							Name:          "webhook2",
+							URL:           "http://example.com",
+							Method:        "POST",
 							FinalResponse: true,
 						},
 					},
@@ -185,15 +188,15 @@ func TestInitializeWebhooks(t *testing.T) {
 				Config: map[EventType][]WebhookConfig{
 					"event1": {
 						{
-							Name:        "webhook1",
-							URL:         "http://example.com",
-							Method:      "POST",
+							Name:          "webhook1",
+							URL:           "http://example.com",
+							Method:        "POST",
 							FinalResponse: true,
 						},
 						{
-							Name:        "webhook1",
-							URL:         "http://example.com",
-							Method:      "POST",
+							Name:   "webhook1",
+							URL:    "http://example.com",
+							Method: "POST",
 						},
 					},
 				},
@@ -208,9 +211,9 @@ func TestInitializeWebhooks(t *testing.T) {
 				Config: map[EventType][]WebhookConfig{
 					"event1": {
 						{
-							Name:        "webhook1",
-							URL:         "http://example.com",
-							Method:      "POST",
+							Name:          "webhook1",
+							URL:           "http://example.com",
+							Method:        "POST",
 							FinalResponse: true,
 						},
 						{
@@ -218,7 +221,6 @@ func TestInitializeWebhooks(t *testing.T) {
 							URL:         "http://example.com",
 							Method:      "POST",
 							UseDataFrom: "webhook_non_existent",
-
 						},
 					},
 				},
@@ -239,9 +241,9 @@ func TestInitializeWebhooks(t *testing.T) {
 							UseDataFrom: "webhook1",
 						},
 						{
-							Name:        "webhook1",
-							URL:         "http://example.com",
-							Method:      "POST",
+							Name:          "webhook1",
+							URL:           "http://example.com",
+							Method:        "POST",
 							FinalResponse: true,
 						},
 					},
@@ -263,11 +265,14 @@ func TestInitializeWebhooks(t *testing.T) {
 }
 func TestInvokeWebhooksSimple(t *testing.T) {
 	// Setup mock WebhookClient with specific behaviors
+	response := []byte(`{"data":"abc"}`)
 	mockClient := &MockWebhookClient{}
 	// Expect Invoke to return response from client and no error
-	mockClient.On("Invoke", mock.Anything, mock.Anything).Return([]byte("{}"), nil).Once()
+	mockClient.On("Invoke", mock.Anything, mock.Anything).Return(response, nil).Once()
 	mockClient.On("IsAsync").Return(false)
-	mockClient.On("AbortOnFail").Return(false)
+	mockClient.On("IsFinalResponse").Return(true)
+	mockClient.On("GetUseDataFrom").Return("")
+	mockClient.On("GetName").Return("webhook1")
 
 	// Setup WebhookManager with the mock client
 	webhookManager := &webhookManager{
@@ -277,7 +282,7 @@ func TestInvokeWebhooksSimple(t *testing.T) {
 	}
 
 	// Execution
-	err := webhookManager.InvokeWebhooks(context.Background(), "validEvent", &testPayloadData, onSuccess, onError)
+	err := webhookManager.InvokeWebhooks(context.Background(), "validEvent", &testPayloadData, onSuccess(t, response), onError)
 
 	// Assertion
 	assert.NoError(t, err)           // Expect no error
@@ -286,25 +291,28 @@ func TestInvokeWebhooksSimple(t *testing.T) {
 
 func TestInvokeMultipleSyncWebhooks(t *testing.T) {
 	// Setup mock WebhookClient with specific behaviors
+	webhook1Result := []byte(`{"result": "xyz"}`)
+	response := []byte(`{"data":"abc"}`)
 	mockClient := &MockWebhookClient{}
 	// Expect Invoke to return response from client and no error
-	mockClient.On("Invoke", mock.Anything, mock.Anything).Return([]byte(`{"result": "xyz"}`), nil)
+	mockClient.On("Invoke", mock.Anything, mock.Anything).Return(webhook1Result, nil)
 	mockClient.On("IsAsync").Return(false)
+	mockClient.On("GetName").Return("webhook1")
+	mockClient.On("IsFinalResponse").Return(false)
+	mockClient.On("GetUseDataFrom").Return("")
 
 	mockClient2 := &MockWebhookClient{}
 	mockClient2.On("Invoke", mock.Anything, mock.MatchedBy(func(payload []byte) bool {
-		// check if payload matches testPayloadData
-		var tmp testResult
-		if err := json.Unmarshal(payload, &tmp); err != nil {
-			return false
-		}
-		if diff := cmp.Diff(testResultData, tmp); diff != "" {
+		if diff := cmp.Diff(webhook1Result, payload); diff != "" {
 			fmt.Println("diff", diff)
 			return false
 		}
 		return true
-	})).Return([]byte("{}"), nil)
-	mockClient2.On("IsAsync").Return(false).Once()
+	})).Return(response, nil)
+	mockClient2.On("IsAsync").Return(false)
+	mockClient2.On("GetName").Return("webhook2")
+	mockClient2.On("GetUseDataFrom").Return("webhook1")
+	mockClient2.On("IsFinalResponse").Return(true)
 	// Setup WebhookManager with the mock client
 	webhookManager := &webhookManager{
 		webhookClients: map[EventType][]WebhookClient{
@@ -312,7 +320,7 @@ func TestInvokeMultipleSyncWebhooks(t *testing.T) {
 		},
 	}
 	// Execution
-	err := webhookManager.InvokeWebhooks(context.Background(), "validEvent", &testPayloadData, onSuccess, onError)
+	err := webhookManager.InvokeWebhooks(context.Background(), "validEvent", &testPayloadData, onSuccess(t, response), onError)
 
 	// Assertion
 	assert.NoError(t, err)
