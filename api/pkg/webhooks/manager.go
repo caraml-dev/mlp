@@ -117,6 +117,9 @@ func parseAndValidateConfig(eventList []EventType, webhookConfigMap map[EventTyp
 }
 
 func validateWebhookConfig(webhookConfig *WebhookConfig) error {
+	if webhookConfig.Name == "" {
+			return fmt.Errorf("missing webhook name")
+	}
 	if webhookConfig.URL == "" {
 		return fmt.Errorf("missing webhook URL")
 	}
@@ -160,9 +163,8 @@ func validateSyncClients(webhookClients []WebhookClient) error {
 		if client.IsFinalResponse() {
 			if isFinalResponseSet {
 				return fmt.Errorf("only 1 sync client can have finalResponse set to true")
-			} else {
-				isFinalResponseSet = true
 			}
+			isFinalResponseSet = true
 		}
 	}
 	if !isFinalResponseSet {
@@ -171,23 +173,23 @@ func validateSyncClients(webhookClients []WebhookClient) error {
 	// Ensure that all useDataFrom fields exist
 	webhookNames := make(map[string]int)
 	for idx, client := range webhookClients {
-		if _, ok := webhookNames[client.GetUseDataFrom()]; ok {
+		if _, ok := webhookNames[client.GetName()]; ok {
 			return fmt.Errorf("duplicate webhook name")
-		} else {
-			webhookNames[client.GetName()] = idx
 		}
+		webhookNames[client.GetName()] = idx
+
 	}
 	// Ensure that webhook order is correct if they have dependencies
 	for idx, client := range webhookClients {
 		if client.GetUseDataFrom() == "" {
 			continue
 		}
-		if useIdx, ok := webhookNames[client.GetUseDataFrom()]; !ok {
+		useIdx, ok := webhookNames[client.GetUseDataFrom()]
+		if !ok {
 			return fmt.Errorf("webhook name %s not found", client.GetUseDataFrom())
-		} else {
-			if useIdx > idx {
-				return fmt.Errorf("webhook name %s must be defined before %s", client.GetUseDataFrom(), client.GetName())
-			}
+		}
+		if useIdx > idx {
+			return fmt.Errorf("webhook name %s must be defined before %s", client.GetUseDataFrom(), client.GetName())
 		}
 	}
 
