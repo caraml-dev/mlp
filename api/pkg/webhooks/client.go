@@ -225,7 +225,7 @@ func validateWebhookConfig(webhookConfig *WebhookConfig) error {
 		return fmt.Errorf("missing webhook URL")
 	}
 	if webhookConfig.Method == "" {
-		webhookConfig.Method = http.MethodGet
+		webhookConfig.Method = http.MethodPost // Default to POST, TODO: decide if GET is allowed
 	}
 	if webhookConfig.AuthEnabled && webhookConfig.AuthToken == "" {
 		return fmt.Errorf("missing webhook auth token")
