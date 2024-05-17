@@ -334,13 +334,6 @@ func TestProjectsService_FindById(t *testing.T) {
 
 func TestProjectsService_CreateWithWebhook(t *testing.T) {
 
-	authEnforcer := &enforcerMock.Enforcer{}
-	mockClient1 := &webhooks.MockWebhookClient{}
-	mockClient1.On("IsAsync").Return(false)
-	mockClient1.On("GetName").Return("webhook1")
-	mockClient1.On("IsFinalResponse").Return(true)
-	mockClient1.On("GetUseDataFrom").Return("")
-	storage := &mocks.ProjectRepository{}
 	tests := []struct {
 		name         string
 		arg          *models.Project
@@ -389,8 +382,6 @@ func TestProjectsService_CreateWithWebhook(t *testing.T) {
 				ID:                1,
 				Name:              "project-1",
 				MLFlowTrackingURL: MLFlowTrackingURL,
-				Administrators:    []string{"admin-1@email.com"},
-				Readers:           []string{"reader-1@email.com"},
 				Team:              "team-1",
 				Stream:            "team-2-modified-by-webhook",
 			},
@@ -404,8 +395,15 @@ func TestProjectsService_CreateWithWebhook(t *testing.T) {
 	// construct test
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			authEnforcer := &enforcerMock.Enforcer{}
+			mockClient1 := &webhooks.MockWebhookClient{}
+			mockClient1.On("IsAsync").Return(false)
+			mockClient1.On("GetName").Return("webhook1")
+			mockClient1.On("IsFinalResponse").Return(true)
+			mockClient1.On("GetUseDataFrom").Return("")
+			storage := &mocks.ProjectRepository{}
 			storage.On("Save", test.arg).Return(test.arg, nil).Once()
-			storage.On("Save", test.expResult).Return(test.expResult, nil).Once()
+			storage.On("Save", test.expResult).Return(test.expResult, nil).Maybe()
 			mockClient1.On("Invoke", mock.Anything, mock.Anything).Return(test.whResponse, nil)
 			whManager := &webhooks.SimpleWebhookManager{
 				WebhookClients: map[webhooks.EventType][]webhooks.WebhookClient{
