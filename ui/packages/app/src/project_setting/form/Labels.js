@@ -93,7 +93,7 @@ export const Labels = ({
     setIsValidLabels(labelsValid);
     if (!labelsValid) {
       setLabelError(
-        "Invalid labels. Both key and value of a label must start and end with an alphanumeric character and must contain only alphanumeric and dash (-)"
+        "Invalid labels. Both key and value of a label must contain only lowercase alphanumeric and dash (-) and must start and end with an alphanumeric character"
       );
     }
     // }
