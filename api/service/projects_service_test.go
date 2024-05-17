@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/caraml-dev/mlp/api/models"
+	"github.com/caraml-dev/mlp/api/pkg/webhooks"
 	"github.com/caraml-dev/mlp/api/repository/mocks"
 
 	enforcerMock "github.com/caraml-dev/mlp/api/pkg/authz/enforcer/mocks"
@@ -103,7 +104,7 @@ func TestProjectsService_CreateProject(t *testing.T) {
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
 
 			authEnforcer := &enforcerMock.Enforcer{}
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil)
 			require.NoError(t, err)
 
 			if tt.expAuthUpdate != nil {
@@ -197,7 +198,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 				authEnforcer.On("UpdateAuthorization", mock.Anything, *tt.expAuthUpdate).Return(nil)
 			}
 
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil)
 			assert.NoError(t, err)
 
 			res, err := projectsService.UpdateProject(context.Background(), tt.arg)
@@ -294,7 +295,7 @@ func TestProjectsService_ListProjects(t *testing.T) {
 				authEnforcer.On("GetUserRoles", mock.Anything, tt.user).Return(tt.userRoles, nil)
 			}
 
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil)
 			assert.NoError(t, err)
 
 			res, err := projectsService.ListProjects(context.Background(), "project-", tt.user)
@@ -321,7 +322,7 @@ func TestProjectsService_FindById(t *testing.T) {
 	storage.On("Get", id).Return(exp, nil)
 
 	authEnforcer := &enforcerMock.Enforcer{}
-	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false)
+	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, nil)
 	assert.NoError(t, err)
 
 	res, err := projectsService.FindByID(id)
@@ -329,4 +330,101 @@ func TestProjectsService_FindById(t *testing.T) {
 	assert.Equal(t, exp, res)
 
 	storage.AssertExpectations(t)
+}
+
+func TestProjectsService_CreateWithWebhook(t *testing.T) {
+
+	authEnforcer := &enforcerMock.Enforcer{}
+	mockClient1 := &webhooks.MockWebhookClient{}
+	mockClient1.On("IsAsync").Return(false)
+	mockClient1.On("GetName").Return("webhook1")
+	mockClient1.On("IsFinalResponse").Return(true)
+	mockClient1.On("GetUseDataFrom").Return("")
+	storage := &mocks.ProjectRepository{}
+	tests := []struct {
+		name         string
+		arg          *models.Project
+		authEnabled  bool
+		expResult    *models.Project
+		wantError    bool
+		wantErrorMsg string
+		whResponse   []byte
+	}{
+
+		{
+			name: "test basic working webhook",
+			arg: &models.Project{
+				ID:                1,
+				Name:              "project-1",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Team:              "team-1",
+				Stream:            "team-2",
+			},
+			authEnabled: false,
+			expResult: &models.Project{
+				ID:                1,
+				Name:              "project-1",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Team:              "team-1",
+				Stream:            "team-2-modified-by-webhook",
+			},
+			wantError: false,
+			whResponse: []byte(`{
+				"id": 1,
+				"name": "project-1",
+				"team": "team-1",
+				"stream": "team-2-modified-by-webhook"
+			}`),
+		},
+		{
+			name: "test invalid json str error",
+			arg: &models.Project{
+				ID:                1,
+				Name:              "project-1",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Team:              "team-1",
+			},
+			authEnabled: false,
+			expResult: &models.Project{
+				ID:                1,
+				Name:              "project-1",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"admin-1@email.com"},
+				Readers:           []string{"reader-1@email.com"},
+				Team:              "team-1",
+				Stream:            "team-2-modified-by-webhook",
+			},
+			wantError: true,
+			whResponse: []byte(`{
+				invalid-json-str
+			`),
+		},
+	}
+
+	// construct test
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			storage.On("Save", test.arg).Return(test.arg, nil).Once()
+			storage.On("Save", test.expResult).Return(test.expResult, nil).Once()
+			mockClient1.On("Invoke", mock.Anything, mock.Anything).Return(test.whResponse, nil)
+			whManager := &webhooks.SimpleWebhookManager{
+				WebhookClients: map[webhooks.EventType][]webhooks.WebhookClient{
+					ProjectCreatedEvent: {
+						mockClient1,
+					},
+				},
+			}
+			mockClient1.On("Invoke", mock.Anything, mock.Anything).Return(test.whResponse, nil)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, whManager)
+			assert.NoError(t, err)
+			res, err := projectsService.CreateProject(context.Background(), test.arg)
+			if test.wantError {
+				require.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, test.expResult, res)
+		})
+	}
+
 }

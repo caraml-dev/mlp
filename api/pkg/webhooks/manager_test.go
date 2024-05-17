@@ -28,12 +28,7 @@ type testPayload struct {
 	Data string `json:"data"`
 }
 
-type testResult struct {
-	Result string `json:"result"`
-}
-
 var testPayloadData = testPayload{Data: "abc"}
-var testResultData = testResult{Result: "xyz"}
 
 func TestInitializeWebhooks(t *testing.T) {
 	tests := []struct {
@@ -275,8 +270,8 @@ func TestInvokeWebhooksSimple(t *testing.T) {
 	mockClient.On("GetName").Return("webhook1")
 
 	// Setup WebhookManager with the mock client
-	webhookManager := &webhookManager{
-		webhookClients: map[EventType][]WebhookClient{
+	webhookManager := &SimpleWebhookManager{
+		WebhookClients: map[EventType][]WebhookClient{
 			"validEvent": {mockClient},
 		},
 	}
@@ -314,8 +309,8 @@ func TestInvokeMultipleSyncWebhooks(t *testing.T) {
 	mockClient2.On("GetUseDataFrom").Return("webhook1")
 	mockClient2.On("IsFinalResponse").Return(true)
 	// Setup WebhookManager with the mock client
-	webhookManager := &webhookManager{
-		webhookClients: map[EventType][]WebhookClient{
+	webhookManager := &SimpleWebhookManager{
+		WebhookClients: map[EventType][]WebhookClient{
 			"validEvent": {mockClient, mockClient2},
 		},
 	}

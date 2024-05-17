@@ -82,11 +82,12 @@ func (service *projectsService) CreateProject(ctx context.Context, project *mode
 
 	if service.webhookManager != nil {
 		err = service.webhookManager.InvokeWebhooks(ctx, ProjectCreatedEvent, project, func(p []byte) error {
-			var project models.Project
-			if err := json.Unmarshal(p, &project); err != nil {
+			// Expects webhook output to be a project object
+			var tmpproject models.Project
+			if err := json.Unmarshal(p, &tmpproject); err != nil {
 				return err
 			}
-			_, err := service.save(&project)
+			project, err = service.save(&tmpproject)
 			if err != nil {
 				return err
 			}

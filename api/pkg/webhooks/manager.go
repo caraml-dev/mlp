@@ -11,8 +11,8 @@ type WebhookManager interface {
 	InvokeWebhooks(context.Context, EventType, interface{}, func([]byte) error, func(error) error) error
 }
 
-type webhookManager struct {
-	webhookClients map[EventType][]WebhookClient
+type SimpleWebhookManager struct {
+	WebhookClients map[EventType][]WebhookClient
 }
 
 // InvokeWebhooks iterates through the webhooks for a given event and invokes them.
@@ -25,11 +25,11 @@ type webhookManager struct {
 // This can be specified in the UseDataFrom field
 // For async clients, the payload is only the original input payload.
 // Only one webhook's response can be used as the finalResponse
-func (w *webhookManager) InvokeWebhooks(ctx context.Context, event EventType, p interface{}, onSuccess func([]byte) error, onError func(error) error) error {
+func (w *SimpleWebhookManager) InvokeWebhooks(ctx context.Context, event EventType, p interface{}, onSuccess func([]byte) error, onError func(error) error) error {
 	var asyncClients []WebhookClient
 	var syncClients []WebhookClient
 	var finalResponse []byte
-	whc, ok := w.webhookClients[event]
+	whc, ok := w.WebhookClients[event]
 	if !ok {
 		return fmt.Errorf("Could not find event %s", event)
 	}
@@ -95,7 +95,7 @@ func parseAndValidateConfig(eventList []EventType, webhookConfigMap map[EventTyp
 				if err := validateWebhookConfig(&webhookConfig); err != nil {
 					return nil, err
 				}
-				result = append(result, &SimpleWebhookClient{
+				result = append(result, &simpleWebhookClient{
 					WebhookConfig: webhookConfig,
 				})
 			}
@@ -113,7 +113,7 @@ func parseAndValidateConfig(eventList []EventType, webhookConfigMap map[EventTyp
 			return nil, err
 		}
 	}
-	return &webhookManager{webhookClients: eventToWHMap}, nil
+	return &SimpleWebhookManager{WebhookClients: eventToWHMap}, nil
 }
 
 func validateWebhookConfig(webhookConfig *WebhookConfig) error {

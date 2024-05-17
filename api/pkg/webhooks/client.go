@@ -76,7 +76,7 @@ type WebhookClient interface {
 	GetName() string
 }
 
-type SimpleWebhookClient struct {
+type simpleWebhookClient struct {
 	WebhookConfig
 }
 
@@ -100,7 +100,7 @@ type WebhookConfig struct {
 
 func NoOpErrorHandler(err error) error { return err }
 
-func (g *SimpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byte, error) {
+func (g *simpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byte, error) {
 	// create http request to webhook
 	var content []byte
 	err := retry.Do(
@@ -140,7 +140,7 @@ func (g *SimpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byt
 	return content, nil
 }
 
-func (g *SimpleWebhookClient) InvokeAsync(ctx context.Context, payload []byte) error {
+func (g *simpleWebhookClient) InvokeAsync(ctx context.Context, payload []byte) error {
 	go func() {
 		if _, err := g.Invoke(ctx, payload); err != nil {
 			return
@@ -149,22 +149,22 @@ func (g *SimpleWebhookClient) InvokeAsync(ctx context.Context, payload []byte) e
 	return nil
 }
 
-func (g *SimpleWebhookClient) IsAsync() bool {
+func (g *simpleWebhookClient) IsAsync() bool {
 	return g.Async
 }
 
-func (g *SimpleWebhookClient) AbortOnFail() bool {
+func (g *simpleWebhookClient) AbortOnFail() bool {
 	return g.OnError == onErrorAbort
 }
 
-func (g *SimpleWebhookClient) IsFinalResponse() bool {
+func (g *simpleWebhookClient) IsFinalResponse() bool {
 	return g.FinalResponse
 }
 
-func (g *SimpleWebhookClient) GetUseDataFrom() string {
+func (g *simpleWebhookClient) GetUseDataFrom() string {
 	return g.UseDataFrom
 }
 
-func (g *SimpleWebhookClient) GetName() string {
+func (g *simpleWebhookClient) GetName() string {
 	return g.Name
 }
