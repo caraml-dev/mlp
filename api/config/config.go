@@ -116,8 +116,9 @@ type UIConfig struct {
 	StaticPath string `validated:"required"`
 	IndexPath  string `validated:"required"`
 
-	ClockworkUIHomepage string `json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
-	KubeflowUIHomepage  string `json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`
+	ClockworkUIHomepage      string `json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
+	KubeflowUIHomepage       string `json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`
+	ProjectInfoUpdateEnabled bool   `json:"REACT_APP_PROJECT_INFO_UPDATE_ENABLED"`
 }
 
 // Transform env variables to the format consumed by koanf.
