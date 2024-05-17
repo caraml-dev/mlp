@@ -7,7 +7,13 @@ import (
 )
 
 type WebhookManager interface {
-	InvokeWebhooks(context.Context, EventType, interface{}, func([]byte) error, func(error) error) error
+	InvokeWebhooks(
+		context.Context,
+		EventType,
+		interface{},
+		func([]byte) error,
+		func(error) error,
+	) error
 }
 
 type SimpleWebhookManager struct {
@@ -24,7 +30,13 @@ type SimpleWebhookManager struct {
 // This can be specified in the UseDataFrom field
 // For async clients, the payload is only the original input payload.
 // Only one webhook's response can be used as the finalResponse
-func (w *SimpleWebhookManager) InvokeWebhooks(ctx context.Context, event EventType, p interface{}, onSuccess func([]byte) error, onError func(error) error) error {
+func (w *SimpleWebhookManager) InvokeWebhooks(
+	ctx context.Context,
+	event EventType,
+	p interface{},
+	onSuccess func([]byte) error,
+	onError func(error) error,
+) error {
 	var asyncClients []WebhookClient
 	var syncClients []WebhookClient
 	var finalResponse []byte
@@ -54,7 +66,10 @@ func (w *SimpleWebhookManager) InvokeWebhooks(ctx context.Context, event EventTy
 		} else if tmpPayload, ok = responsePayloadLookup[client.GetUseDataFrom()]; !ok {
 			// This should only happen if a previous error had an error, but did not abort
 			// and the current client is trying to use the response from that client
-			return fmt.Errorf("webhook name %s not found, this could be because an error in a downstream webhook", client.GetUseDataFrom())
+			return fmt.Errorf(
+				"webhook name %s not found, this could be because an error in a downstream webhook",
+				client.GetUseDataFrom(),
+			)
 		}
 		p, err := client.Invoke(ctx, tmpPayload)
 		if err == nil {
@@ -85,7 +100,10 @@ func (w *SimpleWebhookManager) InvokeWebhooks(ctx context.Context, event EventTy
 	return nil
 }
 
-func parseAndValidateConfig(eventList []EventType, webhookConfigMap map[EventType][]WebhookConfig) (WebhookManager, error) {
+func parseAndValidateConfig(
+	eventList []EventType,
+	webhookConfigMap map[EventType][]WebhookConfig,
+) (WebhookManager, error) {
 	eventToWHMap := make(map[EventType][]WebhookClient)
 	for _, eventType := range eventList {
 		if webhookConfigList, ok := webhookConfigMap[eventType]; ok {
@@ -162,7 +180,11 @@ func validateSyncClients(webhookClients []WebhookClient) error {
 			return fmt.Errorf("webhook name %s not found", client.GetUseDataFrom())
 		}
 		if useIdx > idx {
-			return fmt.Errorf("webhook name %s must be defined before %s", client.GetUseDataFrom(), client.GetName())
+			return fmt.Errorf(
+				"webhook name %s must be defined before %s",
+				client.GetUseDataFrom(),
+				client.GetName(),
+			)
 		}
 	}
 

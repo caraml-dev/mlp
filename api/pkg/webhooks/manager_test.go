@@ -277,7 +277,13 @@ func TestInvokeWebhooksSimple(t *testing.T) {
 	}
 
 	// Execution
-	err := webhookManager.InvokeWebhooks(context.Background(), "validEvent", &testPayloadData, onSuccess(t, response), onError)
+	err := webhookManager.InvokeWebhooks(
+		context.Background(),
+		"validEvent",
+		&testPayloadData,
+		onSuccess(t, response),
+		onError,
+	)
 
 	// Assertion
 	assert.NoError(t, err)           // Expect no error
@@ -315,7 +321,13 @@ func TestInvokeMultipleSyncWebhooks(t *testing.T) {
 		},
 	}
 	// Execution
-	err := webhookManager.InvokeWebhooks(context.Background(), "validEvent", &testPayloadData, onSuccess(t, response), onError)
+	err := webhookManager.InvokeWebhooks(
+		context.Background(),
+		"validEvent",
+		&testPayloadData,
+		onSuccess(t, response),
+		onError,
+	)
 
 	// Assertion
 	assert.NoError(t, err)

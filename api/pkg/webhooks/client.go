@@ -16,7 +16,11 @@ var EventList = []wh.EventType{
 }
 ```
 
-2. Define the event to webhook configuration. Optionally, the configuration can be provided in a yaml file and parsed via the `Config` struct. In the config file, define the event to webhook mapping for those events as required. For example, if projects need extra labels from an external source, we define the webhook config for the `OnProjectCreated` event
+2. Define the event to webhook configuration. Optionally, the configuration can be provided in a yaml file
+and parsed via the `Config` struct.
+In the config file, define the event to webhook mapping for those events as required.
+For example, if projects need extra labels from an external source,
+we define the webhook config for the `OnProjectCreated` event
 
 ```go
 webhooks:
@@ -82,11 +86,11 @@ type simpleWebhookClient struct {
 
 // WebhookConfig struct is the configuration for each webhook to be called
 type WebhookConfig struct {
-	Name        string `yaml:"name" validate:"required"`
-	URL         string `yaml:"url" validate:"required,url"`
+	Name        string `yaml:"name"        validate:"required"`
+	URL         string `yaml:"url"         validate:"required,url"`
 	Method      string `yaml:"method"`
 	AuthEnabled bool   `yaml:"authEnabled"`
-	AuthToken   string `yaml:"authToken" validate:"required_if=AuthEnabled True"`
+	AuthToken   string `yaml:"authToken"   validate:"required_if=AuthEnabled True"`
 	OnError     string `yaml:"onError"`
 	Async       bool   `yaml:"async"`
 	NumRetries  int    `yaml:"numRetries"`
