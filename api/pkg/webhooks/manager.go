@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 type WebhookManager interface {
@@ -114,32 +113,6 @@ func parseAndValidateConfig(eventList []EventType, webhookConfigMap map[EventTyp
 		}
 	}
 	return &SimpleWebhookManager{WebhookClients: eventToWHMap}, nil
-}
-
-func validateWebhookConfig(webhookConfig *WebhookConfig) error {
-	if webhookConfig.Name == "" {
-		return fmt.Errorf("missing webhook name")
-	}
-	if webhookConfig.URL == "" {
-		return fmt.Errorf("missing webhook URL")
-	}
-	if webhookConfig.Method == "" {
-		webhookConfig.Method = http.MethodPost // Default to POST, TODO: decide if GET is allowed
-	}
-	if webhookConfig.AuthEnabled && webhookConfig.AuthToken == "" {
-		return fmt.Errorf("missing webhook auth token")
-	}
-	if webhookConfig.OnError == "" {
-		webhookConfig.OnError = onErrorAbort
-	}
-	if webhookConfig.NumRetries < -1 {
-		return fmt.Errorf("numRetries must be a positive integer or -1")
-	}
-	if webhookConfig.Timeout == nil {
-		def := 10
-		webhookConfig.Timeout = &def
-	}
-	return nil
 }
 
 // validateWebhookResponse ensures that the response from a webhook is either
