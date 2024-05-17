@@ -7,9 +7,9 @@ import (
 
 // Paging can be used to capture paging information in API responses.
 type Paging struct {
-	Page  int32
-	Pages int32
-	Total int32
+	Page  int32 `json:"page,omitempty"`
+	Pages int32 `json:"pages,omitempty"`
+	Total int32 `json:"total,omitempty"`
 }
 
 // Options can be used to supply pagination filter options to APIs.
