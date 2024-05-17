@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useMemo } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import {
   EuiPanel,
   EuiFormRow,
@@ -9,12 +9,13 @@ import {
   EuiButton,
   EuiForm
 } from "@elastic/eui";
-import { addToast, EuiComboBoxSelect, useMlpApi } from "@caraml-dev/ui-lib";
+import { addToast, useMlpApi } from "@caraml-dev/ui-lib";
 import { ProjectFormContext } from "./context";
 import { EmailTextArea } from "./EmailTextArea";
 import { Labels } from "./Labels";
+import { Stream } from "./Stream";
+import { Team } from "./Team";
 import { isDNS1123Label } from "../../validation/validation";
-import config from "../../config";
 import { useNavigate } from "react-router-dom";
 
 const ProjectForm = () => {
@@ -30,19 +31,6 @@ const ProjectForm = () => {
     setLabels
   } = useContext(ProjectFormContext);
 
-  const streamOptions = useMemo(() => {
-    return Object.entries(config.STREAMS)
-      .map(([stream]) => stream.trim())
-      .sort((a, b) => a.localeCompare(b))
-      .map(stream => ({ label: stream }));
-  }, []);
-
-  const teamOptions = useMemo(() => {
-    return (config.STREAMS[project.stream] || [])
-      .sort((a, b) => a.localeCompare(b))
-      .map(team => ({ label: team.trim() }));
-  }, [project.stream]);
-
   const [projectError, setProjectError] = useState("");
   const [isValidProject, setIsValidProject] = useState(false);
   const onProjectChange = e => {
@@ -57,41 +45,8 @@ const ProjectForm = () => {
     setName(newValue);
   };
 
-  const [streamError, setStreamError] = useState("");
   const [isValidStream, setIsValidStream] = useState(false);
-  const onStreamChange = selectedStream => {
-    if (selectedStream !== project.stream) {
-      let isValid = isDNS1123Label(selectedStream);
-      if (!isValid) {
-        setStreamError(
-          "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-)"
-        );
-      }
-      setIsValidStream(isValid);
-      setStream(selectedStream);
-    }
-  };
-
-  const [teamError, setTeamError] = useState("");
   const [isValidTeam, setIsValidTeam] = useState(false);
-  const onTeamChange = selectedTeam => {
-    if (selectedTeam !== project.team) {
-      let isValid = isDNS1123Label(selectedTeam);
-      if (!isValid) {
-        setTeamError(
-          "Team name is invalid. It should contain only lowercase alphanumeric and dash (-)"
-        );
-      }
-      setIsValidTeam(isValid);
-      setTeam(selectedTeam);
-    }
-  };
-
-  useEffect(() => {
-    if (!project.team) {
-      setIsValidTeam(false);
-    }
-  }, [project.team]);
 
   const onAdminValueChange = emails => {
     setAdmin(emails);
@@ -118,32 +73,6 @@ const ProjectForm = () => {
   };
 
   const [isValidLabels, setIsValidLabels] = useState(true);
-  const [labelError, setLabelError] = useState("");
-  const onLabelChange = labels => {
-    const labelsValid =
-      labels.length === 0
-        ? true
-        : labels.reduce((labelsValid, label) => {
-            return labelsValid && label.isKeyValid && label.isValueValid;
-          }, true);
-    setIsValidLabels(labelsValid);
-    if (!labelsValid) {
-      setLabelError(
-        "Invalid labels. Both key and value of a label must contain only alphanumeric and dash (-)"
-      );
-    }
-
-    //deep copy
-    let newLabels = JSON.parse(JSON.stringify(labels));
-    newLabels = newLabels.map(element => {
-      delete element.isKeyValid;
-      delete element.isValueValid;
-      delete element.idx;
-      return element;
-    });
-
-    setLabels(newLabels);
-  };
 
   const onSubmit = () => {
     submitForm({ body: JSON.stringify(project) });
@@ -192,26 +121,23 @@ const ProjectForm = () => {
             <EuiDescribedFormGroup
               title={<h3>Stream</h3>}
               description="Product stream the project belongs to">
-              <EuiFormRow isInvalid={!isValidStream} error={streamError}>
-                <EuiComboBoxSelect
-                  value={project.stream}
-                  options={streamOptions}
-                  onChange={onStreamChange}
-                  onCreateOption={onStreamChange}
-                />
-              </EuiFormRow>
+              <Stream
+                stream={project.stream}
+                setStream={setStream}
+                isValidStream={isValidStream}
+                setIsValidStream={setIsValidStream}
+              />
             </EuiDescribedFormGroup>
             <EuiDescribedFormGroup
               title={<h3>Team</h3>}
               description="Owner of the project">
-              <EuiFormRow isInvalid={!isValidTeam} error={teamError}>
-                <EuiComboBoxSelect
-                  value={project.team}
-                  options={teamOptions}
-                  onChange={onTeamChange}
-                  onCreateOption={onTeamChange}
-                />
-              </EuiFormRow>
+              <Team
+                team={project.team}
+                setTeam={setTeam}
+                stream={project.stream}
+                isValidTeam={isValidTeam}
+                setIsValidTeam={setIsValidTeam}
+              />
             </EuiDescribedFormGroup>
             <EuiDescribedFormGroup
               title={<h3>Project Members</h3>}
@@ -238,9 +164,12 @@ const ProjectForm = () => {
             <EuiDescribedFormGroup
               title={<h3>Labels</h3>}
               description="Additional Labels">
-              <EuiFormRow isInvalid={!isValidLabels} error={labelError}>
-                <Labels onChange={onLabelChange} />
-              </EuiFormRow>
+              <Labels
+                labels={project.labels}
+                setLabels={setLabels}
+                setIsValidLabels={setIsValidLabels}
+                isValidLabels={isValidLabels}
+              />
             </EuiDescribedFormGroup>
           </EuiPanel>
         </EuiFlexItem>
