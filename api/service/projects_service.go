@@ -37,7 +37,8 @@ func NewProjectsService(
 	mlflowURL string,
 	projectRepository repository.ProjectRepository,
 	authEnforcer enforcer.Enforcer,
-	authEnabled bool, webhookManager webhooks.WebhookManager) (ProjectsService, error) {
+	authEnabled bool,
+	webhookManager webhooks.WebhookManager) (ProjectsService, error) {
 	if strings.TrimSpace(mlflowURL) == "" {
 		return nil, errors.New("default mlflow tracking url should be provided")
 	}

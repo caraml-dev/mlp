@@ -103,6 +103,7 @@ type WebhookConfig struct {
 }
 
 func NoOpErrorHandler(err error) error { return err }
+func NoOpCallback([]byte) error        { return nil }
 
 func (g *simpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byte, error) {
 	// create http request to webhook
