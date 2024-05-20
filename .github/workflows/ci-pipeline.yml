@@ -124,6 +124,13 @@ jobs:
       - name: Run Integration Test
         run: make it-test-api
 
+      - uses: codecov/codecov-action@v4
+        with:
+          flags: api-test
+          name: api-test
+          token: ${{ secrets.CODECOV_TOKEN }}
+          working-directory: ./api
+
   e2e-test:
     runs-on: ubuntu-latest
     needs:

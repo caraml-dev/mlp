@@ -28,6 +28,7 @@ authorization:
 ui:
   clockworkUIHomepage: http://clockwork.dev
   kubeflowUIHomepage: http://kubeflow.org
+  projectinfoUpdateEnabled: true
 
 defaultSecretStorage:
   name: default-secret-storage
