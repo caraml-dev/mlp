@@ -13,10 +13,7 @@ import { addToast, useMlpApi } from "@caraml-dev/ui-lib";
 import { ProjectFormContext } from "./context";
 import { EmailTextArea } from "./EmailTextArea";
 import { Labels } from "./Labels";
-import {
-  isDNS1123Label,
-  isValidK8sLabelValue
-} from "../../validation/validation";
+import { isDNS1123Label } from "../../validation/validation";
 import { Stream } from "./Stream";
 import { Team } from "./Team";
 import { useNavigate } from "react-router-dom";

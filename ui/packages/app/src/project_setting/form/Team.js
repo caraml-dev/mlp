@@ -24,7 +24,7 @@ export const Team = ({
     let isValid = isValidK8sLabelValue(team);
     if (!isValid) {
       setTeamError(
-        "Team name is invalid. It should contain only lowercase alphanumeric and dash (-), and must start and end with an alphanumeric character"
+        "Team name is invalid. It should contain only lowercase alphanumeric and dash (-) or underscore (_) or period (.), and must start and end with an alphanumeric character"
       );
     }
     setIsValidTeam(isValid);
