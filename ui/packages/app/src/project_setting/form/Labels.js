@@ -107,6 +107,8 @@ export const Labels = ({
     });
 
     setLabels(newLabels);
+
+    console.log(isDisabled || items.length === 0);
   };
 
   return (
@@ -151,9 +153,8 @@ export const Labels = ({
             iconType="plusInCircle"
             onClick={addItem}
             disabled={
-              isDisabled
-                ? true
-                : items.length === 0
+              isDisabled ||
+              (items.length === 0
                 ? false
                 : items.reduce((addButtonDisabled, currentValue) => {
                     return (
@@ -161,7 +162,7 @@ export const Labels = ({
                       !currentValue.isKeyValid ||
                       !currentValue.isValueValid
                     );
-                  }, false)
+                  }, false))
             }
           />
         </EuiFlexItem>
