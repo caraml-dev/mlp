@@ -17,7 +17,6 @@ import {
   isDNS1123Label,
   isValidK8sLabelValue
 } from "../../validation/validation";
-import config from "../../config";
 import { Stream } from "./Stream";
 import { Team } from "./Team";
 import { useNavigate } from "react-router-dom";
@@ -50,33 +49,6 @@ const ProjectForm = () => {
   };
 
   const [isValidStream, setIsValidStream] = useState(false);
-  const onStreamChange = selectedStream => {
-    if (selectedStream !== project.stream) {
-      let isValid = isValidK8sLabelValue(selectedStream);
-      if (!isValid) {
-        setStreamError(
-          "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-), or underscore (_) or period (.)"
-        );
-      }
-      setIsValidStream(isValid);
-      setStream(selectedStream);
-    }
-  };
-
-  const [teamError, setTeamError] = useState("");
-  const [isValidTeam, setIsValidTeam] = useState(false);
-  const onTeamChange = selectedTeam => {
-    if (selectedTeam !== project.team) {
-      let isValid = isValidK8sLabelValue(selectedTeam);
-      if (!isValid) {
-        setTeamError(
-          "Team name is invalid. It should contain only lowercase alphanumeric and dash (-), or underscore (_) or period (.)"
-        );
-      }
-      setIsValidTeam(isValid);
-      setTeam(selectedTeam);
-    }
-  };
 
   useEffect(() => {
     if (!project.team) {
@@ -158,22 +130,6 @@ const ProjectForm = () => {
             <EuiDescribedFormGroup
               title={<h3>Stream</h3>}
               description="Product stream the project belongs to">
-              <EuiFormRow isInvalid={!isValidStream} error={streamError}>
-                {config.ALLOW_CUSTOM_STREAM ? (
-                  <EuiComboBoxSelect
-                    value={project.stream}
-                    options={streamOptions}
-                    onChange={onStreamChange}
-                    onCreateOption={onStreamChange}
-                  />
-                ) : (
-                  <EuiComboBoxSelect
-                    value={project.stream}
-                    options={streamOptions}
-                    onChange={onStreamChange}
-                  />
-                )}
-              </EuiFormRow>
               <Stream
                 stream={project.stream}
                 setStream={setStream}
@@ -184,23 +140,6 @@ const ProjectForm = () => {
             <EuiDescribedFormGroup
               title={<h3>Team</h3>}
               description="Owner of the project">
-              <EuiFormRow isInvalid={!isValidTeam} error={teamError}>
-                {config.ALLOW_CUSTOM_TEAM ? (
-                  <EuiComboBoxSelect
-                    value={project.team}
-                    options={teamOptions}
-                    onChange={onTeamChange}
-                    onCreateOption={onTeamChange}
-                  />
-                ) : (
-                  <EuiComboBoxSelect
-                    value={project.team}
-                    options={teamOptions}
-                    onChange={onTeamChange}
-                    onCreateOption={onTeamChange}
-                  />
-                )}
-              </EuiFormRow>
               <Team
                 team={project.team}
                 setTeam={setTeam}

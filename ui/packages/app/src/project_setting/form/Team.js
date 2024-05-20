@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { EuiFormRow } from "@elastic/eui";
 import { EuiComboBoxSelect } from "@caraml-dev/ui-lib";
-import { isDNS1123Label } from "../../validation/validation";
+import { isValidK8sLabelValue } from "../../validation/validation";
 import config from "../../config";
 
 export const Team = ({
@@ -21,7 +21,7 @@ export const Team = ({
   const [teamError, setTeamError] = useState("");
 
   const onTeamChange = team => {
-    let isValid = isDNS1123Label(team);
+    let isValid = isValidK8sLabelValue(team);
     if (!isValid) {
       setTeamError(
         "Team name is invalid. It should contain only lowercase alphanumeric and dash (-), and must start and end with an alphanumeric character"
@@ -39,13 +39,23 @@ export const Team = ({
 
   return (
     <EuiFormRow isInvalid={!isValidTeam} error={teamError}>
-      <EuiComboBoxSelect
-        value={team}
-        options={teamOptions}
-        onChange={onTeamChange}
-        onCreateOption={onTeamChange}
-        isDisabled={isDisabled}
-      />
+      {config.ALLOW_CUSTOM_TEAM ? (
+        <EuiComboBoxSelect
+          value={team}
+          options={teamOptions}
+          onChange={onTeamChange}
+          onCreateOption={onTeamChange}
+          isDiasbled={isDisabled}
+        />
+      ) : (
+        <EuiComboBoxSelect
+          value={team}
+          options={teamOptions}
+          onChange={onTeamChange}
+          onCreateOption={onTeamChange}
+          isDiasbled={isDisabled}
+        />
+      )}
     </EuiFormRow>
   );
 };
