@@ -35,6 +35,7 @@ type Config struct {
 	DefaultSecretStorage *SecretStorage         `validate:"required"`
 	UI                   *UIConfig
 	Webhooks             *webhooks.Config
+	UpdateProject        *UpdateProjectConfig `validate:"required"`
 }
 
 // SecretStorage represents the configuration for a secret storage.
@@ -124,6 +125,13 @@ type UIConfig struct {
 	AllowCustomStream        bool `json:"REACT_APP_ALLOW_CUSTOM_STREAM"`
 	AllowCustomTeam          bool `json:"REACT_APP_ALLOW_CUSTOM_TEAM"`
 	ProjectInfoUpdateEnabled bool `json:"REACT_APP_PROJECT_INFO_UPDATE_ENABLED"`
+}
+
+type UpdateProjectConfig struct {
+	UpdateProjectEndpoint        string `validate:"required,url"`
+	UpdateProjectPayload         string `validate:"required"`
+	UpdateProjectResponse        string `validate:"required"`
+	UpdateProjectLabelsBlacklist []string
 }
 
 // Transform env variables to the format consumed by koanf.
@@ -223,6 +231,12 @@ var defaultConfig = &Config{
 		StaticPath:        "ui/build",
 		AllowCustomTeam:   true,
 		AllowCustomStream: true,
+	},
+	UpdateProject: &UpdateProjectConfig{
+		UpdateProjectEndpoint:        "",
+		UpdateProjectPayload:         `{}`,
+		UpdateProjectResponse:        `{}`,
+		UpdateProjectLabelsBlacklist: []string{"team_id"},
 	},
 	DefaultSecretStorage: &SecretStorage{
 		Name: "internal",
