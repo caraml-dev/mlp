@@ -32,6 +32,7 @@ export const EuiComboBoxSelect = ({ value, onChange, options, ...props }) => {
         onChange(selected.length ? selected[0].label : undefined);
       }}
       isClearable={props.isClearable || true}
+      isDisabled={props.isDisabled}
       selectedOptions={selected}
       rowHeight={EuiComboboxSuggestItemRowHeight}
       onCreateOption={props.onCreateOption}

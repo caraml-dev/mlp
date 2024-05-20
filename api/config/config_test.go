@@ -246,6 +246,7 @@ func TestLoad(t *testing.T) {
 					KubeflowUIHomepage:  "http://kubeflow.org",
 					AllowCustomTeam:     true,
 					AllowCustomStream:   true,
+					ProjectInfoUpdateEnabled: true,
 				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",
@@ -328,6 +329,9 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				UI: &config.UIConfig{
+					ProjectInfoUpdateEnabled: true,
+				},
 			},
 		},
 		"extended | success": {
@@ -371,6 +375,9 @@ func TestValidate(t *testing.T) {
 							GCPAuthType: models.GCEGCPAuthType,
 						},
 					},
+				},
+				UI: &config.UIConfig{
+					ProjectInfoUpdateEnabled: true,
 				},
 			},
 		},
@@ -420,6 +427,9 @@ func TestValidate(t *testing.T) {
 						},
 					},
 				},
+				UI: &config.UIConfig{
+					ProjectInfoUpdateEnabled: true,
+				},
 			},
 			error: errors.New(
 				"failed to validate configuration: " +
@@ -464,6 +474,9 @@ func TestValidate(t *testing.T) {
 							GCPAuthType: models.GCEGCPAuthType,
 						},
 					},
+				},
+				UI: &config.UIConfig{
+					ProjectInfoUpdateEnabled: true,
 				},
 			},
 			error: errors.New(

@@ -3,6 +3,7 @@ import { EuiSideNav, EuiIcon, EuiPageTemplate } from "@elastic/eui";
 import { slugify } from "@caraml-dev/ui-lib/src/utils";
 import UserRoleSetting from "./UserRoleSetting";
 import SecretSetting from "./SecretSetting";
+import ProjectInfoSetting from "./ProjectInfoSetting";
 import {
   Navigate,
   Route,
@@ -15,6 +16,10 @@ const sections = {
   "user-roles": {
     iconType: "user",
     name: "User Roles"
+  },
+  "project-info": {
+    iconType: "iInCircle",
+    name: "Project Info"
   },
   "secrets-management": {
     iconType: "lock",
@@ -64,6 +69,7 @@ const ProjectSetting = () => {
         <Routes>
           <Route index element={<Navigate to="user-roles" replace={true} />} />
           <Route path="user-roles" element={<UserRoleSetting />} />
+          <Route path="project-info" element={<ProjectInfoSetting />} />
           <Route path="secrets-management" element={<SecretSetting />} />
           <Route
             path="*"

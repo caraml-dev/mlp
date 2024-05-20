@@ -121,6 +121,7 @@ type UIConfig struct {
 
 	AllowCustomStream bool `json:"REACT_APP_ALLOW_CUSTOM_STREAM"`
 	AllowCustomTeam   bool `json:"REACT_APP_ALLOW_CUSTOM_TEAM"`
+	ProjectInfoUpdateEnabled bool   `json:"REACT_APP_PROJECT_INFO_UPDATE_ENABLED"`
 }
 
 // Transform env variables to the format consumed by koanf.

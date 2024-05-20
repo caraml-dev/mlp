@@ -5,12 +5,32 @@ import {
   EuiFieldText,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiButton
+  EuiButton,
+  EuiFormRow
 } from "@elastic/eui";
 import { isDNS1123Label } from "../../validation/validation";
 
-export const Labels = ({ onChange }) => {
-  const [items, setItems] = useState([]);
+export const Labels = ({
+  labels,
+  setLabels,
+  setIsValidLabels,
+  isValidLabels,
+  isDisabled = false
+}) => {
+  const [items, setItems] = useState(
+    (e => {
+      if (e) {
+        return e.map((label, idx) => ({
+          ...label,
+          idx,
+          isKeyValid: true,
+          isValueValid: true
+        }));
+      } else {
+        return [];
+      }
+    })(labels)
+  );
 
   const addItem = () => {
     const newItems = [
@@ -62,57 +82,91 @@ export const Labels = ({ onChange }) => {
     };
   };
 
-  return (
-    <EuiFlexGroup direction="column" gutterSize="m">
-      {items.map((element, idx) => {
-        return (
-          <EuiFlexItem>
-            <EuiFlexGroup gutterSize="s">
-              <EuiFlexItem grow={1}>
-                <EuiFieldText
-                  placeholder="key"
-                  value={element.key}
-                  onChange={onKeyChange(idx)}
-                  isInvalid={!element.isKeyValid}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem grow={1}>
-                <EuiFieldText
-                  placeholder="value"
-                  value={element.value}
-                  onChange={onValueChange(idx)}
-                  isInvalid={!element.isValueValid}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiButtonEmpty
-                  iconType="trash"
-                  onClick={removeElement(idx)}
-                  color="danger"
-                />
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-        );
-      })}
+  const [labelError, setLabelError] = useState("");
+  const onChange = labels => {
+    const labelsValid =
+      labels.length === 0
+        ? true
+        : labels.reduce((labelsValid, label) => {
+            return labelsValid && label.isKeyValid && label.isValueValid;
+          }, true);
+    setIsValidLabels(labelsValid);
+    if (!labelsValid) {
+      setLabelError(
+        "Invalid labels. Both key and value of a label must contain only lowercase alphanumeric and dash (-), and must start and end with an alphanumeric character"
+      );
+    }
 
-      <EuiFlexItem>
-        <EuiButton
-          iconType="plusInCircle"
-          onClick={addItem}
-          disabled={
-            items.length === 0
-              ? false
-              : items.reduce((addButtonDisabled, currentValue) => {
-                  return (
-                    addButtonDisabled ||
-                    !currentValue.isKeyValid ||
-                    !currentValue.isValueValid
-                  );
-                }, false)
-          }
-        />
-      </EuiFlexItem>
-    </EuiFlexGroup>
+    //deep copy
+    let newLabels = JSON.parse(JSON.stringify(labels));
+    newLabels = newLabels.map(element => {
+      delete element.isKeyValid;
+      delete element.isValueValid;
+      delete element.idx;
+      return element;
+    });
+
+    setLabels(newLabels);
+
+    console.log(isDisabled || items.length === 0);
+  };
+
+  return (
+    <EuiFormRow isInvalid={!isValidLabels} error={labelError}>
+      <EuiFlexGroup direction="column" gutterSize="m">
+        {items.map((element, idx) => {
+          return (
+            <EuiFlexItem>
+              <EuiFlexGroup gutterSize="s">
+                <EuiFlexItem grow={1}>
+                  <EuiFieldText
+                    placeholder="key"
+                    value={element.key}
+                    onChange={onKeyChange(idx)}
+                    isInvalid={!element.isKeyValid}
+                    disabled={isDisabled}
+                  />
+                </EuiFlexItem>
+                <EuiFlexItem grow={1}>
+                  <EuiFieldText
+                    placeholder="value"
+                    value={element.value}
+                    onChange={onValueChange(idx)}
+                    isInvalid={!element.isValueValid}
+                    disabled={isDisabled}
+                  />
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiButtonEmpty
+                    iconType="trash"
+                    onClick={removeElement(idx)}
+                    color="danger"
+                    disabled={isDisabled}
+                  />
+                </EuiFlexItem>
+              </EuiFlexGroup>
+            </EuiFlexItem>
+          );
+        })}
+        <EuiFlexItem>
+          <EuiButton
+            iconType="plusInCircle"
+            onClick={addItem}
+            disabled={
+              isDisabled ||
+              (items.length === 0
+                ? false
+                : items.reduce((addButtonDisabled, currentValue) => {
+                    return (
+                      addButtonDisabled ||
+                      !currentValue.isKeyValid ||
+                      !currentValue.isValueValid
+                    );
+                  }, false))
+            }
+          />
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    </EuiFormRow>
   );
 };
