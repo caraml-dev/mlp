@@ -83,7 +83,7 @@ const UpdateProjectInfoModal = ({
         buttonColor="primary"
         defaultFocusedButton="confirm">
         <p>
-          You are about to update the project info for project{" "}
+          You are about to update the project info for the project{" "}
           <b>{project.name}</b>
           , are you sure?
           <br />

@@ -24,7 +24,7 @@ export const Stream = ({
     let isValid = isDNS1123Label(stream);
     if (!isValid) {
       setStreamError(
-        "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-) and must start and end with an alphanumeric character"
+        "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-), and must start and end with an alphanumeric character"
       );
     }
     setIsValidStream(isValid);

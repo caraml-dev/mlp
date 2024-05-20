@@ -24,7 +24,7 @@ export const Team = ({
     let isValid = isDNS1123Label(team);
     if (!isValid) {
       setTeamError(
-        "Team name is invalid. It should contain only lowercase alphanumeric and dash (-) and must start and end with an alphanumeric character"
+        "Team name is invalid. It should contain only lowercase alphanumeric and dash (-), and must start and end with an alphanumeric character"
       );
     }
     setIsValidTeam(isValid);
