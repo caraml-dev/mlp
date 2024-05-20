@@ -91,7 +91,6 @@ func (w *SimpleWebhookManager) InvokeWebhooks(
 			return onError(err)
 		}
 	}
-	// tmpPayload here is the last response.
 	if err := onSuccess(finalResponse); err != nil {
 		// If the callback fails, return the error
 		return err
