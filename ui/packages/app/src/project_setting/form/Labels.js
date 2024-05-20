@@ -96,7 +96,6 @@ export const Labels = ({
         "Invalid labels. Both key and value of a label must contain only lowercase alphanumeric and dash (-), and must start and end with an alphanumeric character"
       );
     }
-    // }
 
     //deep copy
     let newLabels = JSON.parse(JSON.stringify(labels));
@@ -147,13 +146,14 @@ export const Labels = ({
             </EuiFlexItem>
           );
         })}
-
         <EuiFlexItem>
           <EuiButton
             iconType="plusInCircle"
             onClick={addItem}
             disabled={
-              isDisabled || items.length === 0
+              isDisabled
+                ? true
+                : items.length === 0
                 ? false
                 : items.reduce((addButtonDisabled, currentValue) => {
                     return (
