@@ -242,10 +242,10 @@ func TestLoad(t *testing.T) {
 					StaticPath: "ui/build",
 					IndexPath:  "index.html",
 
-					ClockworkUIHomepage: "http://clockwork.dev",
-					KubeflowUIHomepage:  "http://kubeflow.org",
-					AllowCustomTeam:     true,
-					AllowCustomStream:   true,
+					ClockworkUIHomepage:      "http://clockwork.dev",
+					KubeflowUIHomepage:       "http://kubeflow.org",
+					AllowCustomTeam:          true,
+					AllowCustomStream:        true,
 					ProjectInfoUpdateEnabled: true,
 				},
 				DefaultSecretStorage: &config.SecretStorage{
