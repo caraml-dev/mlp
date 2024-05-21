@@ -39,23 +39,13 @@ export const Team = ({
 
   return (
     <EuiFormRow isInvalid={!isValidTeam} error={teamError}>
-      {config.ALLOW_CUSTOM_TEAM ? (
-        <EuiComboBoxSelect
-          value={team}
-          options={teamOptions}
-          onChange={onTeamChange}
-          onCreateOption={onTeamChange}
-          isDiasbled={isDisabled}
-        />
-      ) : (
-        <EuiComboBoxSelect
-          value={team}
-          options={teamOptions}
-          onChange={onTeamChange}
-          onCreateOption={onTeamChange}
-          isDiasbled={isDisabled}
-        />
-      )}
+      <EuiComboBoxSelect
+        value={team}
+        options={teamOptions}
+        onChange={onTeamChange}
+        onCreateOption={config.ALLOW_CUSTOM_TEAM ? onTeamChange : undefined}
+        isDiasbled={isDisabled}
+      />
     </EuiFormRow>
   );
 };

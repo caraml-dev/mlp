@@ -33,22 +33,12 @@ export const Stream = ({
 
   return (
     <EuiFormRow isInvalid={!isValidStream} error={streamError}>
-      {config.ALLOW_CUSTOM_STREAM ? (
-        <EuiComboBoxSelect
-          value={stream}
-          options={streamOptions}
-          onChange={onStreamChange}
-          onCreateOption={onStreamChange}
-          isDiasbled={isDisabled}
-        />
-      ) : (
-        <EuiComboBoxSelect
-          value={stream}
-          options={streamOptions}
-          onChange={onStreamChange}
-          isDiasbled={isDisabled}
-        />
-      )}
+      <EuiComboBoxSelect
+        value={stream}
+        options={streamOptions}
+        onChange={onStreamChange}
+        onCreateOption={config.ALLOW_CUSTOM_STREAM ? onStreamChange : undefined}
+      />
     </EuiFormRow>
   );
 };
