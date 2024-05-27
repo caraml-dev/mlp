@@ -24,7 +24,7 @@ export const Stream = ({
     let isValid = isValidK8sLabelValue(stream);
     if (!isValid) {
       setStreamError(
-        "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-), or underscore (_) or period (.)"
+        "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-), or underscore (_) or period (.), and must start and end with an alphanumeric character"
       );
     }
     setIsValidStream(isValid);
@@ -38,6 +38,7 @@ export const Stream = ({
         options={streamOptions}
         onChange={onStreamChange}
         onCreateOption={config.ALLOW_CUSTOM_STREAM ? onStreamChange : undefined}
+        isDiasbled={isDisabled}
       />
     </EuiFormRow>
   );
