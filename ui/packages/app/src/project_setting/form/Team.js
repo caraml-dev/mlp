@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { EuiFormRow } from "@elastic/eui";
 import { EuiComboBoxSelect } from "@caraml-dev/ui-lib";
-import { isValidK8sLabelValue } from "../../validation/validation";
+import { isValidK8sLabelKeyValue } from "../../validation/validation";
 import config from "../../config";
 
 export const Team = ({
@@ -21,7 +21,7 @@ export const Team = ({
   const [teamError, setTeamError] = useState("");
 
   const onTeamChange = team => {
-    let isValid = isValidK8sLabelValue(team);
+    let isValid = isValidK8sLabelKeyValue(team);
     if (!isValid) {
       setTeamError(
         "Team name is invalid. It should contain only lowercase alphanumeric and dash (-) or underscore (_) or period (.), and must start and end with an alphanumeric character"
