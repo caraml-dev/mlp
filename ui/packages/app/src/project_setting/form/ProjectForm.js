@@ -47,11 +47,6 @@ const ProjectForm = () => {
 
   const [isValidStream, setIsValidStream] = useState(false);
 
-  useEffect(() => {
-    if (!project.team) {
-      setIsValidTeam(false);
-    }
-  }, [project.team]);
   const [isValidTeam, setIsValidTeam] = useState(false);
 
   const onAdminValueChange = emails => {
