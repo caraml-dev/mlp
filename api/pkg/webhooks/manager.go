@@ -60,7 +60,7 @@ func (w *SimpleWebhookManager) InvokeWebhooks(
 			// This should only happen if a previous webhook had an error, but did not abort
 			// and the current client is trying to use the response from that client
 			return fmt.Errorf(
-				"webhook name %s not found, this could be because an error in a previous webhook that this webhook depends on",
+				"webhook name %s not found, this could be because of an error in a previous webhook that this webhook depends on",
 				client.GetUseDataFrom(),
 			)
 		}

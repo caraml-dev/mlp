@@ -247,6 +247,37 @@ func TestInitializeWebhooks(t *testing.T) {
 			eventList:     []EventType{"event1"},
 			expectedError: true,
 		},
+		{
+			name: "Config enabled with multiple webhooks with sync and async, fail with duplicate names",
+			cfg: &Config{
+				Enabled: true,
+				Config: map[EventType][]WebhookConfig{
+					"event1": {
+						{
+							Name:        "webhook2",
+							URL:         "http://example.com",
+							Method:      "POST",
+							UseDataFrom: "webhook1",
+							Async:       true,
+						},
+						{
+							Name:          "webhook1",
+							URL:           "http://example.com",
+							Method:        "POST",
+							FinalResponse: true,
+						},
+						{
+							Name:   "webhook2",
+							URL:    "http://example.com",
+							Method: "POST",
+							Async:  true,
+						},
+					},
+				},
+			},
+			eventList:     []EventType{"event1"},
+			expectedError: true,
+		},
 	}
 
 	for _, test := range tests {
