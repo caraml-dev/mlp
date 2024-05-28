@@ -3,10 +3,11 @@ package cmd
 import (
 	"testing"
 
-	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
-	enforcerMock "github.com/caraml-dev/mlp/api/pkg/authz/enforcer/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
+	enforcerMock "github.com/caraml-dev/mlp/api/pkg/authz/enforcer/mocks"
 )
 
 func TestStartKetoBootsrap(t *testing.T) {

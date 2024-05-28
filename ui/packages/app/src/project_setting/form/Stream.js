@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { EuiFormRow } from "@elastic/eui";
 import { EuiComboBoxSelect } from "@caraml-dev/ui-lib";
-import { isDNS1123Label } from "../../validation/validation";
+import { isValidK8sLabelKeyValue } from "../../validation/validation";
 import config from "../../config";
 
 export const Stream = ({
@@ -21,10 +21,10 @@ export const Stream = ({
   const [streamError, setStreamError] = useState("");
 
   const onStreamChange = stream => {
-    let isValid = isDNS1123Label(stream);
+    let isValid = isValidK8sLabelKeyValue(stream);
     if (!isValid) {
       setStreamError(
-        "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-), and must start and end with an alphanumeric character"
+        "Stream name is invalid. It should contain only lowercase alphanumeric and dash (-), or underscore (_) or period (.), and must start and end with an alphanumeric character"
       );
     }
     setIsValidStream(isValid);
@@ -37,8 +37,8 @@ export const Stream = ({
         value={stream}
         options={streamOptions}
         onChange={onStreamChange}
-        onCreateOption={onStreamChange}
-        isDisabled={isDisabled}
+        onCreateOption={config.ALLOW_CUSTOM_STREAM ? onStreamChange : undefined}
+        isDiasbled={isDisabled}
       />
     </EuiFormRow>
   );

@@ -8,7 +8,7 @@ import {
   EuiButton,
   EuiFormRow
 } from "@elastic/eui";
-import { isDNS1123Label } from "../../validation/validation";
+import { isValidK8sLabelKeyValue } from "../../validation/validation";
 
 export const Labels = ({
   labels,
@@ -52,7 +52,7 @@ export const Labels = ({
       newItems[idx] = {
         ...newItems[idx],
         key: newKey,
-        isKeyValid: isDNS1123Label(newKey)
+        isKeyValid: isValidK8sLabelKeyValue(newKey)
       };
       setItems(newItems);
       onChange(newItems);
@@ -66,7 +66,7 @@ export const Labels = ({
       newItems[idx] = {
         ...newItems[idx],
         value: newValue,
-        isValueValid: isDNS1123Label(newValue)
+        isValueValid: isValidK8sLabelKeyValue(newValue)
       };
       setItems(newItems);
       onChange(newItems);

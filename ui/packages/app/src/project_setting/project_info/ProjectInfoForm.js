@@ -9,7 +9,7 @@ import {
 } from "@elastic/eui";
 import SubmitProjectInfoForm from "./SubmitProjectInfoForm";
 import config from "../../config";
-import { isDNS1123Label } from "../../validation/validation";
+import { isValidK8sLabelKeyValue } from "../../validation/validation";
 import { ProjectFormContext } from "../form/context";
 import { Labels } from "../form/Labels";
 import { Stream } from "../form/Stream";
@@ -21,9 +21,11 @@ const ProjectInfoForm = ({ originalProject, fetchUpdates }) => {
   );
 
   const [isValidStream, setIsValidStream] = useState(
-    isDNS1123Label(project.stream)
+    isValidK8sLabelKeyValue(project.stream)
   );
-  const [isValidTeam, setIsValidTeam] = useState(isDNS1123Label(project.team));
+  const [isValidTeam, setIsValidTeam] = useState(
+    isValidK8sLabelKeyValue(project.team)
+  );
 
   const [isValidLabels, setIsValidLabels] = useState(
     project.labels.length === 0
@@ -31,8 +33,8 @@ const ProjectInfoForm = ({ originalProject, fetchUpdates }) => {
       : project.labels.reduce((labelsValid, label) => {
           return (
             labelsValid &&
-            isDNS1123Label(label.key) &&
-            isDNS1123Label(label.value)
+            isValidK8sLabelKeyValue(label.key) &&
+            isValidK8sLabelKeyValue(label.value)
           );
         }, true)
   );

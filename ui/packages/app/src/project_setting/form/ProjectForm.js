@@ -13,9 +13,9 @@ import { addToast, useMlpApi } from "@caraml-dev/ui-lib";
 import { ProjectFormContext } from "./context";
 import { EmailTextArea } from "./EmailTextArea";
 import { Labels } from "./Labels";
+import { isValidK8sLabelKeyValue } from "../../validation/validation";
 import { Stream } from "./Stream";
 import { Team } from "./Team";
-import { isDNS1123Label } from "../../validation/validation";
 import { useNavigate } from "react-router-dom";
 
 const ProjectForm = () => {
@@ -35,7 +35,7 @@ const ProjectForm = () => {
   const [isValidProject, setIsValidProject] = useState(false);
   const onProjectChange = e => {
     const newValue = e.target.value;
-    let isValid = isDNS1123Label(newValue);
+    let isValid = isValidK8sLabelKeyValue(newValue);
     if (!isValid) {
       setProjectError(
         "Project name is invalid. It should contain only lowercase alphanumeric and dash ('-')"
@@ -46,6 +46,7 @@ const ProjectForm = () => {
   };
 
   const [isValidStream, setIsValidStream] = useState(false);
+
   const [isValidTeam, setIsValidTeam] = useState(false);
 
   const onAdminValueChange = emails => {
