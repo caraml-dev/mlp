@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
-import PropTypes from "prop-types";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
+import PropTypes from "prop-types";
+import React, { useCallback, useEffect, useState } from "react";
 
 const emptyState = {
   isAuthenticated: false,
