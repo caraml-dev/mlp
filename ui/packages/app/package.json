@@ -14,8 +14,8 @@
     "object-assign-deep": "0.4.0",
     "proper-url-join": "2.1.1",
     "query-string": "^9.0.0",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "react-router-dom": "^6.23.1"
   },
   "devDependencies": {
