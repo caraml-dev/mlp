@@ -1,29 +1,29 @@
-import React from "react";
 import {
   EuiFlexGroup,
   EuiFlexItem,
-  EuiLoadingContent,
-  EuiPageTemplate
+  EuiPageTemplate,
+  EuiSkeletonText
 } from "@elastic/eui";
+import React from "react";
 
 export const PagePlaceholder = () => (
   <EuiPageTemplate restrictWidth="90%">
     <EuiPageTemplate.Section grow={false}>
-      <EuiLoadingContent lines={2} />
+      <EuiSkeletonText lines={2} />
     </EuiPageTemplate.Section>
 
     <EuiPageTemplate.Section grow={false}>
-      <EuiLoadingContent lines={5} />
+      <EuiSkeletonText lines={5} />
     </EuiPageTemplate.Section>
 
     <EuiPageTemplate.Section>
       <EuiFlexGroup direction="row">
         <EuiFlexItem>
-          <EuiLoadingContent lines={10} />
+          <EuiSkeletonText lines={10} />
         </EuiFlexItem>
 
         <EuiFlexItem>
-          <EuiLoadingContent lines={10} />
+          <EuiSkeletonText lines={10} />
         </EuiFlexItem>
       </EuiFlexGroup>
     </EuiPageTemplate.Section>
