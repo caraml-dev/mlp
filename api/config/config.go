@@ -222,4 +222,7 @@ var defaultConfig = &Config{
 		Name: "internal",
 		Type: "internal",
 	},
+	Webhooks: &webhooks.Config{
+		Enabled: false,
+	},
 }

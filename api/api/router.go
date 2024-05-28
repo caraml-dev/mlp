@@ -62,9 +62,13 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		return nil, fmt.Errorf("failed to initialize applications service: %v", err)
 	}
 
-	projectsWebhookManager, err := webhooks.InitializeWebhooks(cfg.Webhooks, service.EventList)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize projects webhook manager: %v", err)
+	var projectsWebhookManager webhooks.WebhookManager
+	if cfg.Webhooks.Enabled {
+		projectsWebhookManager, err = webhooks.InitializeWebhooks(cfg.Webhooks, service.EventList)
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize projects webhook manager: %v", err)
+		}
+
 	}
 
 	projectsService, err := service.NewProjectsService(

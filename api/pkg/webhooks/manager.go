@@ -160,7 +160,8 @@ func validateSyncClients(webhookClients []WebhookClient) error {
 	if !isFinalResponseSet {
 		return fmt.Errorf("at least 1 sync client must have finalResponse set to true")
 	}
-	// Ensure that all useDataFrom fields exist
+
+	// Check for duplicate webhook names
 	webhookNames := make(map[string]int)
 	for idx, client := range webhookClients {
 		if _, ok := webhookNames[client.GetName()]; ok {
@@ -169,9 +170,13 @@ func validateSyncClients(webhookClients []WebhookClient) error {
 		webhookNames[client.GetName()] = idx
 
 	}
-	// Ensure that webhook order is correct if they have dependencies
+	// Ensure that if a client uses the response from another client, that client exists
+	// If a client uses the response from another client, it must be defined before it
 	for idx, client := range webhookClients {
 		if client.GetUseDataFrom() == "" {
+			// If the client does not use data from another webhook,
+			// then we can skip the rest of the checks
+			// since the payload used will be the user's payload
 			continue
 		}
 		useIdx, ok := webhookNames[client.GetUseDataFrom()]
