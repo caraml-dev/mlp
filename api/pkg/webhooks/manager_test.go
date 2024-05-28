@@ -264,15 +264,14 @@ func TestInvokeWebhooksSimple(t *testing.T) {
 	mockClient := &MockWebhookClient{}
 	// Expect Invoke to return response from client and no error
 	mockClient.On("Invoke", mock.Anything, mock.Anything).Return(response, nil).Once()
-	mockClient.On("IsAsync").Return(false)
 	mockClient.On("IsFinalResponse").Return(true)
 	mockClient.On("GetUseDataFrom").Return("")
 	mockClient.On("GetName").Return("webhook1")
 
 	// Setup WebhookManager with the mock client
 	webhookManager := &SimpleWebhookManager{
-		WebhookClients: map[EventType][]WebhookClient{
-			"validEvent": {mockClient},
+		WebhookClients: map[EventType]map[WebhookType][]WebhookClient{
+			"validEvent": {Sync: {mockClient}},
 		},
 	}
 
@@ -297,7 +296,6 @@ func TestInvokeMultipleSyncWebhooks(t *testing.T) {
 	mockClient := &MockWebhookClient{}
 	// Expect Invoke to return response from client and no error
 	mockClient.On("Invoke", mock.Anything, mock.Anything).Return(webhook1Result, nil)
-	mockClient.On("IsAsync").Return(false)
 	mockClient.On("GetName").Return("webhook1")
 	mockClient.On("IsFinalResponse").Return(false)
 	mockClient.On("GetUseDataFrom").Return("")
@@ -310,14 +308,13 @@ func TestInvokeMultipleSyncWebhooks(t *testing.T) {
 		}
 		return true
 	})).Return(response, nil)
-	mockClient2.On("IsAsync").Return(false)
 	mockClient2.On("GetName").Return("webhook2")
 	mockClient2.On("GetUseDataFrom").Return("webhook1")
 	mockClient2.On("IsFinalResponse").Return(true)
 	// Setup WebhookManager with the mock client
 	webhookManager := &SimpleWebhookManager{
-		WebhookClients: map[EventType][]WebhookClient{
-			"validEvent": {mockClient, mockClient2},
+		WebhookClients: map[EventType]map[WebhookType][]WebhookClient{
+			"validEvent": {Sync: {mockClient, mockClient2}},
 		},
 	}
 	// Execution

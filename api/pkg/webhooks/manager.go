@@ -118,7 +118,7 @@ func parseAndValidateConfig(
 			}
 		}
 		allClients := append(syncClients, asyncClients...)
-		if err := validateSyncClients(allClients); err != nil {
+		if err := validateClients(allClients); err != nil {
 			return nil, err
 		}
 		tmpMap := make(map[WebhookType][]WebhookClient)
@@ -144,7 +144,7 @@ func validateWebhookResponse(content []byte) error {
 	return fmt.Errorf("webhook response is not a valid json object and not empty")
 }
 
-func validateSyncClients(webhookClients []WebhookClient) error {
+func validateClients(webhookClients []WebhookClient) error {
 	// ensure that only 1 sync client has finalResponse set to true
 	isFinalResponseSet := false
 	for _, client := range webhookClients {
