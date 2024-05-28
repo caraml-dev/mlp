@@ -17,7 +17,7 @@ type WebhookManager interface {
 }
 
 type SimpleWebhookManager struct {
-	WebhookClients map[EventType][]WebhookClient
+	WebhookClients map[EventType]map[WebhookType][]WebhookClient
 }
 
 // InvokeWebhooks iterates through the webhooks for a given event and invokes them.
@@ -37,8 +37,6 @@ func (w *SimpleWebhookManager) InvokeWebhooks(
 	onSuccess func([]byte) error,
 	onError func(error) error,
 ) error {
-	var asyncClients []WebhookClient
-	var syncClients []WebhookClient
 	var finalResponse []byte
 	whc, ok := w.WebhookClients[event]
 	if !ok {
@@ -48,13 +46,8 @@ func (w *SimpleWebhookManager) InvokeWebhooks(
 	if err != nil {
 		return err
 	}
-	for _, client := range whc {
-		if client.IsAsync() {
-			asyncClients = append(asyncClients, client)
-		} else {
-			syncClients = append(syncClients, client)
-		}
-	}
+	asyncClients := whc[Async]
+	syncClients := whc[Sync]
 
 	// Mapping to store response from different webhooks
 	responsePayloadLookup := make(map[string][]byte)
@@ -64,10 +57,10 @@ func (w *SimpleWebhookManager) InvokeWebhooks(
 		if client.GetUseDataFrom() == "" {
 			tmpPayload = originalPayload
 		} else if tmpPayload, ok = responsePayloadLookup[client.GetUseDataFrom()]; !ok {
-			// This should only happen if a previous error had an error, but did not abort
+			// This should only happen if a previous webhook had an error, but did not abort
 			// and the current client is trying to use the response from that client
 			return fmt.Errorf(
-				"webhook name %s not found, this could be because an error in a downstream webhook",
+				"webhook name %s not found, this could be because an error in a previous webhook that this webhook depends on",
 				client.GetUseDataFrom(),
 			)
 		}
@@ -103,33 +96,38 @@ func parseAndValidateConfig(
 	eventList []EventType,
 	webhookConfigMap map[EventType][]WebhookConfig,
 ) (WebhookManager, error) {
-	eventToWHMap := make(map[EventType][]WebhookClient)
+	eventToWHMap := make(map[EventType]map[WebhookType][]WebhookClient)
 	for _, eventType := range eventList {
-		if webhookConfigList, ok := webhookConfigMap[eventType]; ok {
-			var result []WebhookClient
-			for _, webhookConfig := range webhookConfigList {
-				if err := validateWebhookConfig(&webhookConfig); err != nil {
-					return nil, err
-				}
-				result = append(result, &simpleWebhookClient{
-					WebhookConfig: webhookConfig,
-				})
-			}
-			eventToWHMap[eventType] = result
+		webhookConfigList, ok := webhookConfigMap[eventType]
+		if !ok {
+			continue
 		}
-	}
-	for _, webhookClients := range eventToWHMap {
 		syncClients := make([]WebhookClient, 0)
-		for _, client := range webhookClients {
+		asyncClients := make([]WebhookClient, 0)
+		for _, webhookConfig := range webhookConfigList {
+			if err := validateWebhookConfig(&webhookConfig); err != nil {
+				return nil, err
+			}
+			client := &simpleWebhookClient{
+				WebhookConfig: webhookConfig,
+			}
 			if !client.IsAsync() {
 				syncClients = append(syncClients, client)
+			} else {
+				asyncClients = append(asyncClients, client)
 			}
 		}
-		if err := validateSyncClients(syncClients); err != nil {
+		allClients := append(syncClients, asyncClients...)
+		if err := validateSyncClients(allClients); err != nil {
 			return nil, err
 		}
+		tmpMap := make(map[WebhookType][]WebhookClient)
+		tmpMap[Async] = asyncClients
+		tmpMap[Sync] = syncClients
+		eventToWHMap[eventType] = tmpMap
 	}
 	return &SimpleWebhookManager{WebhookClients: eventToWHMap}, nil
+
 }
 
 // validateWebhookResponse ensures that the response from a webhook is either
