@@ -360,5 +360,4 @@ func TestInvokeMultipleSyncWebhooks(t *testing.T) {
 	// Assertion
 	assert.NoError(t, err)
 	mockClient.AssertExpectations(t) // Verify that expectations on the mock client were met
-	// t.Errorf("test")
 }
