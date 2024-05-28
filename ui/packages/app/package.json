@@ -19,7 +19,7 @@
     "react-router-dom": "^6.23.1"
   },
   "devDependencies": {
-    "@craco/craco": "^6.4.5",
+    "@craco/craco": "^7.1.0",
     "react-scripts": "^5.0.1"
   },
   "engines": {
