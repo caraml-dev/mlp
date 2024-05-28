@@ -30,8 +30,8 @@
     "preunlink": "yarn unlink:react && yarn unlink:react-dom"
   },
   "dependencies": {
-    "@react-oauth/google": "0.2.6",
-    "classnames": "^2.2.6",
+    "@react-oauth/google": "0.12.1",
+    "classnames": "^2.5.1",
     "json-bigint": "1.0.0",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
@@ -40,11 +40,11 @@
     "query-string": "^7.0.1",
     "react-collapsed": "^3.0.1",
     "react-ellipsis-text": "^1.2.1",
-    "react-fast-compare": "^3.2.0",
-    "react-scroll": "^1.8.1",
+    "react-fast-compare": "^3.2.2",
+    "react-scroll": "^1.9.0",
     "react-sticky": "^6.0.3",
     "resize-observer-polyfill": "^1.5.1",
-    "yup": "^0.29.3"
+    "yup": "^1.4.0"
   },
   "peerDependencies": {
     "@elastic/eui": "^94.5.1",
@@ -57,11 +57,13 @@
     "react-router-dom": "^6.3.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.18.10",
-    "@babel/core": "^7.18.10",
-    "@babel/plugin-proposal-export-default-from": "^7.8.3",
-    "@babel/preset-env": "^7.18.10",
-    "@babel/preset-react": "^7.18.6",
+    "@babel/cli": "^7.24.6",
+    "@babel/core": "^7.24.6",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-export-default-from": "^7.24.6",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/preset-env": "^7.24.6",
+    "@babel/preset-react": "^7.24.6",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^22.0.2",
     "@rollup/plugin-eslint": "^8.0.2",
@@ -70,8 +72,8 @@
     "rollup": "^2.77.3",
     "rollup-plugin-ignore-import": "^1.3.2",
     "rollup-plugin-peer-deps-external": "^2.2.4",
-    "rollup-plugin-sass": "^1.2.13",
+    "rollup-plugin-sass": "^1.12.22",
     "rollup-pluginutils": "^2.8.2",
-    "sass": "^1.54.4"
+    "sass": "^1.77.2"
   }
 }
