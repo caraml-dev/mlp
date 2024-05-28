@@ -13,6 +13,9 @@
     ],
     "nohoist": []
   },
+  "engines": {
+    "node": ">=20.13.1"
+  },
   "scripts": {
     "app": "yarn workspace mlp-ui",
     "lib": "yarn workspace @caraml-dev/ui-lib",

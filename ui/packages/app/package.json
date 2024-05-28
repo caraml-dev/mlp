@@ -22,6 +22,9 @@
     "@craco/craco": "^6.4.5",
     "react-scripts": "^5.0.1"
   },
+  "engines": {
+    "node": ">=20.13.1"
+  },
   "scripts": {
     "build": "craco build",
     "postbuild": "mv build ../../build",
