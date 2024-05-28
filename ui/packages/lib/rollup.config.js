@@ -1,14 +1,12 @@
-import babel from "@rollup/plugin-babel";
+import babel from '@rollup/plugin-babel';
 import resolve from "@rollup/plugin-node-resolve";
-import eslint from "@rollup/plugin-eslint";
-import sass from "rollup-plugin-sass";
-import peerDepsExternal from "rollup-plugin-peer-deps-external";
-import ignoreImport from "rollup-plugin-ignore-import";
+import terser from "@rollup/plugin-terser";
 import path from "path";
-
+import peerDepsExternal from 'rollup-plugin-peer-deps-external';
+import sass from "rollup-plugin-sass";
 import pkg from "./package.json";
 
-export default {
+module.exports = {
   input: "src/index.js",
   output: [
     {
@@ -26,10 +24,13 @@ export default {
     peerDepsExternal({
       includeDependencies: true
     }),
-    ignoreImport({
-      extensions: [".scss", ".css"]
+    resolve(),
+    babel({
+      babelHelpers: "bundled",
+      exclude: "node_modules/**",
+      presets: [['@babel/preset-react', { "runtime": "automatic" }]],
+      extensions: ['.js', '.jsx']
     }),
-    eslint(),
     sass({
       output: true,
       options: {
@@ -37,10 +38,6 @@ export default {
         includePaths: [path.resolve(__dirname, "../../node_modules")]
       }
     }),
-    resolve(),
-    babel({
-      babelHelpers: "bundled",
-      exclude: "node_modules/**"
-    })
+    terser(),
   ]
-};
+}
