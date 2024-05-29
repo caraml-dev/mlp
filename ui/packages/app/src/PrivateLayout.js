@@ -1,4 +1,3 @@
-import React from "react";
 import {
   ApplicationsContext,
   ApplicationsContextProvider,
@@ -6,9 +5,10 @@ import {
   PrivateRoute,
   ProjectsContextProvider
 } from "@caraml-dev/ui-lib";
-import config from "./config";
 import urlJoin from "proper-url-join";
+import React from "react";
 import { Outlet, useNavigate } from "react-router-dom";
+import config from "./config";
 
 export const PrivateLayout = () => {
   const navigate = useNavigate();

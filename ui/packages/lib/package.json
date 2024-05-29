@@ -50,7 +50,7 @@
     "yup": "^1.4.0"
   },
   "peerDependencies": {
-    "@elastic/eui": "^94.5.1",
+    "@elastic/eui": "^94.5.2",
     "@emotion/css": "^11.11.2",
     "@emotion/react": "^11.11.4",
     "@sentry/browser": "5.15.5",

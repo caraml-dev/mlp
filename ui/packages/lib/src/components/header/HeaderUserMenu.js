@@ -2,15 +2,15 @@ import React, { Fragment, useCallback, useState } from "react";
 
 import {
   EuiAvatar,
+  EuiContextMenuItem,
+  EuiContextMenuPanel,
   EuiFlexGroup,
   EuiFlexItem,
   EuiHeaderSectionItemButton,
   EuiHorizontalRule,
-  EuiContextMenuPanel,
-  EuiContextMenuItem,
+  EuiPopover,
   EuiText,
-  EuiTitle,
-  EuiPopover
+  EuiTitle
 } from "@elastic/eui";
 import PropTypes from "prop-types";
 import "./HeaderUserMenu.scss";
@@ -55,7 +55,7 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
           gutterSize="m"
           className="euiHeaderProfile"
           responsive={false}>
-          <EuiFlexItem grow={false}>
+          <EuiFlexItem>
             <EuiAvatar
               imageUrl={profileObj.picture}
               name={profileObj.name}
