@@ -115,11 +115,11 @@ func TestProjectsService_CreateProject(t *testing.T) {
 			UpdateProjectPayloadTemplate := ""
 			UpdateProjectResponseTemplate := ""
 
-            projectsService, err := NewProjectsService(
-                MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil,
-                UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
-                UpdateProjectResponseTemplate,
-            )
+			projectsService, err := NewProjectsService(
+				MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil,
+				UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
+				UpdateProjectResponseTemplate,
+			)
 			require.NoError(t, err)
 
 			if tt.expAuthUpdate != nil {
@@ -226,8 +226,8 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 					"status":  "success",
 					"message": "Project updated successfully",
 				}
-                err = json.NewEncoder(w).Encode(response)
-                require.NoError(t, err)
+				err = json.NewEncoder(w).Encode(response)
+				require.NoError(t, err)
 			}))
 			defer server.Close()
 
@@ -245,11 +245,11 @@ func TestProjectsService_UpdateProject(t *testing.T) {
                 "message": "{{.message}}"
             }`
 
-            projectsService, err := NewProjectsService(
+			projectsService, err := NewProjectsService(
 				MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil,
 				UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
 				UpdateProjectResponseTemplate,
-            )
+			)
 			assert.NoError(t, err)
 
 			res, responseMessage, err := projectsService.UpdateProject(context.Background(), tt.arg)
@@ -361,11 +361,11 @@ func TestProjectsService_ListProjects(t *testing.T) {
                 "message": "{{.message}}"
             }`
 
-            projectsService, err := NewProjectsService(
+			projectsService, err := NewProjectsService(
 				MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil,
 				UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
 				UpdateProjectResponseTemplate,
-            )
+			)
 			assert.NoError(t, err)
 
 			res, err := projectsService.ListProjects(context.Background(), "project-", tt.user)
@@ -674,7 +674,11 @@ func TestProjectsService_MakeRequestPayload(t *testing.T) {
 	storage.On("Get", models.ID(1)).Return(exp, nil)
 
 	authEnforcer := &enforcerMock.Enforcer{}
-	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
+	projectsService, err := NewProjectsService(
+		MLFlowTrackingURL, storage, authEnforcer, false,
+		UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
+		UpdateProjectResponseTemplate,
+	)
 	assert.NoError(t, err)
 
 	payload, err := projectsService.MakeRequestPayload(project, UpdateProjectPayloadTemplate)
@@ -746,9 +750,9 @@ func TestProjectsService_ProcessResponseURL(t *testing.T) {
 		Body:       io.NopCloser(bytes.NewReader([]byte(body))),
 	}
 
-	UpdateProjectResponseTemplate := `{"url": "https://project-test.{{ if eq .domain "development" }}d{{ else if eq .domain "staging" }}s{{ else if eq .domain "production" }}p{{ else }}unknown{{ end }}.test.com/projects/{{.project_id}}/domains/{{.domain}}/executions/{{.name}}"}`
+	UpdateProjectResponseTemplate := `{"url": "https://{{.project_id}}.{{.domain}}.test.com/{{.name}}"}`
 
-	exp := `{"url": "https://project-test.d.test.com/projects/my-project/domains/development/executions/response-url"}`
+	exp := `{"url": "https://my-project.development.test.com/response-url"}`
 
 	storage := &mocks.ProjectRepository{}
 	storage.On("Get", models.ID(1)).Return(exp, nil)

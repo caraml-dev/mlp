@@ -482,10 +482,12 @@ func TestUpdateProject(t *testing.T) {
 					assert.NoError(t, err)
 
 					w.WriteHeader(http.StatusOK)
-					json.NewEncoder(w).Encode(map[string]interface{}{
+					response := map[string]string{
 						"status":  "success",
 						"message": "Project updated successfully",
-					})
+					}
+					err = json.NewEncoder(w).Encode(response)
+					assert.NoError(t, err)
 				}))
 				defer server.Close()
 

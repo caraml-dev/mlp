@@ -134,7 +134,8 @@ func (service *projectsService) ListProjects(ctx context.Context, name string, u
 	return allProjects, nil
 }
 
-func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project, string, error) {
+func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project, string,
+	error) {
 	if service.authEnabled {
 		err := service.updateAuthorizationPolicy(ctx, project)
 		if err != nil {
