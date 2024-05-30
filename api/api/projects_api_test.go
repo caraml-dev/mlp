@@ -476,7 +476,33 @@ func TestUpdateProject(t *testing.T) {
 					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil)
+				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					var payload map[string]interface{}
+					err := json.NewDecoder(r.Body).Decode(&payload)
+					require.NoError(t, err)
+
+					w.WriteHeader(http.StatusOK)
+					json.NewEncoder(w).Encode(map[string]interface{}{
+						"status":  "success",
+						"message": "Project updated successfully",
+					})
+				}))
+				defer server.Close()
+
+				updateProjectEndpoint := server.URL
+				updateProjectPayloadTemplate := `{
+					"project": "{{.Name}}",
+					"administrators": "{{.Administrators}}",
+					"readers": "{{.Readers}}",
+					"team": "{{.Team}}",
+					"stream": "{{.Stream}}",
+				}`
+				updateProjectResponseTemplate := `{
+					"status": "{{.status}}",
+					"message": "{{.message}}"
+				}`
+
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, updateProjectEndpoint, updateProjectPayloadTemplate, updateProjectResponseTemplate)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{

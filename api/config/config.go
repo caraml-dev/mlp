@@ -35,7 +35,7 @@ type Config struct {
 	DefaultSecretStorage *SecretStorage         `validate:"required"`
 	UI                   *UIConfig
 	Webhooks             *webhooks.Config
-	UpdateProject        *UpdateProjectConfig `validate:"required"`
+	UpdateProject        *UpdateProjectConfig
 }
 
 // SecretStorage represents the configuration for a secret storage.
@@ -128,10 +128,10 @@ type UIConfig struct {
 }
 
 type UpdateProjectConfig struct {
-	UpdateProjectEndpoint        string `validate:"required,url"`
-	UpdateProjectPayload         string `validate:"required"`
-	UpdateProjectResponse        string `validate:"required"`
-	UpdateProjectLabelsBlacklist []string
+	Endpoint         string `validate:"url"`
+	PayloadTemplate  string
+	ResponseTemplate string
+	LabelsBlacklist  []string
 }
 
 // Transform env variables to the format consumed by koanf.
@@ -231,12 +231,6 @@ var defaultConfig = &Config{
 		StaticPath:        "ui/build",
 		AllowCustomTeam:   true,
 		AllowCustomStream: true,
-	},
-	UpdateProject: &UpdateProjectConfig{
-		UpdateProjectEndpoint:        "",
-		UpdateProjectPayload:         `{}`,
-		UpdateProjectResponse:        `{}`,
-		UpdateProjectLabelsBlacklist: []string{"team_id"},
 	},
 	DefaultSecretStorage: &SecretStorage{
 		Name: "internal",

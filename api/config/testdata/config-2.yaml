@@ -30,6 +30,11 @@ ui:
   kubeflowUIHomepage: http://kubeflow.org
   projectinfoUpdateEnabled: true
 
+updateProject:
+  endpoint: "http://example-update-project.dev"
+  payloadTemplate: "template-payload"
+  responseTemplate: "template-response"
+
 defaultSecretStorage:
   name: default-secret-storage
   type: vault

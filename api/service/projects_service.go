@@ -6,6 +6,11 @@ import (
 	"fmt"
 	"strings"
 
+	"bytes"
+	"encoding/json"
+	"html/template"
+	"net/http"
+
 	"golang.org/x/exp/slices"
 
 	"github.com/pkg/errors"
@@ -20,9 +25,12 @@ import (
 type ProjectsService interface {
 	ListProjects(ctx context.Context, name string, user string) ([]*models.Project, error)
 	CreateProject(ctx context.Context, project *models.Project) (*models.Project, error)
-	UpdateProject(ctx context.Context, project *models.Project) (*models.Project, error)
+	UpdateProject(ctx context.Context, project *models.Project) (*models.Project, string, error)
 	FindByID(projectID models.ID) (*models.Project, error)
 	FindByName(projectName string) (*models.Project, error)
+	MakeRequestPayload(project *models.Project, templateString string) (string, error)
+	SendUpdateRequest(url string, payload string) (*http.Response, error)
+	ProcessResponseURL(response *http.Response, templateString string) (string, error)
 }
 
 var reservedProjectName = map[string]bool{
@@ -38,26 +46,36 @@ func NewProjectsService(
 	projectRepository repository.ProjectRepository,
 	authEnforcer enforcer.Enforcer,
 	authEnabled bool,
-	webhookManager webhooks.WebhookManager) (ProjectsService, error) {
+	webhookManager webhooks.WebhookManager,
+	updateProjectEndpoint string,
+	updateProjectPayloadTemplate string,
+	updateProjectResponseTemplate string,
+) (ProjectsService, error) {
 	if strings.TrimSpace(mlflowURL) == "" {
 		return nil, errors.New("default mlflow tracking url should be provided")
 	}
 
 	return &projectsService{
-		projectRepository:           projectRepository,
-		defaultMlflowTrackingServer: mlflowURL,
-		authEnforcer:                authEnforcer,
-		authEnabled:                 authEnabled,
+		projectRepository:             projectRepository,
+		defaultMlflowTrackingServer:   mlflowURL,
+		authEnforcer:                  authEnforcer,
+		authEnabled:                   authEnabled,
 		webhookManager:              webhookManager,
+		updateProjectEndpoint:         updateProjectEndpoint,
+		updateProjectPayloadTemplate:  updateProjectPayloadTemplate,
+		updateProjectResponseTemplate: updateProjectResponseTemplate,
 	}, nil
 }
 
 type projectsService struct {
-	projectRepository           repository.ProjectRepository
-	defaultMlflowTrackingServer string
-	authEnforcer                enforcer.Enforcer
-	authEnabled                 bool
+	projectRepository             repository.ProjectRepository
+	defaultMlflowTrackingServer   string
+	authEnforcer                  enforcer.Enforcer
+	authEnabled                   bool
 	webhookManager              webhooks.WebhookManager
+	updateProjectEndpoint         string
+	updateProjectPayloadTemplate  string
+	updateProjectResponseTemplate string
 }
 
 func (service *projectsService) CreateProject(ctx context.Context, project *models.Project) (*models.Project, error) {
@@ -116,15 +134,36 @@ func (service *projectsService) ListProjects(ctx context.Context, name string, u
 	return allProjects, nil
 }
 
-func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project, error) {
+func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project, string, error) {
 	if service.authEnabled {
 		err := service.updateAuthorizationPolicy(ctx, project)
 		if err != nil {
-			return nil, fmt.Errorf("error while updating authorization policy for project %s", project.Name)
+			return nil, "", fmt.Errorf("error while updating authorization policy for project %s", project.Name)
 		}
 	}
 	if service.webhookManager == nil || !service.webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
-		return service.save(project)
+		updatedProject, err := service.save(project)
+	if err != nil {
+		return nil, "", fmt.Errorf("error saving project %s: %w", project.Name, err)
+	}
+
+	payload, err := service.MakeRequestPayload(project, service.updateProjectPayloadTemplate)
+	if err != nil {
+		return nil, "", fmt.Errorf("error generating request payload: %w", err)
+	}
+
+	response, err := service.SendUpdateRequest(service.updateProjectEndpoint, payload)
+	if err != nil {
+		return nil, "", fmt.Errorf("error sending update request: %w", err)
+	}
+	defer response.Body.Close()
+
+	responseMessage, err := service.ProcessResponseURL(response, service.updateProjectResponseTemplate)
+	if err != nil {
+		return nil, "", fmt.Errorf("error processing response template: %w", err)
+	}
+
+	return updatedProject, responseMessage, nil
 	}
 	err := service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
 		// Expects webhook output to be a project object
@@ -249,4 +288,50 @@ func (service *projectsService) filterAuthorizedProjects(ctx context.Context, pr
 		}
 	}
 	return authorizedProjects, nil
+}
+
+func (service *projectsService) MakeRequestPayload(project *models.Project, templateString string) (string, error) {
+	tmpl, err := template.New("requestPayload").Parse(templateString)
+	if err != nil {
+		return "", err
+	}
+	var payload bytes.Buffer
+	if err := tmpl.Execute(&payload, project); err != nil {
+		return "", err
+	}
+	return payload.String(), nil
+}
+
+func (service *projectsService) SendUpdateRequest(url string, payload string) (*http.Response, error) {
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(payload)))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (service *projectsService) ProcessResponseURL(response *http.Response, templateString string) (string, error) {
+	var data map[string]interface{}
+	if err := json.NewDecoder(response.Body).Decode(&data); err != nil {
+		return "", err
+	}
+
+	tmpl, err := template.New("responseURL").Parse(templateString)
+	if err != nil {
+		return "", err
+	}
+
+	var responseText bytes.Buffer
+	if err := tmpl.Execute(&responseText, data); err != nil {
+		return "", err
+	}
+	return responseText.String(), nil
 }

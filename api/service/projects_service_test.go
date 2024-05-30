@@ -2,6 +2,13 @@ package service
 
 import (
 	"context"
+
+	"bytes"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
+
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -104,7 +111,11 @@ func TestProjectsService_CreateProject(t *testing.T) {
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
 
 			authEnforcer := &enforcerMock.Enforcer{}
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil)
+			UpdateProjectEndpoint := ""
+			UpdateProjectPayloadTemplate := ""
+			UpdateProjectResponseTemplate := ""
+
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
 			require.NoError(t, err)
 
 			if tt.expAuthUpdate != nil {
@@ -198,12 +209,44 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 				authEnforcer.On("UpdateAuthorization", mock.Anything, *tt.expAuthUpdate).Return(nil)
 			}
 
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil)
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, "POST", r.Method)
+				assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
+
+				var payload map[string]interface{}
+				err := json.NewDecoder(r.Body).Decode(&payload)
+				require.NoError(t, err)
+
+				w.WriteHeader(http.StatusOK)
+				response := map[string]string{
+					"status":  "success",
+					"message": "Project updated successfully",
+				}
+				json.NewEncoder(w).Encode(response)
+			}))
+			defer server.Close()
+
+			UpdateProjectEndpoint := server.URL
+			UpdateProjectPayloadTemplate := `{
+                "project": "{{.Name}}",
+                "administrators": "{{.Administrators}}",
+                "readers": "{{.Readers}}",
+                "team": "{{.Team}}",
+                "stream": "{{.Stream}}",
+                "labels": "{{.Labels}}"
+            }`
+			UpdateProjectResponseTemplate := `{
+                "status": "{{.status}}",
+                "message": "{{.message}}"
+            }`
+
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
 			assert.NoError(t, err)
 
-			res, err := projectsService.UpdateProject(context.Background(), tt.arg)
+			res, responseMessage, err := projectsService.UpdateProject(context.Background(), tt.arg)
 			require.NoError(t, err)
 			require.Equal(t, tt.expResult, res)
+			require.Contains(t, responseMessage, "Project updated successfully")
 
 			storage.AssertExpectations(t)
 			authEnforcer.AssertExpectations(t)
@@ -295,7 +338,21 @@ func TestProjectsService_ListProjects(t *testing.T) {
 				authEnforcer.On("GetUserRoles", mock.Anything, tt.user).Return(tt.userRoles, nil)
 			}
 
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil)
+			UpdateProjectEndpoint := ".com"
+			UpdateProjectPayloadTemplate := `{
+                "project": "{{.Name}}",
+                "administrators": "{{.Administrators}}",
+                "readers": "{{.Readers}}",
+                "team": "{{.Team}}",
+                "stream": "{{.Stream}}",
+                "labels": "{{.Labels}}"
+            }`
+			UpdateProjectResponseTemplate := `{
+                "status": "{{.status}}",
+                "message": "{{.message}}"
+            }`
+
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
 			assert.NoError(t, err)
 
 			res, err := projectsService.ListProjects(context.Background(), "project-", tt.user)
@@ -322,7 +379,12 @@ func TestProjectsService_FindById(t *testing.T) {
 	storage.On("Get", id).Return(exp, nil)
 
 	authEnforcer := &enforcerMock.Enforcer{}
-	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, nil)
+
+	UpdateProjectEndpoint := ""
+	UpdateProjectPayloadTemplate := ""
+	UpdateProjectResponseTemplate := ""
+
+	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, nil, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
 	assert.NoError(t, err)
 
 	res, err := projectsService.FindByID(id)
@@ -570,4 +632,112 @@ func TestProjectsService_UpdateProjectWithWebhookEventNotSet(t *testing.T) {
 			authEnforcer.AssertExpectations(t)
 		})
 	}
+}
+
+func TestProjectsService_MakeRequestPayload(t *testing.T) {
+	UpdateProjectResponseTemplate := ""
+	UpdateProjectEndpoint := ""
+
+	project := &models.Project{
+		ID:   1,
+		Name: "my-project",
+	}
+
+	UpdateProjectPayloadTemplate := `{
+		"project": {{.Name}},
+		"domain": "development",
+		}`
+
+	exp := `{
+		"project": my-project,
+		"domain": "development",
+		}`
+
+	storage := &mocks.ProjectRepository{}
+	storage.On("Get", models.ID(1)).Return(exp, nil)
+
+	authEnforcer := &enforcerMock.Enforcer{}
+	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
+	assert.NoError(t, err)
+
+	payload, err := projectsService.MakeRequestPayload(project, UpdateProjectPayloadTemplate)
+	assert.NoError(t, err)
+	assert.Equal(t, exp, payload, "Generated payload should match the expected JSON structure")
+}
+
+func TestProjectsService_SendUpdateRequest(t *testing.T) {
+	UpdateProjectPayloadTemplate := `{
+		"project_id": "my-project",
+		"domain": "development",
+		"name": "send-payload",
+		"org": ""
+		}`
+	UpdateProjectResponseTemplate := ""
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte(UpdateProjectPayloadTemplate))
+		require.NoError(t, err)
+	}))
+	defer server.Close()
+
+	exp := `{
+		"project_id": "my-project",
+		"domain": "development",
+		"name": "send-payload",
+		"org": ""
+		}`
+
+	UpdateProjectEndpoint := server.URL
+
+	storage := &mocks.ProjectRepository{}
+	storage.On("Get", models.ID(1)).Return(exp, nil)
+
+	authEnforcer := &enforcerMock.Enforcer{}
+	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
+	assert.NoError(t, err)
+
+	resp, err := projectsService.SendUpdateRequest(UpdateProjectEndpoint, UpdateProjectPayloadTemplate)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+
+	respBody, err := io.ReadAll(resp.Body)
+	assert.NoError(t, err)
+	resp.Body.Close()
+
+	assert.Equal(t, exp, string(respBody), "Response body should match the expected JSON")
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+func TestProjectsService_ProcessResponseURL(t *testing.T) {
+	UpdateProjectEndpoint := ""
+	UpdateProjectPayloadTemplate := ""
+
+	body := `{
+        "project_id": "my-project",
+        "domain": "development",
+        "name": "response-url",
+        "org": ""
+    }`
+
+	response := &http.Response{
+		StatusCode: 200,
+		Body:       io.NopCloser(bytes.NewReader([]byte(body))),
+	}
+
+	UpdateProjectResponseTemplate := `{"url": "https://project-test.{{ if eq .domain "development" }}d{{ else if eq .domain "staging" }}s{{ else if eq .domain "production" }}p{{ else }}unknown{{ end }}.test.com/projects/{{.project_id}}/domains/{{.domain}}/executions/{{.name}}"}`
+
+	exp := `{"url": "https://project-test.d.test.com/projects/my-project/domains/development/executions/response-url"}`
+
+	storage := &mocks.ProjectRepository{}
+	storage.On("Get", models.ID(1)).Return(exp, nil)
+
+	authEnforcer := &enforcerMock.Enforcer{}
+
+	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
+	assert.NoError(t, err)
+
+	result, err := projectsService.ProcessResponseURL(response, UpdateProjectResponseTemplate)
+	assert.NoError(t, err)
+	assert.Equal(t, exp, result, "Response URL should match the expected URL")
 }

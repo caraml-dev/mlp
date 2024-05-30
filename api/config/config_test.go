@@ -248,6 +248,11 @@ func TestLoad(t *testing.T) {
 					AllowCustomStream:        true,
 					ProjectInfoUpdateEnabled: true,
 				},
+				UpdateProject: &config.UpdateProjectConfig{
+					Endpoint:         "http://example-update-project.dev",
+					PayloadTemplate:  "template-payload",
+					ResponseTemplate: "template-response",
+				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",
 					Type: "vault",
@@ -332,6 +337,11 @@ func TestValidate(t *testing.T) {
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
 				},
+				UpdateProject: &config.UpdateProjectConfig{
+					Endpoint:         "http://example-update-project.dev",
+					PayloadTemplate:  "template-payload",
+					ResponseTemplate: "template-response",
+				},
 			},
 		},
 		"extended | success": {
@@ -378,6 +388,11 @@ func TestValidate(t *testing.T) {
 				},
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
+				},
+				UpdateProject: &config.UpdateProjectConfig{
+					Endpoint:         "http://example-update-project.dev",
+					PayloadTemplate:  "template-payload",
+					ResponseTemplate: "template-response",
 				},
 			},
 		},
@@ -430,6 +445,11 @@ func TestValidate(t *testing.T) {
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
 				},
+				UpdateProject: &config.UpdateProjectConfig{
+					Endpoint:         "http://example-update-project.dev",
+					PayloadTemplate:  "template-payload",
+					ResponseTemplate: "template-response",
+				},
 			},
 			error: errors.New(
 				"failed to validate configuration: " +
@@ -477,6 +497,11 @@ func TestValidate(t *testing.T) {
 				},
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
+				},
+				UpdateProject: &config.UpdateProjectConfig{
+					Endpoint:         "http://example-update-project.dev",
+					PayloadTemplate:  "template-payload",
+					ResponseTemplate: "template-response",
 				},
 			},
 			error: errors.New(
