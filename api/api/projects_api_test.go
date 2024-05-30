@@ -504,7 +504,11 @@ func TestUpdateProject(t *testing.T) {
 					"message": "{{.message}}"
 				}`
 
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, updateProjectEndpoint, updateProjectPayloadTemplate, updateProjectResponseTemplate)
+				projectsService, err := service.NewProjectsService(
+					mlflowTrackingURL, prjRepository, nil, false, nil
+					updateProjectEndpoint, updateProjectPayloadTemplate,
+					updateProjectResponseTemplate,
+				)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
