@@ -115,7 +115,11 @@ func TestProjectsService_CreateProject(t *testing.T) {
 			UpdateProjectPayloadTemplate := ""
 			UpdateProjectResponseTemplate := ""
 
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
+            projectsService, err := NewProjectsService(
+                MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil,
+                UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
+                UpdateProjectResponseTemplate,
+            )
 			require.NoError(t, err)
 
 			if tt.expAuthUpdate != nil {
@@ -222,7 +226,8 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 					"status":  "success",
 					"message": "Project updated successfully",
 				}
-				json.NewEncoder(w).Encode(response)
+                err = json.NewEncoder(w).Encode(response)
+                require.NoError(t, err)
 			}))
 			defer server.Close()
 
@@ -240,7 +245,11 @@ func TestProjectsService_UpdateProject(t *testing.T) {
                 "message": "{{.message}}"
             }`
 
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
+            projectsService, err := NewProjectsService(
+				MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil,
+				UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
+				UpdateProjectResponseTemplate,
+            )
 			assert.NoError(t, err)
 
 			res, responseMessage, err := projectsService.UpdateProject(context.Background(), tt.arg)
@@ -352,7 +361,11 @@ func TestProjectsService_ListProjects(t *testing.T) {
                 "message": "{{.message}}"
             }`
 
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
+            projectsService, err := NewProjectsService(
+				MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil,
+				UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
+				UpdateProjectResponseTemplate,
+            )
 			assert.NoError(t, err)
 
 			res, err := projectsService.ListProjects(context.Background(), "project-", tt.user)
@@ -384,7 +397,11 @@ func TestProjectsService_FindById(t *testing.T) {
 	UpdateProjectPayloadTemplate := ""
 	UpdateProjectResponseTemplate := ""
 
-	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, nil, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
+	projectsService, err := NewProjectsService(
+		MLFlowTrackingURL, storage, authEnforcer, false, nil,
+		UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
+		UpdateProjectResponseTemplate,
+	)
 	assert.NoError(t, err)
 
 	res, err := projectsService.FindByID(id)
@@ -677,7 +694,7 @@ func TestProjectsService_SendUpdateRequest(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte(UpdateProjectPayloadTemplate))
-		require.NoError(t, err)
+		assert.NoError(t, err)
 	}))
 	defer server.Close()
 
@@ -694,7 +711,11 @@ func TestProjectsService_SendUpdateRequest(t *testing.T) {
 	storage.On("Get", models.ID(1)).Return(exp, nil)
 
 	authEnforcer := &enforcerMock.Enforcer{}
-	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
+	projectsService, err := NewProjectsService(
+		MLFlowTrackingURL, storage, authEnforcer, false,
+		UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
+		UpdateProjectResponseTemplate,
+	)
 	assert.NoError(t, err)
 
 	resp, err := projectsService.SendUpdateRequest(UpdateProjectEndpoint, UpdateProjectPayloadTemplate)
@@ -734,7 +755,11 @@ func TestProjectsService_ProcessResponseURL(t *testing.T) {
 
 	authEnforcer := &enforcerMock.Enforcer{}
 
-	projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, UpdateProjectEndpoint, UpdateProjectPayloadTemplate, UpdateProjectResponseTemplate)
+	projectsService, err := NewProjectsService(
+		MLFlowTrackingURL, storage, authEnforcer, false,
+		UpdateProjectEndpoint, UpdateProjectPayloadTemplate,
+		UpdateProjectResponseTemplate,
+	)
 	assert.NoError(t, err)
 
 	result, err := projectsService.ProcessResponseURL(response, UpdateProjectResponseTemplate)
