@@ -497,14 +497,14 @@ func TestUpdateProject(t *testing.T) {
 					"administrators": "{{.Administrators}}",
 					"readers": "{{.Readers}}",
 					"team": "{{.Team}}",
-					"stream": "{{.Stream}}",
+					"stream": "{{.Stream}}"
 				}`
 				updateProjectResponseTemplate := `{
 					"status": "{{.status}}",
 					"message": "{{.message}}"
 				}`
 
-				projectsService, err := service.NewProjectsService(
+				projectService, err := service.NewProjectsService(
 					mlflowTrackingURL, prjRepository, nil, false, nil
 					updateProjectEndpoint, updateProjectPayloadTemplate,
 					updateProjectResponseTemplate,
