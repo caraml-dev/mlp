@@ -38,7 +38,7 @@ export const Stream = ({
         options={streamOptions}
         onChange={onStreamChange}
         onCreateOption={config.ALLOW_CUSTOM_STREAM ? onStreamChange : undefined}
-        isDiasbled={isDisabled}
+        isDisabled={isDisabled}
       />
     </EuiFormRow>
   );
