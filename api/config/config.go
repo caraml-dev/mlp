@@ -128,7 +128,7 @@ type UIConfig struct {
 }
 
 type UpdateProjectConfig struct {
-	Endpoint         string `validate:"url"`
+	Endpoint         string
 	PayloadTemplate  string
 	ResponseTemplate string
 	LabelsBlacklist  []string
