@@ -207,7 +207,10 @@ func TestCreateProject(t *testing.T) {
 					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, nil)
+				projectService, err := service.NewProjectsService(
+					mlflowTrackingURL, prjRepository, nil, false, nil,
+					config.UpdateProjectConfig{},
+				)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
@@ -317,7 +320,10 @@ func TestListProjects(t *testing.T) {
 						assert.NoError(t, err)
 					}
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, nil)
+				projectService, err := service.NewProjectsService(
+					mlflowTrackingURL, prjRepository, nil, false, nil,
+					config.UpdateProjectConfig{},
+				)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
@@ -415,7 +421,7 @@ func TestUpdateProject(t *testing.T) {
 					},
 				},
 			},
-			updateProjectEndpoint: server.URL,
+			updateProjectEndpoint: "url",
 			updateProjectPayload: `{
 				"project": "{{.Name}}",
 				"administrators": "{{.Administrators}}",
@@ -685,7 +691,10 @@ func TestGetProject(t *testing.T) {
 					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, nil)
+				projectService, err := service.NewProjectsService(
+					mlflowTrackingURL, prjRepository, nil, false, nil,
+					config.UpdateProjectConfig{},
+				)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
