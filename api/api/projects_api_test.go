@@ -15,6 +15,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/it/database"
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/repository"
@@ -206,7 +207,7 @@ func TestCreateProject(t *testing.T) {
 					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, "", "", "")
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, nil)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
@@ -316,7 +317,7 @@ func TestListProjects(t *testing.T) {
 						assert.NoError(t, err)
 					}
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, "", "", "")
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, nil)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
@@ -537,20 +538,26 @@ func TestUpdateProject(t *testing.T) {
 					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					var payload map[string]interface{}
-					err := json.NewDecoder(r.Body).Decode(&payload)
-					assert.NoError(t, err)
 
-					w.WriteHeader(http.StatusOK)
-					response := map[string]string{
-						"status":  "success",
-						"message": "Project updated successfully",
-					}
-					err = json.NewEncoder(w).Encode(response)
-					assert.NoError(t, err)
-				}))
-				defer server.Close()
+				var server *httptest.Server
+				if tC.updateProjectEndpoint != "" {
+					server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						var payload map[string]interface{}
+						err := json.NewDecoder(r.Body).Decode(&payload)
+						assert.NoError(t, err)
+
+						w.WriteHeader(http.StatusOK)
+						response := map[string]string{
+							"status":  "success",
+							"message": "Project updated successfully",
+						}
+						err = json.NewEncoder(w).Encode(response)
+						assert.NoError(t, err)
+					}))
+					defer server.Close()
+
+					tC.updateProjectEndpoint = server.URL
+				}
 
 				projectService, err := service.NewProjectsService(
 					mlflowTrackingURL, prjRepository, nil, false, nil
@@ -678,7 +685,7 @@ func TestGetProject(t *testing.T) {
 					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, "", "", "")
+				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil, nil)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
