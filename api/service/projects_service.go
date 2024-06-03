@@ -17,6 +17,7 @@ import (
 
 	"github.com/caraml-dev/mlp/api/repository"
 
+	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	"github.com/caraml-dev/mlp/api/pkg/webhooks"
@@ -47,35 +48,28 @@ func NewProjectsService(
 	authEnforcer enforcer.Enforcer,
 	authEnabled bool,
 	webhookManager webhooks.WebhookManager,
-	updateProjectEndpoint string,
-	updateProjectPayloadTemplate string,
-	updateProjectResponseTemplate string,
-) (ProjectsService, error) {
+	updateProjectConfig config.UpdateProjectConfig) (ProjectsService, error) {
 	if strings.TrimSpace(mlflowURL) == "" {
 		return nil, errors.New("default mlflow tracking url should be provided")
 	}
 
 	return &projectsService{
-		projectRepository:             projectRepository,
-		defaultMlflowTrackingServer:   mlflowURL,
-		authEnforcer:                  authEnforcer,
-		authEnabled:                   authEnabled,
+		projectRepository:           projectRepository,
+		defaultMlflowTrackingServer: mlflowURL,
+		authEnforcer:                authEnforcer,
+		authEnabled:                 authEnabled,
 		webhookManager:              webhookManager,
-		updateProjectEndpoint:         updateProjectEndpoint,
-		updateProjectPayloadTemplate:  updateProjectPayloadTemplate,
-		updateProjectResponseTemplate: updateProjectResponseTemplate,
+		updateProjectConfig:         updateProjectConfig,
 	}, nil
 }
 
 type projectsService struct {
-	projectRepository             repository.ProjectRepository
-	defaultMlflowTrackingServer   string
-	authEnforcer                  enforcer.Enforcer
-	authEnabled                   bool
+	projectRepository           repository.ProjectRepository
+	defaultMlflowTrackingServer string
+	authEnforcer                enforcer.Enforcer
+	authEnabled                 bool
 	webhookManager              webhooks.WebhookManager
-	updateProjectEndpoint         string
-	updateProjectPayloadTemplate  string
-	updateProjectResponseTemplate string
+	updateProjectConfig         config.UpdateProjectConfig
 }
 
 func (service *projectsService) CreateProject(ctx context.Context, project *models.Project) (*models.Project, error) {
@@ -148,23 +142,27 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 		return nil, "", fmt.Errorf("error saving project %s: %w", project.Name, err)
 	}
 
-	payload, err := service.MakeRequestPayload(project, service.updateProjectPayloadTemplate)
-	if err != nil {
-		return nil, "", fmt.Errorf("error generating request payload: %w", err)
-	}
+	if service.updateProjectConfig.Endpoint != "" &&
+		service.updateProjectConfig.PayloadTemplate != "" &&
+		service.updateProjectConfig.ResponseTemplate != "" {
 
-	response, err := service.SendUpdateRequest(service.updateProjectEndpoint, payload)
-	if err != nil {
-		return nil, "", fmt.Errorf("error sending update request: %w", err)
-	}
-	defer response.Body.Close()
+		payload, err := service.MakeRequestPayload(project, service.updateProjectConfig.PayloadTemplate)
+		if err != nil {
+			return nil, "", fmt.Errorf("error generating request payload: %w", err)
+		}
 
-	responseMessage, err := service.ProcessResponseURL(response, service.updateProjectResponseTemplate)
-	if err != nil {
-		return nil, "", fmt.Errorf("error processing response template: %w", err)
-	}
+		response, err := service.SendUpdateRequest(service.updateProjectConfig.Endpoint, payload)
+		if err != nil {
+			return nil, "", fmt.Errorf("error sending update request: %w", err)
+		}
+		defer response.Body.Close()
 
-	return updatedProject, responseMessage, nil
+		responseMessage, err := service.ProcessResponseURL(response, service.updateProjectConfig.ResponseTemplate)
+		if err != nil {
+			return nil, "", fmt.Errorf("error processing response template: %w", err)
+		}
+
+		return updatedProject, responseMessage, nil
 	}
 	err := service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
 		// Expects webhook output to be a project object
@@ -185,6 +183,9 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 				ProjectCreatedEvent, err.Error())
 	}
 	return project, nil
+	}
+
+	return updatedProject, "", nil
 }
 
 func (service *projectsService) FindByID(projectID models.ID) (*models.Project, error) {

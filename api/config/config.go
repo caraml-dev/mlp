@@ -128,10 +128,10 @@ type UIConfig struct {
 }
 
 type UpdateProjectConfig struct {
-	Endpoint         string
+	Endpoint         string `validate:"url"`
 	PayloadTemplate  string
 	ResponseTemplate string
-	LabelsBlacklist  []string
+	LabelsBlacklist  []string // labels blacklist that hides/prevents labels contained within to not be modifiable
 }
 
 // Transform env variables to the format consumed by koanf.

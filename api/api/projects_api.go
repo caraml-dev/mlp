@@ -84,7 +84,12 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 		return FromError(err)
 	}
 
-	log.Infof("Project updated successfully, URL link: %s", responseMessage)
+	if responseMessage != "" {
+		log.Infof("Project updated successfully, URL link: %s", responseMessage)
+	} else {
+		log.Infof("Project updated successfully")
+	}
+
 	return Ok(updatedProject)
 }
 

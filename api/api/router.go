@@ -70,14 +70,14 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		}
 	}
 
+	var updateProjectConfig config.UpdateProjectConfig
+
 	projectsService, err := service.NewProjectsService(
 		cfg.Mlflow.TrackingURL,
 		repository.NewProjectRepository(db),
 		authEnforcer,
 		cfg.Authorization.Enabled, projectsWebhookManager,
-		cfg.UpdateProject.Endpoint,
-		cfg.UpdateProject.PayloadTemplate,
-		cfg.UpdateProject.ResponseTemplate)
+		updateProjectConfig)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize projects service: %v", err)

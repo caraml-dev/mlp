@@ -32,8 +32,11 @@ ui:
 
 updateProject:
   endpoint: "http://example-update-project.dev"
-  payloadTemplate: "template-payload"
-  responseTemplate: "template-response"
+  payloadTemplate: "your-payload-template"
+  responseTemplate: "your-response-template"
+  labelsBlacklist:
+    - "label1"
+    - "label2"
 
 defaultSecretStorage:
   name: default-secret-storage

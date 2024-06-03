@@ -369,14 +369,17 @@ func TestListProjects(t *testing.T) {
 
 func TestUpdateProject(t *testing.T) {
 	testCases := []struct {
-		desc             string
-		projectID        models.ID
-		existingProject  *models.Project
-		expectedResponse *Response
-		body             interface{}
+		desc                  string
+		projectID             models.ID
+		existingProject       *models.Project
+		expectedResponse      *Response
+		body                  interface{}
+		updateProjectEndpoint string
+		updateProjectPayload  string
+		updateProjectResponse string
 	}{
 		{
-			desc:      "Should success",
+			desc:      "Should success with update project config",
 			projectID: models.ID(1),
 			existingProject: &models.Project{
 				ID:                models.ID(1),
@@ -411,6 +414,58 @@ func TestUpdateProject(t *testing.T) {
 					},
 				},
 			},
+			updateProjectEndpoint: server.URL,
+			updateProjectPayload: `{
+				"project": "{{.Name}}",
+				"administrators": "{{.Administrators}}",
+				"readers": "{{.Readers}}",
+				"team": "{{.Team}}",
+				"stream": "{{.Stream}}"
+			}`,
+			updateProjectResponse: `{
+				"status": "{{.status}}",
+				"message": "{{.message}}"
+			}`,
+		},
+		{
+			desc:      "Should success without update project config",
+			projectID: models.ID(1),
+			existingProject: &models.Project{
+				ID:                models.ID(1),
+				Name:              "Project1",
+				MLFlowTrackingURL: "http://mlflow.com",
+				Administrators:    []string{adminUser},
+				Team:              "dsp",
+				Stream:            "dsp",
+				CreatedUpdated: models.CreatedUpdated{
+					CreatedAt: now,
+					UpdatedAt: now,
+				},
+			},
+			body: &models.Project{
+				Name:           "Project1",
+				Team:           "merlin",
+				Stream:         "dsp",
+				Administrators: []string{adminUser},
+			},
+			expectedResponse: &Response{
+				code: 200,
+				data: &models.Project{
+					ID:                models.ID(1),
+					Name:              "Project1",
+					MLFlowTrackingURL: "http://mlflow.com",
+					Administrators:    []string{adminUser},
+					Team:              "merlin",
+					Stream:            "dsp",
+					CreatedUpdated: models.CreatedUpdated{
+						CreatedAt: now,
+						UpdatedAt: now,
+					},
+				},
+			},
+			updateProjectEndpoint: "",
+			updateProjectPayload:  "",
+			updateProjectResponse: "",
 		},
 		{
 			desc:      "Should failed when name is not specified",
@@ -438,6 +493,9 @@ func TestUpdateProject(t *testing.T) {
 					Message: "Name is required",
 				},
 			},
+			updateProjectEndpoint: "",
+			updateProjectPayload:  "",
+			updateProjectResponse: "",
 		},
 		{
 			desc:      "Should failed when name project id is not found",
@@ -466,6 +524,9 @@ func TestUpdateProject(t *testing.T) {
 					Message: "project with ID 2 not found",
 				},
 			},
+			updateProjectEndpoint: "",
+			updateProjectPayload:  "",
+			updateProjectResponse: "",
 		},
 	}
 	for _, tC := range testCases {
@@ -491,23 +552,13 @@ func TestUpdateProject(t *testing.T) {
 				}))
 				defer server.Close()
 
-				updateProjectEndpoint := server.URL
-				updateProjectPayloadTemplate := `{
-					"project": "{{.Name}}",
-					"administrators": "{{.Administrators}}",
-					"readers": "{{.Readers}}",
-					"team": "{{.Team}}",
-					"stream": "{{.Stream}}"
-				}`
-				updateProjectResponseTemplate := `{
-					"status": "{{.status}}",
-					"message": "{{.message}}"
-				}`
-
 				projectService, err := service.NewProjectsService(
 					mlflowTrackingURL, prjRepository, nil, false, nil
-					updateProjectEndpoint, updateProjectPayloadTemplate,
-					updateProjectResponseTemplate,
+					config.UpdateProjectConfig{
+						Endpoint:         tC.updateProjectEndpoint,
+						PayloadTemplate:  tC.updateProjectPayload,
+						ResponseTemplate: tC.updateProjectResponse,
+					},
 				)
 				assert.NoError(t, err)
 

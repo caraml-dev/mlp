@@ -250,8 +250,12 @@ func TestLoad(t *testing.T) {
 				},
 				UpdateProject: &config.UpdateProjectConfig{
 					Endpoint:         "http://example-update-project.dev",
-					PayloadTemplate:  "template-payload",
-					ResponseTemplate: "template-response",
+					PayloadTemplate:  "your-payload-template",
+					ResponseTemplate: "your-response-template",
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
+					},
 				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",
@@ -339,8 +343,12 @@ func TestValidate(t *testing.T) {
 				},
 				UpdateProject: &config.UpdateProjectConfig{
 					Endpoint:         "http://example-update-project.dev",
-					PayloadTemplate:  "template-payload",
-					ResponseTemplate: "template-response",
+					PayloadTemplate:  "your-payload-template",
+					ResponseTemplate: "your-response-template",
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
+					},
 				},
 			},
 		},
@@ -391,8 +399,12 @@ func TestValidate(t *testing.T) {
 				},
 				UpdateProject: &config.UpdateProjectConfig{
 					Endpoint:         "http://example-update-project.dev",
-					PayloadTemplate:  "template-payload",
-					ResponseTemplate: "template-response",
+					PayloadTemplate:  "your-payload-template",
+					ResponseTemplate: "your-response-template",
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
+					},
 				},
 			},
 		},
@@ -447,8 +459,12 @@ func TestValidate(t *testing.T) {
 				},
 				UpdateProject: &config.UpdateProjectConfig{
 					Endpoint:         "http://example-update-project.dev",
-					PayloadTemplate:  "template-payload",
-					ResponseTemplate: "template-response",
+					PayloadTemplate:  "your-payload-template",
+					ResponseTemplate: "your-response-template",
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
+					},
 				},
 			},
 			error: errors.New(
@@ -500,8 +516,9 @@ func TestValidate(t *testing.T) {
 				},
 				UpdateProject: &config.UpdateProjectConfig{
 					Endpoint:         "http://example-update-project.dev",
-					PayloadTemplate:  "template-payload",
-					ResponseTemplate: "template-response",
+					PayloadTemplate:  "your-payload-template",
+					ResponseTemplate: "your-response-template",
+					LabelsBlacklist:  []string{},
 				},
 			},
 			error: errors.New(
