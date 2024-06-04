@@ -107,7 +107,7 @@ func (g *simpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byt
 			}
 			return nil
 
-		}, retry.Attempts(uint(g.NumRetries)),
+		}, retry.Attempts(uint(g.NumRetries)), retry.Context(ctx),
 	)
 	if err != nil {
 		return nil, err
