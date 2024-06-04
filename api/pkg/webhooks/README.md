@@ -29,8 +29,8 @@ webhooks:
     OnProjectCreated:
       - url: http://localhost:8081/project_created
         method: POST
-        onError: abort
         finalResponse: true
+        name: webhook1
 ```
 
 3. Call InitializeWebhooks() to get a WebhookManager instance.
@@ -58,7 +58,6 @@ webhooks:
       - name: webhook1
         url: http://webhook1
         method: POST
-        onError: abort
         finalResponse: true
 ```
 
@@ -83,12 +82,10 @@ webhooks:
       - name: webhook1
         url: http://webhook1
         method: POST
-        onError: abort
         finalResponse: true
       - name: webhook2
         url: http://webhook2
         method: POST
-        onError: abort
         async: true
 ```
 
@@ -107,17 +104,14 @@ webhooks:
     OnProjectCreated:
       - url: http://webhook1
         method: POST
-        onError: abort
         finalResponse: true
         name: webhook1
       - url: http://webhook2
         method: POST
-        onError: abort
         useDataFrom: webhook1 # <-- specify to use data from webhook1
         name: webhook2
       - url: http://webhook3
         method: POST
-        onError: abort
         name: webhook3
 ```
 
@@ -126,3 +120,10 @@ webhooks:
 - webhook2 will use the response from webhook1 as its payload. The response from webhook2 is not used.
 - webhook3 will use the same payload as webhook1, but will only be called after webhook2
 - Here, the finalResponse is set to true for webhook1. This means that the response from webhook1 will be passed as an argument to the `onSuccess` function
+
+### Error Handling
+
+- For synchronous webhooks, all webhooks must be successful before the `onSuccess` handler is called. This means that the caller of this package
+  only needs to consider how to handle the successful response.
+- In the event any sync webhooks fail, the `onError` handler is called
+- For webhooks that do not need to succeed (for whatever reason), pass them as async webhooks.
