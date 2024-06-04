@@ -54,15 +54,11 @@ import (
 
 	"github.com/avast/retry-go/v4"
 	"github.com/caraml-dev/mlp/api/log"
+	"github.com/go-playground/validator/v10"
 )
 
 type EventType string
 type ServiceType string
-
-const (
-	onErrorIgnore = "ignore"
-	onErrorAbort  = "abort"
-)
 
 type WebhookClient interface {
 	Invoke(context.Context, []byte) ([]byte, error)
@@ -146,14 +142,11 @@ func (g *simpleWebhookClient) GetName() string {
 }
 
 func validateWebhookConfig(webhookConfig *WebhookConfig) error {
-	if webhookConfig.Name == "" {
-		return fmt.Errorf("missing webhook name")
-	}
-	if webhookConfig.URL == "" {
-		return fmt.Errorf("missing webhook URL")
-	}
-	if webhookConfig.AuthEnabled && webhookConfig.AuthToken == "" {
-		return fmt.Errorf("missing webhook auth token")
+	validate := validator.New()
+
+	err := validate.Struct(webhookConfig)
+	if err != nil {
+		return fmt.Errorf("failed to validate configuration: %s", err)
 	}
 	if webhookConfig.NumRetries < 0 {
 		return fmt.Errorf("numRetries must be a non-negative integer")

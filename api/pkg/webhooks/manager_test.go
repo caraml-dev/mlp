@@ -301,8 +301,8 @@ func TestInvokeWebhooksSimple(t *testing.T) {
 
 	// Setup WebhookManager with the mock client
 	webhookManager := &SimpleWebhookManager{
-		WebhookClients: map[EventType]map[WebhookType][]WebhookClient{
-			"validEvent": {Sync: {mockClient}},
+		SyncClients: map[EventType][]WebhookClient{
+			"validEvent": {mockClient},
 		},
 	}
 
@@ -344,8 +344,8 @@ func TestInvokeMultipleSyncWebhooks(t *testing.T) {
 	mockClient2.On("IsFinalResponse").Return(true)
 	// Setup WebhookManager with the mock client
 	webhookManager := &SimpleWebhookManager{
-		WebhookClients: map[EventType]map[WebhookType][]WebhookClient{
-			"validEvent": {Sync: {mockClient, mockClient2}},
+		SyncClients: map[EventType][]WebhookClient{
+			"validEvent": {mockClient, mockClient2},
 		},
 	}
 	// Execution
