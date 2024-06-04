@@ -1,5 +1,5 @@
 const getEnv = env => {
-  return window.env && window.env[env] ? window.env[env] : process.env[env];
+  return window.env && env in window.env ? window.env[env] : process.env[env];
 };
 
 export const sentryConfig = {
