@@ -68,7 +68,6 @@ type WebhookClient interface {
 	Invoke(context.Context, []byte) ([]byte, error)
 	InvokeAsync(context.Context, []byte) error
 	IsAsync() bool
-	AbortOnFail() bool
 	IsFinalResponse() bool
 	GetUseDataFrom() string
 	GetName() string
@@ -134,10 +133,6 @@ func (g *simpleWebhookClient) IsAsync() bool {
 	return g.Async
 }
 
-func (g *simpleWebhookClient) AbortOnFail() bool {
-	return g.OnError == onErrorAbort
-}
-
 func (g *simpleWebhookClient) IsFinalResponse() bool {
 	return g.FinalResponse
 }
@@ -157,24 +152,21 @@ func validateWebhookConfig(webhookConfig *WebhookConfig) error {
 	if webhookConfig.URL == "" {
 		return fmt.Errorf("missing webhook URL")
 	}
-	if webhookConfig.Method == "" {
-		webhookConfig.Method = http.MethodPost // Default to POST, TODO: decide if GET is allowed
-	}
 	if webhookConfig.AuthEnabled && webhookConfig.AuthToken == "" {
 		return fmt.Errorf("missing webhook auth token")
 	}
-	if webhookConfig.OnError == "" {
-		webhookConfig.OnError = onErrorAbort
-	}
-	if webhookConfig.OnError != onErrorAbort && webhookConfig.OnError != onErrorIgnore {
-		return fmt.Errorf("onError must be either 'abort' or 'ignore'")
-	}
 	if webhookConfig.NumRetries < 0 {
 		return fmt.Errorf("numRetries must be a non-negative integer")
+	}
+	return nil
+}
+
+func setDefaults(webhookConfig *WebhookConfig) {
+	if webhookConfig.Method == "" {
+		webhookConfig.Method = http.MethodPost // Default to POST, TODO: decide if GET is allowed
 	}
 	if webhookConfig.Timeout == nil {
 		def := 10
 		webhookConfig.Timeout = &def
 	}
-	return nil
 }

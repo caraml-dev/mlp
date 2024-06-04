@@ -20,7 +20,6 @@ type WebhookConfig struct {
 	Method      string `yaml:"method"`
 	AuthEnabled bool   `yaml:"authEnabled"`
 	AuthToken   string `yaml:"authToken"   validate:"required_if=AuthEnabled True"`
-	OnError     string `yaml:"onError"`
 	Async       bool   `yaml:"async"`
 	NumRetries  int    `yaml:"numRetries"`
 	Timeout     *int   `yaml:"timeout"`

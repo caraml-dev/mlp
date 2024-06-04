@@ -11,7 +11,7 @@ type WebhookManager interface {
 		context.Context,
 		EventType,
 		interface{},
-		func([]byte) error,
+		func(payload []byte) error,
 		func(error) error,
 	) error
 }
@@ -37,7 +37,7 @@ func (w *SimpleWebhookManager) InvokeWebhooks(
 	onSuccess func([]byte) error,
 	onError func(error) error,
 ) error {
-	var finalResponse []byte
+	finalResponse := make([]byte, 0)
 	whc, ok := w.WebhookClients[event]
 	if !ok {
 		return fmt.Errorf("Could not find event %s", event)
@@ -57,26 +57,20 @@ func (w *SimpleWebhookManager) InvokeWebhooks(
 		if client.GetUseDataFrom() == "" {
 			tmpPayload = originalPayload
 		} else if tmpPayload, ok = responsePayloadLookup[client.GetUseDataFrom()]; !ok {
-			// This should only happen if a previous webhook had an error, but did not abort
-			// and the current client is trying to use the response from that client
+			// NOTE: This should never happen!
 			return fmt.Errorf(
 				"webhook name %s not found, this could be because of an error in a previous webhook that this webhook depends on",
 				client.GetUseDataFrom(),
 			)
 		}
 		p, err := client.Invoke(ctx, tmpPayload)
-		if err == nil {
-			responsePayloadLookup[client.GetName()] = p
-			if client.IsFinalResponse() {
-				finalResponse = p
-			}
-			continue
-		}
-		// if err is not nil, check if client is set to abort
-		if client.AbortOnFail() {
+		if err != nil {
 			return onError(err)
 		}
-
+		responsePayloadLookup[client.GetName()] = p
+		if client.IsFinalResponse() {
+			finalResponse = p
+		}
 	}
 	for _, client := range asyncClients {
 		// NOTE: Currently, this will never return err since InvokeAsync always returns nil
@@ -108,6 +102,7 @@ func parseAndValidateConfig(
 			if err := validateWebhookConfig(&webhookConfig); err != nil {
 				return nil, err
 			}
+			setDefaults(&webhookConfig)
 			client := &simpleWebhookClient{
 				WebhookConfig: webhookConfig,
 			}
@@ -147,30 +142,21 @@ func validateWebhookResponse(content []byte) error {
 func validateClients(webhookClients []WebhookClient) error {
 	// ensure that only 1 sync client has finalResponse set to true
 	isFinalResponseSet := false
-	for _, client := range webhookClients {
+	// Check for duplicate webhook names
+	webhookNames := make(map[string]int)
+	for idx, client := range webhookClients {
 		if client.IsFinalResponse() {
 			if isFinalResponseSet {
 				return fmt.Errorf("only 1 sync client can have finalResponse set to true")
 			}
 			isFinalResponseSet = true
 		}
-	}
-	if !isFinalResponseSet {
-		return fmt.Errorf("at least 1 sync client must have finalResponse set to true")
-	}
-
-	// Check for duplicate webhook names
-	webhookNames := make(map[string]int)
-	for idx, client := range webhookClients {
 		if _, ok := webhookNames[client.GetName()]; ok {
 			return fmt.Errorf("duplicate webhook name")
 		}
 		webhookNames[client.GetName()] = idx
-
-	}
-	// Ensure that if a client uses the response from another client, that client exists
-	// If a client uses the response from another client, it must be defined before it
-	for idx, client := range webhookClients {
+		// Ensure that if a client uses the response from another client, that client exists
+		// If a client uses the response from another client, it must be defined before it
 		if client.GetUseDataFrom() == "" {
 			// If the client does not use data from another webhook,
 			// then we can skip the rest of the checks
@@ -188,6 +174,9 @@ func validateClients(webhookClients []WebhookClient) error {
 				client.GetName(),
 			)
 		}
+	}
+	if !isFinalResponseSet {
+		return fmt.Errorf("at least 1 sync client must have finalResponse set to true")
 	}
 
 	return nil
