@@ -406,9 +406,9 @@ func TestProjectsService_CreateWithWebhook(t *testing.T) {
 			storage.On("Save", test.expResult).Return(test.expResult, nil).Maybe()
 			mockClient1.On("Invoke", mock.Anything, mock.Anything).Return(test.whResponse, nil)
 			whManager := &webhooks.SimpleWebhookManager{
-				WebhookClients: map[webhooks.EventType]map[webhooks.WebhookType][]webhooks.WebhookClient{
+				SyncClients: map[webhooks.EventType][]webhooks.WebhookClient{
 					ProjectCreatedEvent: {
-						webhooks.Sync: {mockClient1},
+						mockClient1,
 					},
 				},
 			}
