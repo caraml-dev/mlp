@@ -62,7 +62,6 @@ type ServiceType string
 
 type WebhookClient interface {
 	Invoke(context.Context, []byte) ([]byte, error)
-	InvokeAsync(context.Context, []byte) error
 	IsAsync() bool
 	IsFinalResponse() bool
 	GetUseDataFrom() string
@@ -114,15 +113,6 @@ func (g *simpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byt
 		return nil, err
 	}
 	return content, nil
-}
-
-func (g *simpleWebhookClient) InvokeAsync(ctx context.Context, payload []byte) error {
-	go func() {
-		if _, err := g.Invoke(ctx, payload); err != nil {
-			return
-		}
-	}()
-	return nil
 }
 
 func (g *simpleWebhookClient) IsAsync() bool {

@@ -79,24 +79,6 @@ func (_m *MockWebhookClient) Invoke(_a0 context.Context, _a1 []byte) ([]byte, er
 	return r0, r1
 }
 
-// InvokeAsync provides a mock function with given fields: _a0, _a1
-func (_m *MockWebhookClient) InvokeAsync(_a0 context.Context, _a1 []byte) error {
-	ret := _m.Called(_a0, _a1)
-
-	if len(ret) == 0 {
-		panic("no return value specified for InvokeAsync")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, []byte) error); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // IsAsync provides a mock function with given fields:
 func (_m *MockWebhookClient) IsAsync() bool {
 	ret := _m.Called()

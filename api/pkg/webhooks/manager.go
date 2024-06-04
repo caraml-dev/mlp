@@ -76,10 +76,12 @@ func (w *SimpleWebhookManager) InvokeWebhooks(
 		}
 	}
 	for _, client := range asyncClients {
-		// NOTE: Currently, this will never return err since InvokeAsync always returns nil
-		if err := client.InvokeAsync(ctx, originalPayload); err != nil {
-			return onError(err)
-		}
+		go func(client WebhookClient) {
+			// Ignore the response from async webhooks
+			if _, err := client.Invoke(ctx, originalPayload); err != nil {
+				return
+			}
+		}(client)
 	}
 	if err := onSuccess(finalResponse); err != nil {
 		// If the callback fails, return the error
