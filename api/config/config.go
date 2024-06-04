@@ -131,7 +131,7 @@ type UpdateProjectConfig struct {
 	Endpoint         string `validate:"url"`
 	PayloadTemplate  string
 	ResponseTemplate string
-	LabelsBlacklist  []string // labels blacklist that hides/prevents labels contained within to not be modifiable
+	LabelsBlacklist  []string `json:"REACT_APP_LABELS_BLACKLIST"` // labels blacklist that hides/prevents labels contained within to not be modifiable
 }
 
 // Transform env variables to the format consumed by koanf.

@@ -93,6 +93,7 @@ const ProjectInfoForm = ({ originalProject, fetchUpdates }) => {
               setIsValidLabels={setIsValidLabels}
               isValidLabels={isValidLabels}
               isDisabled={isDisabled}
+              labelsBlacklist={true}
             />
           </EuiFlexItem>
           <EuiSpacer size="m" />
