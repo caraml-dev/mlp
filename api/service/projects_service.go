@@ -80,25 +80,26 @@ func (service *projectsService) CreateProject(ctx context.Context, project *mode
 			return nil, fmt.Errorf("error while creating authorization policy for project %s", project.Name)
 		}
 	}
+	if service.webhookManager == nil || !service.webhookManager.IsEventConfigured(ProjectCreatedEvent) {
+		return project, nil
+	}
 
-	if service.webhookManager != nil && service.webhookManager.IsEventConfigured(ProjectCreatedEvent) {
-		err = service.webhookManager.InvokeWebhooks(ctx, ProjectCreatedEvent, project, func(p []byte) error {
-			// Expects webhook output to be a project object
-			var tmpproject models.Project
-			if err := json.Unmarshal(p, &tmpproject); err != nil {
-				return err
-			}
-			project, err = service.save(&tmpproject)
-			if err != nil {
-				return err
-			}
-			return nil
-		}, webhooks.NoOpErrorHandler)
-		if err != nil {
-			return project,
-				fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
-					ProjectCreatedEvent, err.Error())
+	err = service.webhookManager.InvokeWebhooks(ctx, ProjectCreatedEvent, project, func(p []byte) error {
+		// Expects webhook output to be a project object
+		var tmpproject models.Project
+		if err := json.Unmarshal(p, &tmpproject); err != nil {
+			return err
 		}
+		project, err = service.save(&tmpproject)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, webhooks.NoOpErrorHandler)
+	if err != nil {
+		return project,
+			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
+				ProjectCreatedEvent, err.Error())
 	}
 	return project, nil
 }
