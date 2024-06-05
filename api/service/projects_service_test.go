@@ -426,3 +426,76 @@ func TestProjectsService_CreateWithWebhook(t *testing.T) {
 	}
 
 }
+func TestProjectsService_UpdateProjectWithWebhook(t *testing.T) {
+	tests := []struct {
+		name         string
+		arg          *models.Project
+		expResult    *models.Project
+		wantError    bool
+		wantErrorMsg string
+		whResponse   []byte
+	}{
+		{
+			"success: webhook update",
+			&models.Project{
+				ID:             1,
+				Name:           "my-project",
+				Administrators: []string{"user@email.com"},
+				Readers:        nil,
+				Team:           "team-1",
+			},
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
+				Team:              "team-1",
+				Stream:            "team-2-modified-by-webhook",
+			},
+			false,
+			"",
+			[]byte(`{
+				"id": 1,
+				"name": "my-project",
+				"mlflow_tracking_url": "http://localhost:5555",
+				"administrators": ["user@email.com"],
+				"team": "team-1",
+				"stream": "team-2-modified-by-webhook"
+			}`),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			storage := &mocks.ProjectRepository{}
+			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
+
+			authEnforcer := &enforcerMock.Enforcer{}
+			mockClient1 := &webhooks.MockWebhookClient{}
+			mockClient1.On("IsAsync").Return(false)
+			mockClient1.On("GetName").Return("webhook1")
+			mockClient1.On("IsFinalResponse").Return(true)
+			mockClient1.On("GetUseDataFrom").Return("")
+			storage.On("Save", tt.expResult).Return(tt.expResult, nil).Maybe()
+			mockClient1.On("Invoke", mock.Anything, mock.Anything).Return(tt.whResponse, nil)
+			whManager := &webhooks.SimpleWebhookManager{
+				SyncClients: map[webhooks.EventType][]webhooks.WebhookClient{
+					ProjectUpdatedEvent: {
+						mockClient1,
+					},
+				},
+			}
+			mockClient1.On("Invoke", mock.Anything, mock.Anything).Return(tt.whResponse, nil)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, whManager)
+
+			assert.NoError(t, err)
+
+			res, err := projectsService.UpdateProject(context.Background(), tt.arg)
+			require.NoError(t, err)
+			require.Equal(t, tt.expResult, res)
+
+			storage.AssertExpectations(t)
+			authEnforcer.AssertExpectations(t)
+		})
+	}
+}
