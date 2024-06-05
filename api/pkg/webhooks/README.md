@@ -50,7 +50,7 @@ method in the caller code based on the event.
 
 #### Optional webhooks events
 
-In the event that there are multiple events to be configured, for example `OnProjectCreated` and `OnProjectUpdated`, and only `OnProjectCreated` webhooks should be fired, use the `IsEventConfigured()` method provided by the `WebhookManager` to check if the event is set before calling `InvokeWebhooks()`
+In the event that there are multiple events to be configured, for example `OnProjectCreated` and `OnProjectUpdated`, use the `IsEventConfigured()` method provided by the `WebhookManager` to check if the event `OnProjectUpdated` is set before calling `InvokeWebhooks()` for the `OnProjectUpdated`. If this check is not performed, the `OnProjectUpdated` event must always be configured in the webhooks configuration if webhooks are enabled.
 
 For example:
 
