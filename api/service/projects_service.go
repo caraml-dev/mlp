@@ -122,8 +122,28 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 			return nil, fmt.Errorf("error while updating authorization policy for project %s", project.Name)
 		}
 	}
-
-	return service.save(project)
+	if service.webhookManager == nil {
+		return service.save(project)
+	}
+	err := service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
+		// Expects webhook output to be a project object
+		var tmpproject models.Project
+		var err error
+		if err := json.Unmarshal(p, &tmpproject); err != nil {
+			return err
+		}
+		project, err = service.save(&tmpproject)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, webhooks.NoOpErrorHandler)
+	if err != nil {
+		return project,
+			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
+				ProjectCreatedEvent, err.Error())
+	}
+	return project, nil
 }
 
 func (service *projectsService) FindByID(projectID models.ID) (*models.Project, error) {
