@@ -86,3 +86,9 @@ defaultSecretStorage:
       # ONLY FOR TESTING PURPOSES
       authMethod: token
       token: root
+# webhooks:
+#   enabled: true
+#   config:
+#     OnProjectCreated:
+#       - url: http://localhost:8081/project_created
+#         method: POST

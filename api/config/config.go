@@ -15,6 +15,7 @@ import (
 
 	"github.com/caraml-dev/mlp/api/models"
 	modelsv2 "github.com/caraml-dev/mlp/api/models/v2"
+	"github.com/caraml-dev/mlp/api/pkg/webhooks"
 )
 
 type Config struct {
@@ -33,6 +34,7 @@ type Config struct {
 	Mlflow               *MlflowConfig          `validate:"required"`
 	DefaultSecretStorage *SecretStorage         `validate:"required"`
 	UI                   *UIConfig
+	Webhooks             *webhooks.Config
 }
 
 // SecretStorage represents the configuration for a secret storage.

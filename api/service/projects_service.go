@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -13,6 +14,7 @@ import (
 
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
+	"github.com/caraml-dev/mlp/api/pkg/webhooks"
 )
 
 type ProjectsService interface {
@@ -35,7 +37,8 @@ func NewProjectsService(
 	mlflowURL string,
 	projectRepository repository.ProjectRepository,
 	authEnforcer enforcer.Enforcer,
-	authEnabled bool) (ProjectsService, error) {
+	authEnabled bool,
+	webhookManager webhooks.WebhookManager) (ProjectsService, error) {
 	if strings.TrimSpace(mlflowURL) == "" {
 		return nil, errors.New("default mlflow tracking url should be provided")
 	}
@@ -45,6 +48,7 @@ func NewProjectsService(
 		defaultMlflowTrackingServer: mlflowURL,
 		authEnforcer:                authEnforcer,
 		authEnabled:                 authEnabled,
+		webhookManager:              webhookManager,
 	}, nil
 }
 
@@ -53,6 +57,7 @@ type projectsService struct {
 	defaultMlflowTrackingServer string
 	authEnforcer                enforcer.Enforcer
 	authEnabled                 bool
+	webhookManager              webhooks.WebhookManager
 }
 
 func (service *projectsService) CreateProject(ctx context.Context, project *models.Project) (*models.Project, error) {
@@ -76,6 +81,25 @@ func (service *projectsService) CreateProject(ctx context.Context, project *mode
 		}
 	}
 
+	if service.webhookManager != nil && service.webhookManager.IsEventConfigured(ProjectCreatedEvent) {
+		err = service.webhookManager.InvokeWebhooks(ctx, ProjectCreatedEvent, project, func(p []byte) error {
+			// Expects webhook output to be a project object
+			var tmpproject models.Project
+			if err := json.Unmarshal(p, &tmpproject); err != nil {
+				return err
+			}
+			project, err = service.save(&tmpproject)
+			if err != nil {
+				return err
+			}
+			return nil
+		}, webhooks.NoOpErrorHandler)
+		if err != nil {
+			return project,
+				fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
+					ProjectCreatedEvent, err.Error())
+		}
+	}
 	return project, nil
 }
 
@@ -98,8 +122,28 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 			return nil, fmt.Errorf("error while updating authorization policy for project %s", project.Name)
 		}
 	}
-
-	return service.save(project)
+	if service.webhookManager == nil || !service.webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
+		return service.save(project)
+	}
+	err := service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
+		// Expects webhook output to be a project object
+		var tmpproject models.Project
+		var err error
+		if err := json.Unmarshal(p, &tmpproject); err != nil {
+			return err
+		}
+		project, err = service.save(&tmpproject)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, webhooks.NoOpErrorHandler)
+	if err != nil {
+		return project,
+			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
+				ProjectCreatedEvent, err.Error())
+	}
+	return project, nil
 }
 
 func (service *projectsService) FindByID(projectID models.ID) (*models.Project, error) {
