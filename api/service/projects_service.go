@@ -81,7 +81,7 @@ func (service *projectsService) CreateProject(ctx context.Context, project *mode
 		}
 	}
 
-	if service.webhookManager != nil {
+	if service.webhookManager != nil && service.webhookManager.IsEventConfigured(ProjectCreatedEvent) {
 		err = service.webhookManager.InvokeWebhooks(ctx, ProjectCreatedEvent, project, func(p []byte) error {
 			// Expects webhook output to be a project object
 			var tmpproject models.Project
@@ -122,7 +122,7 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 			return nil, fmt.Errorf("error while updating authorization policy for project %s", project.Name)
 		}
 	}
-	if service.webhookManager == nil {
+	if service.webhookManager == nil || !service.webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
 		return service.save(project)
 	}
 	err := service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {

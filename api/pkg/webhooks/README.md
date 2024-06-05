@@ -48,6 +48,24 @@ InvokeWebhooks(context.Context, EventType, payload interface{}, onSuccess func([
 
 method in the caller code based on the event.
 
+#### Optional webhooks events
+
+In the event that there are multiple events to be configured, for example `OnProjectCreated` and `OnProjectUpdated`, and only `OnProjectCreated` webhooks should be fired, use the `IsEventConfigured()` method provided by the `WebhookManager` to check if the event is set before calling `InvokeWebhooks()`
+
+For example:
+
+```go
+	if webhookManager == nil || !webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
+		// do step if webhooks disabled, or event not set
+        ...
+	} else {
+        err := webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
+            // onSuccess steps
+            ...
+        }, webhooks.NoOpErrorHandler)
+    }
+```
+
 ### Single Webhook Configuration
 
 ```yaml

@@ -14,11 +14,21 @@ type WebhookManager interface {
 		func(payload []byte) error,
 		func(error) error,
 	) error
+
+	IsEventConfigured(EventType) bool
 }
 
 type SimpleWebhookManager struct {
 	SyncClients  map[EventType][]WebhookClient
 	AsyncClients map[EventType][]WebhookClient
+}
+
+// IsEventConfigured checks if the event is configured in the webhook manager
+// Use this method before calling InvokeWebhooks if it is optional to set webhooks for an event
+func (w *SimpleWebhookManager) IsEventConfigured(event EventType) bool {
+	_, ok := w.SyncClients[event]
+	_, ok1 := w.AsyncClients[event]
+	return ok || ok1
 }
 
 // InvokeWebhooks iterates through the webhooks for a given event and invokes them.
