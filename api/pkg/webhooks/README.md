@@ -50,7 +50,7 @@ method in the caller code based on the event.
 
 #### Optional webhooks events
 
-In the event that there are multiple events to be configured, for example `OnProjectCreated` and `OnProjectUpdated`, use the `IsEventConfigured()` method provided by the `WebhookManager` to check if the event `OnProjectUpdated` is set before calling `InvokeWebhooks()` for the `OnProjectUpdated`. If this check is not performed, the `OnProjectUpdated` event must always be configured in the webhooks configuration if webhooks are enabled.
+In the event that there are multiple events to be configured, for example `OnProjectCreated` and `OnProjectUpdated`, use the `IsEventConfigured()` method provided by the `WebhookManager` to check if the event `OnProjectUpdated` is set before calling `InvokeWebhooks()` for the `OnProjectUpdated`. If this check is not performed, the `OnProjectUpdated` event must always be configured in the webhooks configuration if webhooks are enabled. 
 
 For example:
 
@@ -64,6 +64,33 @@ For example:
             ...
         }, webhooks.NoOpErrorHandler)
     }
+```
+example config:
+```yaml
+webhooks:
+  enabled: true
+  config:
+    OnProjectCreated:
+      - url: http://localhost:8081/project_created
+        method: POST
+        finalResponse: true
+        name: webhook1
+    OnProjectUpdated: # <-- this must always be set if no check is performed before InvokeWebhooks() is called
+      - url: http://localhost:8081/project_updated
+        method: POST
+        finalResponse: true
+        name: webhook2
+```
+Checking if the event exists allows users to just specify a subset of the events available, in this case only `OnProjectCreated` is set.
+```yaml
+webhooks:
+  enabled: true
+  config:
+    OnProjectCreated:
+      - url: http://localhost:8081/project_created
+        method: POST
+        finalResponse: true
+        name: webhook1
 ```
 
 ### Single Webhook Configuration
