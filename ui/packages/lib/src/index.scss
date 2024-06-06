@@ -2,9 +2,6 @@
 @import "@elastic/eui/src/themes/amsterdam/globals";
 
 body {
-  // TODO(arief):
-  // @include euiHeaderAffordForFixed;
-
   padding-top: 0 !important;
 }
 
@@ -12,11 +9,6 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-
-  // TODO(arief):
-  // .euiBody--headerIsFixed & {
-  //   min-height: calc(100vh - #{$euiHeaderHeightCompensation});
-  // }
 }
 
 // table actions

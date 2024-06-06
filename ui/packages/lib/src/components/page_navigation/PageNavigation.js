@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   EuiContextMenuItem,
   EuiContextMenuPanel,
@@ -9,9 +8,8 @@ import {
   EuiTab,
   EuiTabs
 } from "@elastic/eui";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import "./PageNavigation.scss";
 
 export const PageNavigation = ({ tabs, actions, selectedTab = "" }) => {
   const navigate = useNavigate();
