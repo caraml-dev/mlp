@@ -1,5 +1,5 @@
 const getEnv = env => {
-  return window.env && window.env[env] ? window.env[env] : process.env[env];
+  return window.env && env in window.env ? window.env[env] : process.env[env];
 };
 
 export const sentryConfig = {
@@ -34,8 +34,14 @@ const config = {
 
   CLOCKWORK_UI_HOMEPAGE: getEnv("REACT_APP_CLOCKWORK_UI_HOMEPAGE"),
   KUBEFLOW_UI_HOMEPAGE: getEnv("REACT_APP_KUBEFLOW_UI_HOMEPAGE"),
-  ALLOW_CUSTOM_STREAM: getEnv("REACT_APP_ALLOW_CUSTOM_STREAM") || true,
-  ALLOW_CUSTOM_TEAM: getEnv("REACT_APP_ALLOW_CUSTOM_TEAM") || true,
+  ALLOW_CUSTOM_STREAM:
+    getEnv("REACT_APP_ALLOW_CUSTOM_STREAM") != null
+      ? getEnv("REACT_APP_ALLOW_CUSTOM_STREAM")
+      : true,
+  ALLOW_CUSTOM_TEAM:
+    getEnv("REACT_APP_ALLOW_CUSTOM_TEAM") != null
+      ? getEnv("REACT_APP_ALLOW_CUSTOM_TEAM")
+      : true,
   PROJECT_INFO_UPDATE_ENABLED:
     getEnv("REACT_APP_PROJECT_INFO_UPDATE_ENABLED") || false
 };

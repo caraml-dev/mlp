@@ -44,7 +44,7 @@ export const Team = ({
         options={teamOptions}
         onChange={onTeamChange}
         onCreateOption={config.ALLOW_CUSTOM_TEAM ? onTeamChange : undefined}
-        isDiasbled={isDisabled}
+        isDisabled={isDisabled}
       />
     </EuiFormRow>
   );

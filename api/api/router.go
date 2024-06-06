@@ -17,6 +17,7 @@ import (
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	"github.com/caraml-dev/mlp/api/pkg/instrumentation/newrelic"
 	"github.com/caraml-dev/mlp/api/pkg/secretstorage"
+	"github.com/caraml-dev/mlp/api/pkg/webhooks"
 	"github.com/caraml-dev/mlp/api/repository"
 	"github.com/caraml-dev/mlp/api/service"
 	"github.com/caraml-dev/mlp/api/validation"
@@ -61,11 +62,19 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		return nil, fmt.Errorf("failed to initialize applications service: %v", err)
 	}
 
+	var projectsWebhookManager webhooks.WebhookManager
+	if cfg.Webhooks != nil && cfg.Webhooks.Enabled {
+		projectsWebhookManager, err = webhooks.InitializeWebhooks(cfg.Webhooks, service.EventList)
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize projects webhook manager: %v", err)
+		}
+	}
+
 	projectsService, err := service.NewProjectsService(
 		cfg.Mlflow.TrackingURL,
 		repository.NewProjectRepository(db),
 		authEnforcer,
-		cfg.Authorization.Enabled)
+		cfg.Authorization.Enabled, projectsWebhookManager)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize projects service: %v", err)

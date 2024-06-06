@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/storage v1.29.0
 	github.com/antihax/optional v1.0.0
 	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+	github.com/avast/retry-go/v4 v4.6.0
 	github.com/gavv/httpexpect/v2 v2.15.0
 	github.com/getsentry/raven-go v0.2.0
 	github.com/go-playground/locales v0.14.0
@@ -33,7 +34,7 @@ require (
 	github.com/rs/cors v1.7.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.9.0
 	github.com/uber/jaeger-client-go v2.16.0+incompatible
 	go.uber.org/zap v1.17.0
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1
@@ -106,7 +107,7 @@ require (
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/sanity-io/litter v1.5.5 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
-	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/uber-go/atomic v1.4.0 // indirect
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
