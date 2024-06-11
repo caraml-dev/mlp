@@ -233,6 +233,12 @@ var defaultConfig = &Config{
 		AllowCustomTeam:   true,
 		AllowCustomStream: true,
 	},
+	UpdateProject: &UpdateProjectConfig{
+		Endpoint:         "http://localhost:8080",
+		PayloadTemplate:  ``,
+		ResponseTemplate: ``,
+		LabelsBlacklist:  []string{"env"},
+	},
 	DefaultSecretStorage: &SecretStorage{
 		Name: "internal",
 		Type: "internal",

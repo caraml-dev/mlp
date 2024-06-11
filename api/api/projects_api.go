@@ -78,19 +78,17 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 	project.Team = newProject.Team
 	project.Stream = newProject.Stream
 	project.Labels = newProject.Labels
-	updatedProject, responseMessage, err := c.ProjectsService.UpdateProject(r.Context(), project)
+	project, response, err := c.ProjectsService.UpdateProject(r.Context(), project)
+	if project == nil {
+		log.Errorf("project %s is not updated", project)
+		return FromError(err)
+	}
 	if err != nil {
 		log.Errorf("error updating project %s: %s", project.Name, err)
 		return FromError(err)
 	}
 
-	if responseMessage != "" {
-		log.Infof("Project updated successfully, URL link: %s", responseMessage)
-	} else {
-		log.Infof("Project updated successfully")
-	}
-
-	return Ok(updatedProject)
+	return Ok(response)
 }
 
 func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string, body interface{}) *Response {

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"bytes"
-	"encoding/json"
 	"html/template"
 	"net/http"
 
@@ -26,12 +25,9 @@ import (
 type ProjectsService interface {
 	ListProjects(ctx context.Context, name string, user string) ([]*models.Project, error)
 	CreateProject(ctx context.Context, project *models.Project) (*models.Project, error)
-	UpdateProject(ctx context.Context, project *models.Project) (*models.Project, string, error)
+	UpdateProject(ctx context.Context, project *models.Project) (*models.Project, map[string]interface{}, error)
 	FindByID(projectID models.ID) (*models.Project, error)
 	FindByName(projectName string) (*models.Project, error)
-	MakeRequestPayload(project *models.Project, templateString string) (string, error)
-	SendUpdateRequest(url string, payload string) (*http.Response, error)
-	ProcessResponseURL(response *http.Response, templateString string) (string, error)
 }
 
 var reservedProjectName = map[string]bool{
@@ -128,43 +124,43 @@ func (service *projectsService) ListProjects(ctx context.Context, name string, u
 	return allProjects, nil
 }
 
-func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project, string,
+func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project, map[string]interface{},
 	error) {
+	existingProject, err := service.projectRepository.Get(project.ID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error fetching project with id %s: %w", project.ID, err)
+	}
+
+	if existingProject == nil {
+		return nil, nil, fmt.Errorf("project with id %s not found", project.ID)
+	}
+
 	if service.authEnabled {
 		err := service.updateAuthorizationPolicy(ctx, project)
 		if err != nil {
-			return nil, "", fmt.Errorf("error while updating authorization policy for project %s", project.Name)
+			return nil, nil, fmt.Errorf("error while updating authorization policy for project %s", project.Name)
 		}
 	}
+
+	if isLabelBlacklisted(existingProject.Labels, project.Labels, service.updateProjectConfig.LabelsBlacklist) {
+		return nil, nil, fmt.Errorf("one or more labels are blacklisted or have changed values and cannot be updated")
+	}
+
 	if service.webhookManager == nil || !service.webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
-		updatedProject, err := service.save(project)
-	if err != nil {
-		return nil, "", fmt.Errorf("error saving project %s: %w", project.Name, err)
+		project, err := service.save(project)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		project, response, err := service.handleUpdateProjectRequest(project)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return project, response, nil
 	}
 
-	if service.updateProjectConfig.Endpoint != "" &&
-		service.updateProjectConfig.PayloadTemplate != "" &&
-		service.updateProjectConfig.ResponseTemplate != "" {
-
-		payload, err := service.MakeRequestPayload(project, service.updateProjectConfig.PayloadTemplate)
-		if err != nil {
-			return nil, "", fmt.Errorf("error generating request payload: %w", err)
-		}
-
-		response, err := service.SendUpdateRequest(service.updateProjectConfig.Endpoint, payload)
-		if err != nil {
-			return nil, "", fmt.Errorf("error sending update request: %w", err)
-		}
-		defer response.Body.Close()
-
-		responseMessage, err := service.ProcessResponseURL(response, service.updateProjectConfig.ResponseTemplate)
-		if err != nil {
-			return nil, "", fmt.Errorf("error processing response template: %w", err)
-		}
-
-		return updatedProject, responseMessage, nil
-	}
-	err := service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
+	err = service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
 		// Expects webhook output to be a project object
 		var tmpproject models.Project
 		var err error
@@ -178,14 +174,10 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 		return nil
 	}, webhooks.NoOpErrorHandler)
 	if err != nil {
-		return project,
-			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
-				ProjectCreatedEvent, err.Error())
+		return project, nil,
+			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s", ProjectUpdatedEvent, err.Error())
 	}
-	return project, nil
-	}
-
-	return updatedProject, "", nil
+	return project, nil, nil
 }
 
 func (service *projectsService) FindByID(projectID models.ID) (*models.Project, error) {
@@ -292,20 +284,55 @@ func (service *projectsService) filterAuthorizedProjects(ctx context.Context, pr
 	return authorizedProjects, nil
 }
 
-func (service *projectsService) MakeRequestPayload(project *models.Project, templateString string) (string, error) {
+func (service *projectsService) handleUpdateProjectRequest(project *models.Project) (*models.Project, map[string]interface{}, error) {
+	if service.updateProjectConfig.Endpoint == "" || service.updateProjectConfig.PayloadTemplate == "" ||
+		service.updateProjectConfig.ResponseTemplate == "" {
+		return project, nil, nil
+	}
+
+	payload, err := generateRequestPayload(project, service.updateProjectConfig.PayloadTemplate)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error generating request payload: %w", err)
+	}
+
+	resp, err := sendUpdateRequest(service.updateProjectConfig.Endpoint, payload)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error sending update request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	response, err := processResponseTemplate(resp, service.updateProjectConfig.ResponseTemplate)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error processing response template: %w", err)
+	}
+
+	return project, response, nil
+}
+
+func generateRequestPayload(project *models.Project, templateString string) (map[string]interface{}, error) {
 	tmpl, err := template.New("requestPayload").Parse(templateString)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	var payload bytes.Buffer
 	if err := tmpl.Execute(&payload, project); err != nil {
-		return "", err
+		return nil, err
 	}
-	return payload.String(), nil
+	var result map[string]interface{}
+	if err := json.Unmarshal(payload.Bytes(), &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
-func (service *projectsService) SendUpdateRequest(url string, payload string) (*http.Response, error) {
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(payload)))
+func sendUpdateRequest(url string, payload map[string]interface{}) (*http.Response, error) {
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return nil, err
 	}
@@ -320,20 +347,52 @@ func (service *projectsService) SendUpdateRequest(url string, payload string) (*
 	return resp, nil
 }
 
-func (service *projectsService) ProcessResponseURL(response *http.Response, templateString string) (string, error) {
+func processResponseTemplate(response *http.Response, templateString string) (map[string]interface{}, error) {
 	var data map[string]interface{}
 	if err := json.NewDecoder(response.Body).Decode(&data); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	tmpl, err := template.New("responseURL").Parse(templateString)
+	tmpl, err := template.New("responsePayload").Parse(templateString)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	var responseText bytes.Buffer
 	if err := tmpl.Execute(&responseText, data); err != nil {
-		return "", err
+		return nil, err
 	}
-	return responseText.String(), nil
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(responseText.Bytes(), &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// isLabelBlacklisted check if any key in labels is blacklisted
+func isLabelBlacklisted(existingLabels, newLabels []models.Label, blacklist []string) bool {
+	for _, newLabel := range newLabels {
+		if contain(newLabel.Key, blacklist) {
+			for _, existingLabel := range existingLabels {
+				if existingLabel.Key == newLabel.Key && existingLabel.Value != newLabel.Value {
+					return true
+				}
+			}
+		} else {
+			return false
+		}
+	}
+	return false
+}
+
+// contain function to check if a string is in a slice
+func contain(item string, slice []string) bool {
+	for _, label := range slice {
+		if label == item {
+			return true
+		}
+	}
+	return false
 }

@@ -70,7 +70,10 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		}
 	}
 
-	var updateProjectConfig config.UpdateProjectConfig
+	if cfg.UpdateProject == nil {
+		return nil, fmt.Errorf("update project config is nil")
+	}
+	updateProjectConfig := *cfg.UpdateProject
 
 	projectsService, err := service.NewProjectsService(
 		cfg.Mlflow.TrackingURL,
