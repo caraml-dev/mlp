@@ -90,9 +90,9 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 
 	if response != nil {
 		return Ok(response)
-	} else {
-		return Ok(project)
 	}
+
+	return Ok(project)
 }
 
 func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string, body interface{}) *Response {

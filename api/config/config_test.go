@@ -90,6 +90,12 @@ func TestLoad(t *testing.T) {
 					AllowCustomTeam:   true,
 					AllowCustomStream: true,
 				},
+				UpdateProject: &config.UpdateProjectConfig{
+					Endpoint:         "",
+					PayloadTemplate:  "",
+					ResponseTemplate: "",
+					LabelsBlacklist:  nil,
+				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",
 					Type: "vault",
@@ -148,6 +154,12 @@ func TestLoad(t *testing.T) {
 					IndexPath:         "index.html",
 					AllowCustomTeam:   true,
 					AllowCustomStream: true,
+				},
+				UpdateProject: &config.UpdateProjectConfig{
+					Endpoint:         "",
+					PayloadTemplate:  "",
+					ResponseTemplate: "",
+					LabelsBlacklist:  nil,
 				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",

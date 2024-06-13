@@ -408,7 +408,9 @@ func TestUpdateProject(t *testing.T) {
 				Stream:         "dsp",
 				Administrators: []string{adminUser},
 			},
-			expectedResponse: nil,
+			expectedResponse: &Response{
+				code: 200,
+			},
 			expectedMessage: map[string]interface{}{
 				"status":  "success",
 				"message": "Project updated successfully",
@@ -605,7 +607,7 @@ func TestUpdateProject(t *testing.T) {
 
 				assert.Equal(t, tC.expectedResponse.code, rr.Code)
 				if tC.expectedResponse.code >= 200 && tC.expectedResponse.code < 300 {
-					if tC.expectedResponse != nil {
+					if tC.expectedResponse.data != nil {
 						project := &models.Project{}
 						err = json.Unmarshal(rr.Body.Bytes(), &project)
 						assert.NoError(t, err)

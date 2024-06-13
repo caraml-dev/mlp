@@ -139,7 +139,8 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 	}
 
 	if isLabelBlacklisted(existingProject.Labels, project.Labels, service.updateProjectConfig.LabelsBlacklist) {
-		return nil, nil, fmt.Errorf("one or more labels are blacklisted or have been removed or changed values and cannot be updated")
+		return nil, nil,
+			fmt.Errorf("one or more labels are blacklisted or have been removed or changed values and cannot be updated")
 	}
 
 	if service.webhookManager == nil || !service.webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
@@ -174,7 +175,8 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 	}, webhooks.NoOpErrorHandler)
 	if err != nil {
 		return project, nil,
-			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s", ProjectUpdatedEvent, err.Error())
+			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
+				ProjectUpdatedEvent, err.Error())
 	}
 
 	if service.updateProjectConfig.Endpoint != "" {
@@ -292,7 +294,8 @@ func (service *projectsService) filterAuthorizedProjects(ctx context.Context, pr
 	return authorizedProjects, nil
 }
 
-func (service *projectsService) handleUpdateProjectRequest(project *models.Project) (*models.Project, map[string]interface{}, error) {
+func (service *projectsService) handleUpdateProjectRequest(project *models.Project) (*models.Project,
+	map[string]interface{}, error) {
 	if service.updateProjectConfig.PayloadTemplate == "" || service.updateProjectConfig.ResponseTemplate == "" {
 		return project, nil, nil
 	}
