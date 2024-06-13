@@ -44,7 +44,12 @@ const config = {
       : true,
   PROJECT_INFO_UPDATE_ENABLED:
     getEnv("REACT_APP_PROJECT_INFO_UPDATE_ENABLED") || false,
-  LABELS_BLACKLIST: (getEnv("REACT_APP_LABELS_BLACKLIST") || "").split(", ")
+  LABELS_BLACKLIST: (getEnv("REACT_APP_LABELS_BLACKLIST") || "")
+    .split(",")
+    .reduce((check, label) => {
+      check[label.trim()] = true;
+      return check;
+    }, {})
 };
 
 export default config;

@@ -31,12 +31,14 @@ ui:
   projectinfoUpdateEnabled: true
 
 updateProject:
-  endpoint: "http://example-update-project.dev"
-  payloadTemplate: "your-payload-template"
-  responseTemplate: "your-response-template"
+  endpoint: http://localhost:3030
+  payloadTemplate: |
+    {"template": "{{.template}}"}
+  responseTemplate: |
+    {"response": "{{.response}}"}
   labelsBlacklist:
-    - "label1"
-    - "label2"
+    label1: true
+    label2: true
 
 defaultSecretStorage:
   name: default-secret-storage

@@ -380,10 +380,12 @@ func TestUpdateProject(t *testing.T) {
 		projectID             models.ID
 		existingProject       *models.Project
 		expectedResponse      *Response
+		expectedMessage       map[string]interface{}
 		body                  interface{}
 		updateProjectEndpoint string
 		updateProjectPayload  string
 		updateProjectResponse string
+		labelsBlacklist       map[string]bool
 	}{
 		{
 			desc:      "Should success with update project config",
@@ -406,20 +408,10 @@ func TestUpdateProject(t *testing.T) {
 				Stream:         "dsp",
 				Administrators: []string{adminUser},
 			},
-			expectedResponse: &Response{
-				code: 200,
-				data: &models.Project{
-					ID:                models.ID(1),
-					Name:              "Project1",
-					MLFlowTrackingURL: "http://mlflow.com",
-					Administrators:    []string{adminUser},
-					Team:              "merlin",
-					Stream:            "dsp",
-					CreatedUpdated: models.CreatedUpdated{
-						CreatedAt: now,
-						UpdatedAt: now,
-					},
-				},
+			expectedResponse: nil,
+			expectedMessage: map[string]interface{}{
+				"status":  "success",
+				"message": "Project updated successfully",
 			},
 			updateProjectEndpoint: "url",
 			updateProjectPayload: `{
@@ -433,6 +425,10 @@ func TestUpdateProject(t *testing.T) {
 				"status": "{{.status}}",
 				"message": "{{.message}}"
 			}`,
+			labelsBlacklist: map[string]bool{
+				"label1": true,
+				"label2": true,
+			},
 		},
 		{
 			desc:      "Should success without update project config",
@@ -470,9 +466,11 @@ func TestUpdateProject(t *testing.T) {
 					},
 				},
 			},
+			expectedMessage:       nil,
 			updateProjectEndpoint: "",
 			updateProjectPayload:  "",
 			updateProjectResponse: "",
+			labelsBlacklist:       map[string]bool{},
 		},
 		{
 			desc:      "Should failed when name is not specified",
@@ -500,9 +498,11 @@ func TestUpdateProject(t *testing.T) {
 					Message: "Name is required",
 				},
 			},
+			expectedMessage:       nil,
 			updateProjectEndpoint: "",
 			updateProjectPayload:  "",
 			updateProjectResponse: "",
+			labelsBlacklist:       map[string]bool{},
 		},
 		{
 			desc:      "Should failed when name project id is not found",
@@ -531,9 +531,11 @@ func TestUpdateProject(t *testing.T) {
 					Message: "project with ID 2 not found",
 				},
 			},
+			expectedMessage:       nil,
 			updateProjectEndpoint: "",
 			updateProjectPayload:  "",
 			updateProjectResponse: "",
+			labelsBlacklist:       map[string]bool{},
 		},
 	}
 	for _, tC := range testCases {
@@ -566,11 +568,12 @@ func TestUpdateProject(t *testing.T) {
 				}
 
 				projectService, err := service.NewProjectsService(
-					mlflowTrackingURL, prjRepository, nil, false, nil
+					mlflowTrackingURL, prjRepository, nil, false, nil,
 					config.UpdateProjectConfig{
 						Endpoint:         tC.updateProjectEndpoint,
 						PayloadTemplate:  tC.updateProjectPayload,
 						ResponseTemplate: tC.updateProjectResponse,
+						LabelsBlacklist:  tC.labelsBlacklist,
 					},
 				)
 				assert.NoError(t, err)
@@ -602,14 +605,21 @@ func TestUpdateProject(t *testing.T) {
 
 				assert.Equal(t, tC.expectedResponse.code, rr.Code)
 				if tC.expectedResponse.code >= 200 && tC.expectedResponse.code < 300 {
-					project := &models.Project{}
-					err = json.Unmarshal(rr.Body.Bytes(), &project)
-					assert.NoError(t, err)
+					if tC.expectedResponse != nil {
+						project := &models.Project{}
+						err = json.Unmarshal(rr.Body.Bytes(), &project)
+						assert.NoError(t, err)
 
-					project.CreatedAt = now
-					project.UpdatedAt = now
+						project.CreatedAt = now
+						project.UpdatedAt = now
 
-					assert.Equal(t, tC.expectedResponse.data, project)
+						assert.Equal(t, tC.expectedResponse.data, project)
+					} else {
+						var responseMessage map[string]interface{}
+						err = json.Unmarshal(rr.Body.Bytes(), &responseMessage)
+						assert.NoError(t, err)
+						assert.Equal(t, tC.expectedMessage, responseMessage)
+					}
 				} else {
 					e := ErrorMessage{}
 					err = json.Unmarshal(rr.Body.Bytes(), &e)

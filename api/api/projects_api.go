@@ -87,12 +87,12 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 		log.Errorf("error updating project %s: %s", project.Name, err)
 		return FromError(err)
 	}
-	if response == nil {
-		log.Errorf("error updating project, update project config has not been completely specified")
-		return FromError(err)
-	}
 
-	return Ok(response)
+	if response != nil {
+		return Ok(response)
+	} else {
+		return Ok(project)
+	}
 }
 
 func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string, body interface{}) *Response {

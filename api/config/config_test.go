@@ -249,12 +249,14 @@ func TestLoad(t *testing.T) {
 					ProjectInfoUpdateEnabled: true,
 				},
 				UpdateProject: &config.UpdateProjectConfig{
-					Endpoint:         "http://example-update-project.dev",
-					PayloadTemplate:  "your-payload-template",
-					ResponseTemplate: "your-response-template",
-					LabelsBlacklist: []string{
-						"label1",
-						"label2",
+					Endpoint: "http://localhost:3030",
+					PayloadTemplate: `{"template": "{{.template}}"}
+`,
+					ResponseTemplate: `{"response": "{{.response}}"}
+`,
+					LabelsBlacklist: map[string]bool{
+						"label1": true,
+						"label2": true,
 					},
 				},
 				DefaultSecretStorage: &config.SecretStorage{
@@ -345,9 +347,9 @@ func TestValidate(t *testing.T) {
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
-					LabelsBlacklist: []string{
-						"label1",
-						"label2",
+					LabelsBlacklist: map[string]bool{
+						"label1": true,
+						"label2": true,
 					},
 				},
 			},
@@ -401,9 +403,9 @@ func TestValidate(t *testing.T) {
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
-					LabelsBlacklist: []string{
-						"label1",
-						"label2",
+					LabelsBlacklist: map[string]bool{
+						"label1": true,
+						"label2": true,
 					},
 				},
 			},
@@ -461,9 +463,9 @@ func TestValidate(t *testing.T) {
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
-					LabelsBlacklist: []string{
-						"label1",
-						"label2",
+					LabelsBlacklist: map[string]bool{
+						"label1": true,
+						"label2": true,
 					},
 				},
 			},
@@ -518,7 +520,10 @@ func TestValidate(t *testing.T) {
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
-					LabelsBlacklist:  []string{},
+					LabelsBlacklist: map[string]bool{
+						"label1": true,
+						"label2": true,
+					},
 				},
 			},
 			error: errors.New(

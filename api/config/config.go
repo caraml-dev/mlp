@@ -128,10 +128,10 @@ type UIConfig struct {
 }
 
 type UpdateProjectConfig struct {
-	Endpoint         string `validate:"url"`
+	Endpoint         string `validate:"omitempty,url"`
 	PayloadTemplate  string
 	ResponseTemplate string
-	LabelsBlacklist  []string `json:"REACT_APP_LABELS_BLACKLIST"`
+	LabelsBlacklist  map[string]bool
 	// labels blacklist that hides/prevents labels contained within to not be modifiable
 }
 
@@ -233,12 +233,7 @@ var defaultConfig = &Config{
 		AllowCustomTeam:   true,
 		AllowCustomStream: true,
 	},
-	UpdateProject: &UpdateProjectConfig{
-		Endpoint:         "http://localhost:8080",
-		PayloadTemplate:  ``,
-		ResponseTemplate: ``,
-		LabelsBlacklist:  []string{"env"},
-	},
+	UpdateProject: &UpdateProjectConfig{},
 	DefaultSecretStorage: &SecretStorage{
 		Name: "internal",
 		Type: "internal",

@@ -117,14 +117,14 @@ export const Labels = ({
         {items.map((element, idx) => {
           const isFieldDisabled =
             isDisabled ||
-            (labelsBlacklist && config.LABELS_BLACKLIST.includes(element.key));
+            (labelsBlacklist && config.LABELS_BLACKLIST[element.key]);
           return (
-            <EuiFlexItem>
+            <EuiFlexItem key={idx}>
               <EuiFlexGroup gutterSize="s">
                 <EuiFlexItem grow={1}>
                   <EuiFieldText
                     placeholder="key"
-                    value={element.key}
+                    value={element.key || ""}
                     onChange={onKeyChange(idx)}
                     isInvalid={!element.isKeyValid}
                     disabled={isFieldDisabled}
@@ -133,7 +133,7 @@ export const Labels = ({
                 <EuiFlexItem grow={1}>
                   <EuiFieldText
                     placeholder="value"
-                    value={element.value}
+                    value={element.value || ""}
                     onChange={onValueChange(idx)}
                     isInvalid={!element.isValueValid}
                     disabled={isFieldDisabled}

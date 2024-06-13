@@ -124,15 +124,11 @@ func (service *projectsService) ListProjects(ctx context.Context, name string, u
 	return allProjects, nil
 }
 
-func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project, map[string]interface{},
-	error) {
-	existingProject, err := service.projectRepository.Get(project.ID)
+func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project,
+	map[string]interface{}, error) {
+	existingProject, err := service.FindByID(project.ID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error fetching project with id %s: %w", project.ID, err)
-	}
-
-	if existingProject == nil {
-		return nil, nil, fmt.Errorf("project with id %s not found", project.ID)
 	}
 
 	if service.authEnabled {
@@ -143,7 +139,7 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 	}
 
 	if isLabelBlacklisted(existingProject.Labels, project.Labels, service.updateProjectConfig.LabelsBlacklist) {
-		return nil, nil, fmt.Errorf("one or more labels are blacklisted or have changed values and cannot be updated")
+		return nil, nil, fmt.Errorf("one or more labels are blacklisted or have been removed or changed values and cannot be updated")
 	}
 
 	if service.webhookManager == nil || !service.webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
@@ -152,12 +148,15 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 			return nil, nil, err
 		}
 
-		project, response, err := service.handleUpdateProjectRequest(project)
-		if err != nil {
-			return nil, nil, err
+		if service.updateProjectConfig.Endpoint != "" {
+			project, response, err := service.handleUpdateProjectRequest(project)
+			if err != nil {
+				return nil, nil, err
+			}
+			return project, response, nil
 		}
 
-		return project, response, nil
+		return project, nil, nil
 	}
 
 	err = service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
@@ -177,6 +176,15 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 		return project, nil,
 			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s", ProjectUpdatedEvent, err.Error())
 	}
+
+	if service.updateProjectConfig.Endpoint != "" {
+		project, response, err := service.handleUpdateProjectRequest(project)
+		if err != nil {
+			return nil, nil, err
+		}
+		return project, response, nil
+	}
+
 	return project, nil, nil
 }
 
@@ -285,8 +293,7 @@ func (service *projectsService) filterAuthorizedProjects(ctx context.Context, pr
 }
 
 func (service *projectsService) handleUpdateProjectRequest(project *models.Project) (*models.Project, map[string]interface{}, error) {
-	if service.updateProjectConfig.Endpoint == "" || service.updateProjectConfig.PayloadTemplate == "" ||
-		service.updateProjectConfig.ResponseTemplate == "" {
+	if service.updateProjectConfig.PayloadTemplate == "" || service.updateProjectConfig.ResponseTemplate == "" {
 		return project, nil, nil
 	}
 
@@ -372,27 +379,25 @@ func processResponseTemplate(response *http.Response, templateString string) (ma
 }
 
 // isLabelBlacklisted check if any key in labels is blacklisted
-func isLabelBlacklisted(existingLabels, newLabels []models.Label, blacklist []string) bool {
-	for _, newLabel := range newLabels {
-		if contain(newLabel.Key, blacklist) {
-			for _, existingLabel := range existingLabels {
-				if existingLabel.Key == newLabel.Key && existingLabel.Value != newLabel.Value {
-					return true
-				}
-			}
-		} else {
-			return false
-		}
-	}
-	return false
-}
+func isLabelBlacklisted(existingLabels, newLabels []models.Label, blacklist map[string]bool) bool {
+	existingLabelMap := make(map[string]string)
+	newLabelMap := make(map[string]string)
 
-// contain function to check if a string is in a slice
-func contain(item string, slice []string) bool {
-	for _, label := range slice {
-		if label == item {
-			return true
+	for _, label := range existingLabels {
+		existingLabelMap[label.Key] = label.Value
+	}
+
+	for _, label := range newLabels {
+		newLabelMap[label.Key] = label.Value
+	}
+
+	for key, value := range existingLabelMap {
+		if blacklist[key] {
+			if newValue, exists := newLabelMap[key]; !exists || newValue != value {
+				return true
+			}
 		}
 	}
+
 	return false
 }

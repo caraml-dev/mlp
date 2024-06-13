@@ -38,7 +38,7 @@ const UpdateProjectInfoModal = ({
         title: "Project Info Updated!",
         color: "success",
         iconType: "check",
-        text: (
+        text: response ? (
           <p>
             Your project's resource(s) are currently being redeployed, you can
             check the workflow here:{" "}
@@ -46,7 +46,7 @@ const UpdateProjectInfoModal = ({
               Link
             </EuiLink>
           </p>
-        )
+        ) : null
       });
       fetchUpdates();
       navigate(`/projects/${project.id}/settings/project-info`);

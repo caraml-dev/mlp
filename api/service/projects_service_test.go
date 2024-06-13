@@ -2,14 +2,13 @@ package service
 
 import (
 	"context"
-
-	"bytes"
 	"encoding/json"
-	"io"
 	"net/http"
 	"net/http/httptest"
-
 	"testing"
+
+	"bytes"
+	"io"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -148,19 +147,31 @@ func TestProjectsService_CreateProject(t *testing.T) {
 
 func TestProjectsService_UpdateProject(t *testing.T) {
 	tests := []struct {
-		name          string
-		arg           *models.Project
-		authEnabled   bool
-		expResult     *models.Project
-		expAuthUpdate *enforcer.AuthorizationUpdateRequest
+		name                  string
+		arg                   *models.Project
+		existingProject       *models.Project
+		authEnabled           bool
+		expResult             *models.Project
+		expAuthUpdate         *enforcer.AuthorizationUpdateRequest
+		updateProjectEndpoint string
+		updateProjectPayload  string
+		updateProjectResponse string
+		labelsBlacklist       map[string]bool
 	}{
 		{
-			"success: auth enabled",
+			"success: auth enabled with update endpoint",
 			&models.Project{
 				ID:             1,
 				Name:           "my-project",
 				Administrators: []string{"user@email.com"},
 				Readers:        nil,
+			},
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
 			},
 			true,
 			&models.Project{
@@ -184,14 +195,67 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 					"mlp.projects.1.administrator": {"user@email.com"},
 				},
 			},
+			"endpoint-url",
+			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
+			`{"status": "{{.status}}", "message": "{{.message}}"}`,
+			map[string]bool{"label1": true, "label2": true},
 		},
 		{
-			"success: auth disabled",
+			"success: auth enabled without update endpoint",
 			&models.Project{
 				ID:             1,
 				Name:           "my-project",
 				Administrators: []string{"user@email.com"},
 				Readers:        nil,
+			},
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
+			},
+			true,
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
+			},
+			&enforcer.AuthorizationUpdateRequest{
+				RolePermissions: map[string][]string{
+					"mlp.administrator": {"mlp.projects.1.get", "mlp.projects.1.put", "mlp.projects.1.post",
+						"mlp.projects.1.patch", "mlp.projects.1.delete"},
+					"mlp.projects.reader":   {"mlp.projects.1.get"},
+					"mlp.projects.1.reader": {"mlp.projects.1.get"},
+					"mlp.projects.1.administrator": {"mlp.projects.1.get", "mlp.projects.1.put", "mlp.projects.1.post",
+						"mlp.projects.1.patch", "mlp.projects.1.delete"},
+				},
+				RoleMembers: map[string][]string{
+					"mlp.projects.1.reader":        {},
+					"mlp.projects.1.administrator": {"user@email.com"},
+				},
+			},
+			"",
+			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
+			`{"status": "{{.status}}", "message": "{{.message}}"}`,
+			map[string]bool{"label1": true, "label2": true},
+		},
+		{
+			"success: auth disabled without endpoint",
+			&models.Project{
+				ID:             1,
+				Name:           "my-project",
+				Administrators: []string{"user@email.com"},
+				Readers:        nil,
+			},
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
 			},
 			false,
 			&models.Project{
@@ -202,60 +266,64 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 				Readers:           nil,
 			},
 			nil,
+			"",
+			"",
+			"",
+			map[string]bool{"label1": true, "label2": true},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			storage := &mocks.ProjectRepository{}
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
+			storage.On("Get", tt.existingProject.ID).Return(tt.existingProject, nil)
 
 			authEnforcer := &enforcerMock.Enforcer{}
 			if tt.expAuthUpdate != nil {
 				authEnforcer.On("UpdateAuthorization", mock.Anything, *tt.expAuthUpdate).Return(nil)
 			}
 
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, "POST", r.Method)
-				assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
+			var server *httptest.Server
+			if tt.updateProjectEndpoint != "" {
+				server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					var payload map[string]interface{}
+					err := json.NewDecoder(r.Body).Decode(&payload)
+					require.NoError(t, err)
 
-				var payload map[string]interface{}
-				err := json.NewDecoder(r.Body).Decode(&payload)
-				require.NoError(t, err)
+					w.WriteHeader(http.StatusOK)
+					response := map[string]string{
+						"status":  "success",
+						"message": "success-message",
+					}
+					err = json.NewEncoder(w).Encode(response)
+					require.NoError(t, err)
+				}))
+				defer server.Close()
 
-				w.WriteHeader(http.StatusOK)
-				response := map[string]string{
-					"status":  "success",
-					"message": "success-message",
-				}
-				err = json.NewEncoder(w).Encode(response)
-				require.NoError(t, err)
-			}))
-
-			UpdateProjectEndpoint := server.URL
-			UpdateProjectPayloadTemplate := `{
-				"project": "{{.Name}}",
-				"administrators": "{{.Administrators}}",
-				"readers": "{{.Readers}}"
-			}`
-			UpdateProjectResponseTemplate := `{
-				"status": "{{.status}}",
-				"message": "{{.message}}"
-			}`
+				tt.updateProjectEndpoint = server.URL
+			}
 
 			projectsService, err := NewProjectsService(
 				MLFlowTrackingURL, storage, authEnforcer, tt.authEnabled, nil,
 				config.UpdateProjectConfig{
-					Endpoint:         UpdateProjectEndpoint,
-					PayloadTemplate:  UpdateProjectPayloadTemplate,
-					ResponseTemplate: UpdateProjectResponseTemplate,
+					Endpoint:         tt.updateProjectEndpoint,
+					PayloadTemplate:  tt.updateProjectPayload,
+					ResponseTemplate: tt.updateProjectResponse,
+					LabelsBlacklist:  tt.labelsBlacklist,
 				},
 			)
 			assert.NoError(t, err)
 
-			res, responseMessage, err := projectsService.UpdateProject(context.Background(), tt.arg)
-			require.NoError(t, err)
-			require.Equal(t, tt.expResult, res)
-			require.Contains(t, responseMessage, "success-message")
+			res, resp, err := projectsService.UpdateProject(context.Background(), tt.arg)
+			if tt.updateProjectEndpoint != "" {
+				require.NoError(t, err)
+				require.Equal(t, tt.expResult, res)
+				require.Contains(t, resp["message"], "success-message")
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expResult, res)
+				require.Nil(t, resp)
+			}
 
 			storage.AssertExpectations(t)
 			authEnforcer.AssertExpectations(t)
@@ -480,7 +548,12 @@ func TestProjectsService_CreateWithWebhook(t *testing.T) {
 				},
 			}
 			mockClient1.On("Invoke", mock.Anything, mock.Anything).Return(test.whResponse, nil)
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, whManager)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, whManager,
+				config.UpdateProjectConfig{
+					Endpoint:         "",
+					PayloadTemplate:  "",
+					ResponseTemplate: "",
+				})
 			assert.NoError(t, err)
 			res, err := projectsService.CreateProject(context.Background(), test.arg)
 			if test.wantError {
@@ -495,21 +568,33 @@ func TestProjectsService_CreateWithWebhook(t *testing.T) {
 }
 func TestProjectsService_UpdateProjectWithWebhook(t *testing.T) {
 	tests := []struct {
-		name         string
-		arg          *models.Project
-		expResult    *models.Project
-		wantError    bool
-		wantErrorMsg string
-		whResponse   []byte
+		name                  string
+		arg                   *models.Project
+		existingProject       *models.Project
+		expResult             *models.Project
+		wantError             bool
+		wantErrorMsg          string
+		whResponse            []byte
+		updateProjectEndpoint string
+		updateProjectPayload  string
+		updateProjectResponse string
+		labelsBlacklist       map[string]bool
 	}{
 		{
-			"success: webhook update",
+			"success: webhook update with update endpoint",
 			&models.Project{
 				ID:             1,
 				Name:           "my-project",
 				Administrators: []string{"user@email.com"},
 				Readers:        nil,
 				Team:           "team-1",
+			},
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
 			},
 			&models.Project{
 				ID:                1,
@@ -530,12 +615,57 @@ func TestProjectsService_UpdateProjectWithWebhook(t *testing.T) {
 				"team": "team-1",
 				"stream": "team-2-modified-by-webhook"
 			}`),
+			"endpoint-url",
+			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
+			`{"status": "{{.status}}", "message": "{{.message}}"}`,
+			map[string]bool{"label1": true, "label2": true},
+		},
+		{
+			"success: webhook update without update endpoint",
+			&models.Project{
+				ID:             1,
+				Name:           "my-project",
+				Administrators: []string{"user@email.com"},
+				Readers:        nil,
+				Team:           "team-1",
+			},
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
+			},
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
+				Team:              "team-1",
+				Stream:            "team-2-modified-by-webhook",
+			},
+			false,
+			"",
+			[]byte(`{
+				"id": 1,
+				"name": "my-project",
+				"mlflow_tracking_url": "http://localhost:5555",
+				"administrators": ["user@email.com"],
+				"team": "team-1",
+				"stream": "team-2-modified-by-webhook"
+			}`),
+			"",
+			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
+			`{"status": "{{.status}}", "message": "{{.message}}"}`,
+			map[string]bool{"label1": true, "label2": true},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			storage := &mocks.ProjectRepository{}
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
+			storage.On("Get", tt.existingProject.ID).Return(tt.existingProject, nil)
 
 			authEnforcer := &enforcerMock.Enforcer{}
 			mockClient1 := &webhooks.MockWebhookClient{}
@@ -553,13 +683,48 @@ func TestProjectsService_UpdateProjectWithWebhook(t *testing.T) {
 				},
 			}
 			mockClient1.On("Invoke", mock.Anything, mock.Anything).Return(tt.whResponse, nil)
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, whManager)
 
+			var server *httptest.Server
+			if tt.updateProjectEndpoint != "" {
+				server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					var payload map[string]interface{}
+					err := json.NewDecoder(r.Body).Decode(&payload)
+					require.NoError(t, err)
+
+					w.WriteHeader(http.StatusOK)
+					response := map[string]string{
+						"status":  "success",
+						"message": "success-message",
+					}
+					err = json.NewEncoder(w).Encode(response)
+					require.NoError(t, err)
+				}))
+				defer server.Close()
+
+				tt.updateProjectEndpoint = server.URL
+			}
+
+			projectsService, err := NewProjectsService(
+				MLFlowTrackingURL, storage, authEnforcer, false, whManager,
+				config.UpdateProjectConfig{
+					Endpoint:         tt.updateProjectEndpoint,
+					PayloadTemplate:  tt.updateProjectPayload,
+					ResponseTemplate: tt.updateProjectResponse,
+					LabelsBlacklist:  tt.labelsBlacklist,
+				},
+			)
 			assert.NoError(t, err)
 
-			res, err := projectsService.UpdateProject(context.Background(), tt.arg)
-			require.NoError(t, err)
-			require.Equal(t, tt.expResult, res)
+			res, resp, err := projectsService.UpdateProject(context.Background(), tt.arg)
+			if tt.updateProjectEndpoint != "" {
+				require.NoError(t, err)
+				require.Equal(t, tt.expResult, res)
+				require.Contains(t, resp["message"], "success-message")
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expResult, res)
+				require.Nil(t, resp)
+			}
 
 			storage.AssertExpectations(t)
 			authEnforcer.AssertExpectations(t)
@@ -569,21 +734,33 @@ func TestProjectsService_UpdateProjectWithWebhook(t *testing.T) {
 
 func TestProjectsService_UpdateProjectWithWebhookEventNotSet(t *testing.T) {
 	tests := []struct {
-		name         string
-		arg          *models.Project
-		expResult    *models.Project
-		wantError    bool
-		wantErrorMsg string
-		whResponse   []byte
+		name                  string
+		arg                   *models.Project
+		existingProject       *models.Project
+		expResult             *models.Project
+		wantError             bool
+		wantErrorMsg          string
+		whResponse            []byte
+		updateProjectEndpoint string
+		updateProjectPayload  string
+		updateProjectResponse string
+		labelsBlacklist       map[string]bool
 	}{
 		{
-			"success: webhook event ignored",
+			"success: webhook event ignored with endpoint",
 			&models.Project{
 				ID:             1,
 				Name:           "my-project",
 				Administrators: []string{"user@email.com"},
 				Readers:        nil,
 				Team:           "team-1",
+			},
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
 			},
 			&models.Project{
 				ID:                1,
@@ -603,12 +780,56 @@ func TestProjectsService_UpdateProjectWithWebhookEventNotSet(t *testing.T) {
 				"team": "team-1",
 				"stream": "team-2-modified-by-webhook"
 			}`),
+			"endpoint-url",
+			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
+			`{"status": "{{.status}}", "message": "{{.message}}"}`,
+			map[string]bool{"label1": true, "label2": true},
+		},
+		{
+			"success: webhook event ignored without endpoint",
+			&models.Project{
+				ID:             1,
+				Name:           "my-project",
+				Administrators: []string{"user@email.com"},
+				Readers:        nil,
+				Team:           "team-1",
+			},
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
+			},
+			&models.Project{
+				ID:                1,
+				Name:              "my-project",
+				MLFlowTrackingURL: MLFlowTrackingURL,
+				Administrators:    []string{"user@email.com"},
+				Readers:           nil,
+				Team:              "team-1",
+			},
+			false,
+			"",
+			[]byte(`{
+				"id": 1,
+				"name": "my-project",
+				"mlflow_tracking_url": "http://localhost:5555",
+				"administrators": ["user@email.com"],
+				"team": "team-1",
+				"stream": "team-2-modified-by-webhook"
+			}`),
+			"",
+			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
+			`{"status": "{{.status}}", "message": "{{.message}}"}`,
+			map[string]bool{"label1": true, "label2": true},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			storage := &mocks.ProjectRepository{}
 			storage.On("Save", tt.expResult).Return(tt.expResult, nil)
+			storage.On("Get", tt.existingProject.ID).Return(tt.existingProject, nil)
 
 			authEnforcer := &enforcerMock.Enforcer{}
 			mockClient1 := &webhooks.MockWebhookClient{}
@@ -625,13 +846,19 @@ func TestProjectsService_UpdateProjectWithWebhookEventNotSet(t *testing.T) {
 				},
 			}
 			mockClient1.On("Invoke", mock.Anything, mock.Anything).Return(tt.whResponse, nil)
-			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, whManager)
+			projectsService, err := NewProjectsService(MLFlowTrackingURL, storage, authEnforcer, false, whManager,
+				config.UpdateProjectConfig{
+					Endpoint:         "",
+					PayloadTemplate:  "",
+					ResponseTemplate: "",
+				})
 
 			assert.NoError(t, err)
 
-			res, err := projectsService.UpdateProject(context.Background(), tt.arg)
+			res, resp, err := projectsService.UpdateProject(context.Background(), tt.arg)
 			require.NoError(t, err)
 			require.Equal(t, tt.expResult, res)
+			require.Nil(t, resp)
 
 			storage.AssertExpectations(t)
 			authEnforcer.AssertExpectations(t)
@@ -639,80 +866,48 @@ func TestProjectsService_UpdateProjectWithWebhookEventNotSet(t *testing.T) {
 	}
 }
 
-func TestProjectsService_MakeRequestPayload(t *testing.T) {
+func Test_generateRequestPayload(t *testing.T) {
 	project := &models.Project{
-		ID:   1,
-		Name: "my-project",
+		ID:     1,
+		Name:   "my-project",
+		Team:   "team-1",
+		Stream: "team-2",
 	}
 
 	UpdateProjectPayloadTemplate := `{
-		"project": {{.Name}},
-		"domain": "development",
-		}`
+		"project": "{{.Name}}",
+		"team": "{{.Team}}",
+		"stream": "{{.Stream}}"
+	}`
 
-	exp := `{
-		"project": my-project,
-		"domain": "development",
-		}`
+	exp := map[string]interface{}{
+		"project": "my-project",
+		"team":    "team-1",
+		"stream":  "team-2",
+	}
 
-	storage := &mocks.ProjectRepository{}
-	storage.On("Get", models.ID(1)).Return(exp, nil)
-
-	authEnforcer := &enforcerMock.Enforcer{}
-	projectsService, err := NewProjectsService(
-		MLFlowTrackingURL, storage, authEnforcer, false,
-		config.UpdateProjectConfig{
-			Endpoint:         "",
-			PayloadTemplate:  UpdateProjectPayloadTemplate,
-			ResponseTemplate: "",
-		},
-	)
-	assert.NoError(t, err)
-
-	payload, err := projectsService.MakeRequestPayload(project, UpdateProjectPayloadTemplate)
+	payload, err := generateRequestPayload(project, UpdateProjectPayloadTemplate)
 	assert.NoError(t, err)
 	assert.Equal(t, exp, payload, "Generated payload should match the expected JSON structure")
 }
 
-func TestProjectsService_SendUpdateRequest(t *testing.T) {
-	UpdateProjectPayloadTemplate := `{
+func Test_sendUpdateRequest(t *testing.T) {
+	payload := map[string]interface{}{
 		"project_id": "my-project",
-		"domain": "development",
-		"name": "send-payload",
-		"org": ""
-		}`
+		"team":       "team-1",
+		"stream":     "team-2",
+	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(UpdateProjectPayloadTemplate))
+		_, err := w.Write([]byte(`{"status":"success","message":"success-message"}`))
 		assert.NoError(t, err)
 	}))
 	defer server.Close()
 
-	exp := `{
-		"project_id": "my-project",
-		"domain": "development",
-		"name": "send-payload",
-		"org": ""
-		}`
-
 	UpdateProjectEndpoint := server.URL
 
-	storage := &mocks.ProjectRepository{}
-	storage.On("Get", models.ID(1)).Return(exp, nil)
-
-	authEnforcer := &enforcerMock.Enforcer{}
-	projectsService, err := NewProjectsService(
-		MLFlowTrackingURL, storage, authEnforcer, false,
-		config.UpdateProjectConfig{
-			Endpoint:         UpdateProjectEndpoint,
-			PayloadTemplate:  UpdateProjectPayloadTemplate,
-			ResponseTemplate: "",
-		},
-	)
-	assert.NoError(t, err)
-
-	resp, err := projectsService.SendUpdateRequest(UpdateProjectEndpoint, UpdateProjectPayloadTemplate)
+	resp, err := sendUpdateRequest(UpdateProjectEndpoint, payload)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 
@@ -720,43 +915,36 @@ func TestProjectsService_SendUpdateRequest(t *testing.T) {
 	assert.NoError(t, err)
 	resp.Body.Close()
 
-	assert.Equal(t, exp, string(respBody), "Response body should match the expected JSON")
+	expectedResp := `{"status":"success","message":"success-message"}`
+	assert.JSONEq(t, expectedResp, string(respBody), "Response body should match the expected JSON")
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
-func TestProjectsService_ProcessResponseURL(t *testing.T) {
+func Test_processResponseTemplate(t *testing.T) {
 	body := `{
-        "project_id": "my-project",
-        "domain": "development",
-        "name": "response-url",
-        "org": ""
-    }`
+		"status": "success",
+		"message": "message-content",
+		"project_id": "my-project"
+	}`
 
 	response := &http.Response{
 		StatusCode: 200,
 		Body:       io.NopCloser(bytes.NewReader([]byte(body))),
 	}
 
-	UpdateProjectResponseTemplate := `{"url": "https://{{.project_id}}.{{.domain}}.test.com/{{.name}}"}`
+	UpdateProjectResponseTemplate := `{
+		"status": "{{.status}}",
+		"message": "{{.message}}",
+		"project_id": "{{.project_id}}"
+	}`
 
-	exp := `{"url": "https://my-project.development.test.com/response-url"}`
+	exp := map[string]interface{}{
+		"status":     "success",
+		"message":    "message-content",
+		"project_id": "my-project",
+	}
 
-	storage := &mocks.ProjectRepository{}
-	storage.On("Get", models.ID(1)).Return(exp, nil)
-
-	authEnforcer := &enforcerMock.Enforcer{}
-
-	projectsService, err := NewProjectsService(
-		MLFlowTrackingURL, storage, authEnforcer, false,
-		config.UpdateProjectConfig{
-			Endpoint:         "",
-			PayloadTemplate:  "",
-			ResponseTemplate: UpdateProjectResponseTemplate,
-		},
-	)
+	result, err := processResponseTemplate(response, UpdateProjectResponseTemplate)
 	assert.NoError(t, err)
-
-	result, err := projectsService.ProcessResponseURL(response, UpdateProjectResponseTemplate)
-	assert.NoError(t, err)
-	assert.Equal(t, exp, result, "Response URL should match the expected URL")
+	assert.Equal(t, exp, result, "Response should match the expected")
 }
