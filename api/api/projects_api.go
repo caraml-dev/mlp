@@ -79,10 +79,6 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 	project.Stream = newProject.Stream
 	project.Labels = newProject.Labels
 	project, response, err := c.ProjectsService.UpdateProject(r.Context(), project)
-	if project == nil {
-		log.Errorf("project %s is not updated", project)
-		return FromError(err)
-	}
 	if err != nil {
 		log.Errorf("error updating project %s: %s", project.Name, err)
 		return FromError(err)

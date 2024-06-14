@@ -35,7 +35,7 @@ type Config struct {
 	DefaultSecretStorage *SecretStorage         `validate:"required"`
 	UI                   *UIConfig
 	Webhooks             *webhooks.Config
-	UpdateProject        *UpdateProjectConfig
+	UpdateProjectConfig  *UpdateProjectConfig
 }
 
 // SecretStorage represents the configuration for a secret storage.
@@ -128,11 +128,15 @@ type UIConfig struct {
 }
 
 type UpdateProjectConfig struct {
-	Endpoint         string `validate:"omitempty,url"`
-	PayloadTemplate  string
+	// endpoint to be called when the update projects config endpoint is called
+	Endpoint string `validate:"omitempty,url"`
+	// payload template to define the payload in a JSON template to be sent to the endpoint
+	PayloadTemplate string
+	// response template to define the response in the JSON payload given by the endpoint
+	// through the template that should be sent back to the user
 	ResponseTemplate string
-	LabelsBlacklist  map[string]bool
 	// labels blacklist that hides/prevents labels contained within to not be modifiable
+	LabelsBlacklist map[string]bool
 }
 
 // Transform env variables to the format consumed by koanf.
@@ -233,7 +237,7 @@ var defaultConfig = &Config{
 		AllowCustomTeam:   true,
 		AllowCustomStream: true,
 	},
-	UpdateProject: &UpdateProjectConfig{},
+	UpdateProjectConfig: &UpdateProjectConfig{},
 	DefaultSecretStorage: &SecretStorage{
 		Name: "internal",
 		Type: "internal",

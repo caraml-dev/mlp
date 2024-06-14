@@ -83,7 +83,7 @@ func startServer(cfg *config.Config) {
 		Docs:          cfg.Docs,
 		MaxAuthzCacheExpiryMinutes: fmt.Sprintf("%.0f",
 			math.Ceil((time.Duration(enforcer.MaxKeyExpirySeconds) * time.Second).Minutes())),
-		LabelsBlacklist: cfg.UpdateProject.LabelsBlacklist,
+		LabelsBlacklist: cfg.UpdateProjectConfig.LabelsBlacklist,
 		UIConfig:        cfg.UI,
 	}
 

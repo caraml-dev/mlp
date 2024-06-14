@@ -58,7 +58,7 @@ func (s *APITestSuite) SetupTest() {
 		Mlflow: &config.MlflowConfig{
 			TrackingURL: "http://mlflow:5000",
 		},
-		UpdateProject: &config.UpdateProjectConfig{
+		UpdateProjectConfig: &config.UpdateProjectConfig{
 			Endpoint:         "",
 			PayloadTemplate:  "template-payload",
 			ResponseTemplate: "template-response",

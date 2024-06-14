@@ -376,16 +376,12 @@ func TestListProjects(t *testing.T) {
 
 func TestUpdateProject(t *testing.T) {
 	testCases := []struct {
-		desc                  string
-		projectID             models.ID
-		existingProject       *models.Project
-		expectedResponse      *Response
-		expectedMessage       map[string]interface{}
-		body                  interface{}
-		updateProjectEndpoint string
-		updateProjectPayload  string
-		updateProjectResponse string
-		labelsBlacklist       map[string]bool
+		desc                string
+		projectID           models.ID
+		existingProject     *models.Project
+		expectedResponse    *Response
+		body                interface{}
+		updateProjectConfig config.UpdateProjectConfig
 	}{
 		{
 			desc:      "Should success with update project config",
@@ -410,26 +406,28 @@ func TestUpdateProject(t *testing.T) {
 			},
 			expectedResponse: &Response{
 				code: 200,
+				data: map[string]interface{}{
+					"status":  "success",
+					"message": "Project updated successfully",
+				},
 			},
-			expectedMessage: map[string]interface{}{
-				"status":  "success",
-				"message": "Project updated successfully",
-			},
-			updateProjectEndpoint: "url",
-			updateProjectPayload: `{
-				"project": "{{.Name}}",
-				"administrators": "{{.Administrators}}",
-				"readers": "{{.Readers}}",
-				"team": "{{.Team}}",
-				"stream": "{{.Stream}}"
-			}`,
-			updateProjectResponse: `{
-				"status": "{{.status}}",
-				"message": "{{.message}}"
-			}`,
-			labelsBlacklist: map[string]bool{
-				"label1": true,
-				"label2": true,
+			updateProjectConfig: config.UpdateProjectConfig{
+				Endpoint: "url",
+				PayloadTemplate: `{
+					"project": "{{.Name}}",
+					"administrators": "{{.Administrators}}",
+					"readers": "{{.Readers}}",
+					"team": "{{.Team}}",
+					"stream": "{{.Stream}}"
+				}`,
+				ResponseTemplate: `{
+					"status": "{{.status}}",
+					"message": "{{.message}}"
+				}`,
+				LabelsBlacklist: map[string]bool{
+					"label1": true,
+					"label2": true,
+				},
 			},
 		},
 		{
@@ -468,11 +466,7 @@ func TestUpdateProject(t *testing.T) {
 					},
 				},
 			},
-			expectedMessage:       nil,
-			updateProjectEndpoint: "",
-			updateProjectPayload:  "",
-			updateProjectResponse: "",
-			labelsBlacklist:       map[string]bool{},
+			updateProjectConfig: config.UpdateProjectConfig{},
 		},
 		{
 			desc:      "Should failed when name is not specified",
@@ -500,11 +494,7 @@ func TestUpdateProject(t *testing.T) {
 					Message: "Name is required",
 				},
 			},
-			expectedMessage:       nil,
-			updateProjectEndpoint: "",
-			updateProjectPayload:  "",
-			updateProjectResponse: "",
-			labelsBlacklist:       map[string]bool{},
+			updateProjectConfig: config.UpdateProjectConfig{},
 		},
 		{
 			desc:      "Should failed when name project id is not found",
@@ -533,11 +523,52 @@ func TestUpdateProject(t *testing.T) {
 					Message: "project with ID 2 not found",
 				},
 			},
-			expectedMessage:       nil,
-			updateProjectEndpoint: "",
-			updateProjectPayload:  "",
-			updateProjectResponse: "",
-			labelsBlacklist:       map[string]bool{},
+			updateProjectConfig: config.UpdateProjectConfig{},
+		},
+		{
+			desc:      "Should fail when label in blacklist",
+			projectID: models.ID(1),
+			existingProject: &models.Project{
+				ID:                models.ID(1),
+				Name:              "Project1",
+				MLFlowTrackingURL: "http://mlflow.com",
+				Administrators:    []string{adminUser},
+				Team:              "dsp",
+				Stream:            "dsp",
+				Labels: models.Labels{
+					{
+						Key:   "my-label",
+						Value: "my-value",
+					},
+				},
+				CreatedUpdated: models.CreatedUpdated{
+					CreatedAt: now,
+					UpdatedAt: now,
+				},
+			},
+			body: &models.Project{
+				Name:   "Project1",
+				Team:   "merlin",
+				Stream: "dsp",
+				Labels: models.Labels{
+					{
+						Key:   "my-label",
+						Value: "my-new-value",
+					},
+				},
+				Administrators: []string{adminUser},
+			},
+			expectedResponse: &Response{
+				code: 400,
+				data: ErrorMessage{
+					Message: "one or more labels are blacklisted or have been removed or changed values and cannot be updated",
+				},
+			},
+			updateProjectConfig: config.UpdateProjectConfig{
+				LabelsBlacklist: map[string]bool{
+					"my-label": true,
+				},
+			},
 		},
 	}
 	for _, tC := range testCases {
@@ -550,7 +581,7 @@ func TestUpdateProject(t *testing.T) {
 				}
 
 				var server *httptest.Server
-				if tC.updateProjectEndpoint != "" {
+				if tC.updateProjectConfig.Endpoint != "" {
 					server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						var payload map[string]interface{}
 						err := json.NewDecoder(r.Body).Decode(&payload)
@@ -566,17 +597,12 @@ func TestUpdateProject(t *testing.T) {
 					}))
 					defer server.Close()
 
-					tC.updateProjectEndpoint = server.URL
+					tC.updateProjectConfig.Endpoint = server.URL
 				}
 
 				projectService, err := service.NewProjectsService(
 					mlflowTrackingURL, prjRepository, nil, false, nil,
-					config.UpdateProjectConfig{
-						Endpoint:         tC.updateProjectEndpoint,
-						PayloadTemplate:  tC.updateProjectPayload,
-						ResponseTemplate: tC.updateProjectResponse,
-						LabelsBlacklist:  tC.labelsBlacklist,
-					},
+					tC.updateProjectConfig,
 				)
 				assert.NoError(t, err)
 
@@ -607,7 +633,8 @@ func TestUpdateProject(t *testing.T) {
 
 				assert.Equal(t, tC.expectedResponse.code, rr.Code)
 				if tC.expectedResponse.code >= 200 && tC.expectedResponse.code < 300 {
-					if tC.expectedResponse.data != nil {
+					switch tC.expectedResponse.data.(type) {
+					case *models.Project:
 						project := &models.Project{}
 						err = json.Unmarshal(rr.Body.Bytes(), &project)
 						assert.NoError(t, err)
@@ -616,11 +643,13 @@ func TestUpdateProject(t *testing.T) {
 						project.UpdatedAt = now
 
 						assert.Equal(t, tC.expectedResponse.data, project)
-					} else {
+					case map[string]interface{}:
 						var responseMessage map[string]interface{}
 						err = json.Unmarshal(rr.Body.Bytes(), &responseMessage)
 						assert.NoError(t, err)
-						assert.Equal(t, tC.expectedMessage, responseMessage)
+						assert.Equal(t, tC.expectedResponse.data, responseMessage)
+					default:
+						t.Fatal("unexpected type for expectedResponse.data")
 					}
 				} else {
 					e := ErrorMessage{}

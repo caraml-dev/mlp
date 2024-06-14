@@ -90,7 +90,7 @@ func TestLoad(t *testing.T) {
 					AllowCustomTeam:   true,
 					AllowCustomStream: true,
 				},
-				UpdateProject: &config.UpdateProjectConfig{
+				UpdateProjectConfig: &config.UpdateProjectConfig{
 					Endpoint:         "",
 					PayloadTemplate:  "",
 					ResponseTemplate: "",
@@ -155,7 +155,7 @@ func TestLoad(t *testing.T) {
 					AllowCustomTeam:   true,
 					AllowCustomStream: true,
 				},
-				UpdateProject: &config.UpdateProjectConfig{
+				UpdateProjectConfig: &config.UpdateProjectConfig{
 					Endpoint:         "",
 					PayloadTemplate:  "",
 					ResponseTemplate: "",
@@ -260,7 +260,7 @@ func TestLoad(t *testing.T) {
 					AllowCustomStream:        true,
 					ProjectInfoUpdateEnabled: true,
 				},
-				UpdateProject: &config.UpdateProjectConfig{
+				UpdateProjectConfig: &config.UpdateProjectConfig{
 					Endpoint: "http://localhost:3030",
 					PayloadTemplate: `{"template": "{{.template}}"}
 `,
@@ -355,7 +355,7 @@ func TestValidate(t *testing.T) {
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
 				},
-				UpdateProject: &config.UpdateProjectConfig{
+				UpdateProjectConfig: &config.UpdateProjectConfig{
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
@@ -411,7 +411,7 @@ func TestValidate(t *testing.T) {
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
 				},
-				UpdateProject: &config.UpdateProjectConfig{
+				UpdateProjectConfig: &config.UpdateProjectConfig{
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
@@ -471,7 +471,7 @@ func TestValidate(t *testing.T) {
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
 				},
-				UpdateProject: &config.UpdateProjectConfig{
+				UpdateProjectConfig: &config.UpdateProjectConfig{
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
@@ -528,7 +528,7 @@ func TestValidate(t *testing.T) {
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
 				},
-				UpdateProject: &config.UpdateProjectConfig{
+				UpdateProjectConfig: &config.UpdateProjectConfig{
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",

@@ -75,7 +75,7 @@ func NewAppContext(db *gorm.DB, cfg *config.Config) (ctx *AppContext, err error)
 		repository.NewProjectRepository(db),
 		authEnforcer,
 		cfg.Authorization.Enabled, projectsWebhookManager,
-		*cfg.UpdateProject)
+		*cfg.UpdateProjectConfig)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize projects service: %v", err)
