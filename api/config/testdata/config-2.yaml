@@ -30,7 +30,7 @@ ui:
   kubeflowUIHomepage: http://kubeflow.org
   projectinfoUpdateEnabled: true
 
-updateProject:
+updateProjectConfig:
   endpoint: http://localhost:3030
   payloadTemplate: |
     {"template": "{{.template}}"}
