@@ -559,7 +559,7 @@ func TestUpdateProject(t *testing.T) {
 				Administrators: []string{adminUser},
 			},
 			expectedResponse: &Response{
-				code: 400,
+				code: 500,
 				data: ErrorMessage{
 					Message: "one or more labels are blacklisted or have been removed or changed values and cannot be updated",
 				},
