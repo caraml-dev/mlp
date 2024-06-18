@@ -126,11 +126,6 @@ func (service *projectsService) ListProjects(ctx context.Context, name string, u
 
 func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project,
 	map[string]interface{}, error) {
-	existingProject, err := service.FindByID(project.ID)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error fetching project with id %s: %w", project.ID, err)
-	}
-
 	if service.authEnabled {
 		err := service.updateAuthorizationPolicy(ctx, project)
 		if err != nil {
@@ -138,56 +133,47 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 		}
 	}
 
-	if isLabelBlacklisted(existingProject.Labels, project.Labels, service.updateProjectConfig.LabelsBlacklist) {
+	areBlacklistedLabelsChanged, err := service.areBlacklistedLabelsChanged(project.ID, project.Labels,
+		service.updateProjectConfig.LabelsBlacklist)
+	if err != nil {
+		return nil, nil, err
+	}
+	if areBlacklistedLabelsChanged {
 		return nil, nil,
 			fmt.Errorf("one or more labels are blacklisted or have been removed or changed values and cannot be updated")
 	}
 
-	if service.webhookManager == nil || !service.webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
-		project, err := service.save(project)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if service.updateProjectConfig.Endpoint != "" {
-			project, response, err := service.handleUpdateProjectRequest(project)
-			if err != nil {
-				return nil, nil, err
+	if service.webhookManager != nil && service.webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
+		err = service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
+			// Expects webhook output to be a project object
+			var tmpproject models.Project
+			if err := json.Unmarshal(p, &tmpproject); err != nil {
+				return err
 			}
-			return project, response, nil
-		}
-
-		return project, nil, nil
-	}
-
-	err = service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
-		// Expects webhook output to be a project object
-		var tmpproject models.Project
-		var err error
-		if err := json.Unmarshal(p, &tmpproject); err != nil {
-			return err
-		}
-		project, err = service.save(&tmpproject)
+			project, err = service.save(&tmpproject)
+			if err != nil {
+				return err
+			}
+			return nil
+		}, webhooks.NoOpErrorHandler)
 		if err != nil {
-			return err
+			return project, nil,
+				fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
+					ProjectUpdatedEvent, err.Error())
 		}
-		return nil
-	}, webhooks.NoOpErrorHandler)
-	if err != nil {
-		return project, nil,
-			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
-				ProjectUpdatedEvent, err.Error())
-	}
-
-	if service.updateProjectConfig.Endpoint != "" {
-		project, response, err := service.handleUpdateProjectRequest(project)
+	} else {
+		project, err = service.save(project)
 		if err != nil {
 			return nil, nil, err
 		}
-		return project, response, nil
 	}
 
-	return project, nil, nil
+	project, response, err := service.handleUpdateProjectRequest(project)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return project, response, nil
 }
 
 func (service *projectsService) FindByID(projectID models.ID) (*models.Project, error) {
@@ -296,6 +282,10 @@ func (service *projectsService) filterAuthorizedProjects(ctx context.Context, pr
 
 func (service *projectsService) handleUpdateProjectRequest(project *models.Project) (*models.Project,
 	map[string]interface{}, error) {
+	if service.updateProjectConfig.Endpoint == "" {
+		return project, nil, nil
+	}
+
 	if service.updateProjectConfig.PayloadTemplate == "" || service.updateProjectConfig.ResponseTemplate == "" {
 		return project, nil, nil
 	}
@@ -381,26 +371,29 @@ func processResponseTemplate(response *http.Response, templateString string) (ma
 	return result, nil
 }
 
-// isLabelBlacklisted check if any key in labels is blacklisted
-func isLabelBlacklisted(existingLabels, newLabels []models.Label, blacklist map[string]bool) bool {
-	existingLabelMap := make(map[string]string)
-	newLabelMap := make(map[string]string)
-
-	for _, label := range existingLabels {
-		existingLabelMap[label.Key] = label.Value
+// areBlacklistedLabelsChanged check if any key in labels is blacklisted
+func (service *projectsService) areBlacklistedLabelsChanged(projectID models.ID, newLabels []models.Label, blacklist map[string]bool) (bool, error) {
+	existingProject, err := service.FindByID(projectID)
+	if err != nil {
+		return false, fmt.Errorf("error fetching project with id %s: %w", projectID, err)
 	}
 
-	for _, label := range newLabels {
-		newLabelMap[label.Key] = label.Value
-	}
-
-	for key, value := range existingLabelMap {
-		if blacklist[key] {
-			if newValue, exists := newLabelMap[key]; !exists || newValue != value {
-				return true
+	for _, existingLabel := range existingProject.Labels {
+		if blacklist[existingLabel.Key] {
+			found := false
+			for _, newLabel := range newLabels {
+				if newLabel.Key == existingLabel.Key {
+					found = true
+					if newLabel.Value != existingLabel.Value {
+						return true, nil
+					}
+				}
+			}
+			if !found {
+				return true, nil
 			}
 		}
 	}
 
-	return false
+	return false, nil
 }

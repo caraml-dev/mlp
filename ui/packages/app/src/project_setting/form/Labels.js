@@ -16,8 +16,7 @@ export const Labels = ({
   setLabels,
   setIsValidLabels,
   isValidLabels,
-  isDisabled = false,
-  labelsBlacklist = false
+  isDisabled = false
 }) => {
   const [items, setItems] = useState(
     (e => {
@@ -26,7 +25,8 @@ export const Labels = ({
           ...label,
           idx,
           isKeyValid: true,
-          isValueValid: true
+          isValueValid: true,
+          existsBefore: true
         }));
       } else {
         return [];
@@ -40,7 +40,8 @@ export const Labels = ({
       {
         idx: items.length,
         isKeyValid: false,
-        isValueValid: false
+        isValueValid: false,
+        existsBefore: false
       }
     ];
     setItems(newItems);
@@ -105,6 +106,7 @@ export const Labels = ({
       delete element.isKeyValid;
       delete element.isValueValid;
       delete element.idx;
+      delete element.existsBefore;
       return element;
     });
 
@@ -117,14 +119,14 @@ export const Labels = ({
         {items.map((element, idx) => {
           const isFieldDisabled =
             isDisabled ||
-            (labelsBlacklist && config.LABELS_BLACKLIST[element.key]);
+            (element.existsBefore && config.LABELS_BLACKLIST[element.key]);
           return (
             <EuiFlexItem key={idx}>
               <EuiFlexGroup gutterSize="s">
                 <EuiFlexItem grow={1}>
                   <EuiFieldText
                     placeholder="key"
-                    value={element.key || ""}
+                    value={element.key}
                     onChange={onKeyChange(idx)}
                     isInvalid={!element.isKeyValid}
                     disabled={isFieldDisabled}
@@ -133,7 +135,7 @@ export const Labels = ({
                 <EuiFlexItem grow={1}>
                   <EuiFieldText
                     placeholder="value"
-                    value={element.value || ""}
+                    value={element.value}
                     onChange={onValueChange(idx)}
                     isInvalid={!element.isValueValid}
                     disabled={isFieldDisabled}

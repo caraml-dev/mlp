@@ -78,7 +78,7 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 	project.Team = newProject.Team
 	project.Stream = newProject.Stream
 	project.Labels = newProject.Labels
-	project, response, err := c.ProjectsService.UpdateProject(r.Context(), project)
+	updatedProject, response, err := c.ProjectsService.UpdateProject(r.Context(), project)
 	if err != nil {
 		log.Errorf("error updating project %s: %s", project.Name, err)
 		return FromError(err)
@@ -88,7 +88,7 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 		return Ok(response)
 	}
 
-	return Ok(project)
+	return Ok(updatedProject)
 }
 
 func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string, body interface{}) *Response {
