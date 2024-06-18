@@ -372,7 +372,8 @@ func processResponseTemplate(response *http.Response, templateString string) (ma
 }
 
 // areBlacklistedLabelsChanged check if any key in labels is blacklisted
-func (service *projectsService) areBlacklistedLabelsChanged(projectID models.ID, newLabels []models.Label, blacklist map[string]bool) (bool, error) {
+func (service *projectsService) areBlacklistedLabelsChanged(projectID models.ID, newLabels []models.Label,
+	blacklist map[string]bool) (bool, error) {
 	existingProject, err := service.FindByID(projectID)
 	if err != nil {
 		return false, fmt.Errorf("error fetching project with id %s: %w", projectID, err)
