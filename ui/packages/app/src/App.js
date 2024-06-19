@@ -1,17 +1,17 @@
-import React from "react";
 import {
   AuthProvider,
-  Page404,
   ErrorBoundary,
   Login,
   MlpApiContextProvider,
+  Page404,
   Toast
 } from "@caraml-dev/ui-lib";
-import config from "./config";
-import { PrivateLayout } from "./PrivateLayout";
 import { EuiProvider } from "@elastic/eui";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import AppRoutes from "./AppRoutes";
+import { PrivateLayout } from "./PrivateLayout";
+import config from "./config";
 
 const App = () => (
   <EuiProvider>

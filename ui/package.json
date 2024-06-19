@@ -13,6 +13,9 @@
     ],
     "nohoist": []
   },
+  "engines": {
+    "node": ">=20.13.1"
+  },
   "scripts": {
     "app": "yarn workspace mlp-ui",
     "lib": "yarn workspace @caraml-dev/ui-lib",
@@ -32,11 +35,11 @@
     "version-from-git": "../scripts/vertagen/vertagen.sh"
   },
   "devDependencies": {
-    "husky": "^8.0.1",
-    "lint-staged": "^11.1.2",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.5",
     "npm-run-all": "^4.1.5",
-    "prettier": "^1.17.0",
-    "wait-on": "^5.1.0"
+    "prettier": "^3.2.5",
+    "wait-on": "^7.2.0"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx,json,css,scss,md}": [

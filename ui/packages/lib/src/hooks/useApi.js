@@ -1,8 +1,8 @@
+import urlJoin from "proper-url-join";
+import queryString from "query-string";
 import { useCallback, useEffect, useReducer } from "react";
 import fetchJson from "../utils/fetchJson";
-import urlJoin from "proper-url-join";
 import fetchMockData from "../utils/fetchMockData";
-import * as queryString from "query-string";
 
 const isStringifyEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 

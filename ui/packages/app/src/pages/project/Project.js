@@ -1,18 +1,18 @@
-import React, { useContext } from "react";
+import { ApplicationsContext, ProjectsContext } from "@caraml-dev/ui-lib";
 import {
   EuiFlexGroup,
   EuiFlexItem,
-  EuiLoadingContent,
-  EuiSpacer,
-  EuiPageTemplate
+  EuiPageTemplate,
+  EuiSkeletonText,
+  EuiSpacer
 } from "@elastic/eui";
-import { ApplicationsContext, ProjectsContext } from "@caraml-dev/ui-lib";
-import { Instances } from "./components/Instances";
-import { ProjectSummary } from "./components/ProjectSummary";
-import { Resources } from "./components/Resources";
+import React, { useContext } from "react";
 import { useMerlinApi } from "../../hooks/useMerlinApi";
 import { useTuringApi } from "../../hooks/useTuringApi";
 import { ComingSoonPanel } from "./components/ComingSoonPanel";
+import { Instances } from "./components/Instances";
+import { ProjectSummary } from "./components/ProjectSummary";
+import { Resources } from "./components/Resources";
 
 import imageCharts from "../../images/charts.svg";
 import "./components/ListGroup.scss";
@@ -87,7 +87,7 @@ const Project = () => {
             </EuiFlexGroup>
           </>
         ) : (
-          <EuiLoadingContent lines={5} />
+          <EuiSkeletonText lines={5} />
         )}
       </EuiPageTemplate.Section>
     </EuiPageTemplate>

@@ -1,7 +1,7 @@
+import { EuiBadge, EuiBadgeGroup, EuiLink } from "@elastic/eui";
 import React from "react";
-import { EuiBadge, EuiLink, EuiBadgeGroup } from "@elastic/eui";
+import { useCollapse } from "react-collapsed";
 import EllipsisText from "react-ellipsis-text";
-import useCollapse from "react-collapsed";
 
 /**
  * CollapsibleLabelsPanel is a collapsible panel that groups labels for a model version.

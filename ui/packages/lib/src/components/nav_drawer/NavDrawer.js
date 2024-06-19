@@ -1,22 +1,21 @@
-import React, { useContext, useMemo, useState } from "react";
 import {
-  EuiHorizontalRule,
   EuiCollapsibleNav,
   EuiCollapsibleNavGroup,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiHeaderSectionItemButton,
+  EuiHorizontalRule,
+  EuiIcon,
   EuiListGroup,
   EuiListGroupItem,
-  EuiFlexGroup,
-  EuiHeaderSectionItemButton,
-  EuiIcon,
-  EuiFlexItem,
-  EuiSpacer,
   EuiTreeView
 } from "@elastic/eui";
-import { useToggle } from "../../hooks";
-import { slugify } from "../../utils";
 import urlJoin from "proper-url-join";
+import React, { useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToggle } from "../../hooks";
 import { ApplicationsContext, ProjectsContext } from "../../providers";
+import { slugify } from "../../utils";
 
 import "./NavDrawer.scss";
 
@@ -32,20 +31,20 @@ export const NavDrawer = ({ docLinks }) => {
       const isAppActive = a === currentApp;
       const children = !!currentProject
         ? a?.config?.navigation?.map(s => ({
-            id: slugify(`${a.name}.${s.label}`),
-            label: s.label,
-            callback: () => {
-              const dest = urlJoin(
-                a.homepage,
-                "projects",
-                currentProject.id,
-                s.destination
-              );
+          id: slugify(`${a.name}.${s.label}`),
+          label: s.label,
+          callback: () => {
+            const dest = urlJoin(
+              a.homepage,
+              "projects",
+              currentProject.id,
+              s.destination
+            );
 
-              isAppActive ? navigate(dest) : (window.location.href = dest);
-            },
-            className: "euiTreeView__node---small---subsection"
-          }))
+            isAppActive ? navigate(dest) : (window.location.href = dest);
+          },
+          className: "euiTreeView__node---small---subsection"
+        }))
         : undefined;
 
       return {
@@ -60,8 +59,8 @@ export const NavDrawer = ({ docLinks }) => {
         callback: () =>
           !children || !currentProject
             ? (window.location.href = !!currentProject
-                ? urlJoin(a.homepage, "projects", currentProject.id)
-                : a.homepage)
+              ? urlJoin(a.homepage, "projects", currentProject.id)
+              : a.homepage)
             : {},
         children: children
       };
@@ -151,7 +150,6 @@ export const NavDrawer = ({ docLinks }) => {
               />
             </EuiCollapsibleNavGroup>
           )}
-          <EuiSpacer size="s" />
         </EuiFlexItem>
 
         <EuiHorizontalRule margin="none" />

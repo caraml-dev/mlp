@@ -4,7 +4,7 @@ on:
   # Automatically run CI on Release and Pre-Release tags and main branch
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
+      - "v[0-9]+.[0-9]+.[0-9]+*"
     branches:
       - main
     paths-ignore:
@@ -23,7 +23,7 @@ on:
 env:
   GO_VERSION: "1.20"
   GO_LINT_VERSION: v1.51.2
-  NODE_VERSION: 16
+  NODE_VERSION: 20
   ARTIFACT_RETENTION_DAYS: 7
   CONTAINER_REGISTRY: ghcr.io
   LOCAL_REGISTRY: registry.localhost:5000
@@ -35,18 +35,12 @@ jobs:
   build-ui:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Cache Dependencies
-        uses: actions/cache@v3
-        with:
-          path: ui/node_modules
-          key: |
-            ${{ runner.os }}-modules-${{ hashFiles('ui/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-modules-
+          cache: yarn
+          cache-dependency-path: ui/yarn.lock
 
       - name: Install
         working-directory: ui
@@ -61,7 +55,7 @@ jobs:
         run: make build-ui
 
       - name: Publish Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mlp-ui-dist
           path: ui/build/
@@ -72,7 +66,7 @@ jobs:
     outputs:
       api-version: ${{ steps.build-image.outputs.api-version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -90,7 +84,7 @@ jobs:
             mlp-api:${{ steps.build-image.outputs.api-version }}
 
       - name: Publish Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mlp-api.${{ steps.build-image.outputs.api-version }}.tar
           path: mlp-api.${{ steps.build-image.outputs.api-version }}.tar
@@ -101,18 +95,11 @@ jobs:
     env:
       GOPATH: ${{ github.workspace }}/.go
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-
-      - name: Cache Dependencies
-        uses: actions/cache@v3
-        with:
-          path: .go/pkg/mod/
-          key: |
-            gomod-${{ hashFiles('go.mod') }}
-          restore-keys: gomod-
+          cache-dependency-path: api/go.sum
 
       - name: Lint code
         uses: golangci/golangci-lint-action@v2
@@ -138,15 +125,15 @@ jobs:
       - build-api
       - test-api
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: ${{ env.CARAML_CHARTS_REPOSITORY }}
           ref: ${{ env.CARAML_CHARTS_REF }}
-          path: 'helm-charts'
+          path: "helm-charts"
 
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -166,7 +153,7 @@ jobs:
             --k3s-arg "--no-deploy=metrics-server@server:*"
 
       - name: Download API image tar
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mlp-api.${{ needs.build-api.outputs.api-version }}.tar
 
@@ -198,28 +185,28 @@ jobs:
           echo "::group::describe deployment/mlp"
           kubectl describe deployment/mlp
           echo "::endgroup::"
-          
+
           echo "::group::configmap/mlp-config"
           kubectl get cm/mlp-config -o jsonpath='{.data.mlp-config\.yaml}'
           echo "::endgroup::"
-          
+
           echo "::group::logs deployment/mlp"
           kubectl logs deployment/mlp
           echo "::endgroup::"
-          
+
           echo "::group::kubernetes events"
           kubectl get events
           echo "::endgroup::"
 
           echo "::group::kubernetes pod describe"
           kubectl describe pod
-          echo "::endgroup::"      
+          echo "::endgroup::"
 
       - name: Setup MLP project
         shell: bash
         run: |
           sleep 2
-          
+
           tee payload.json <<EOF
           {
             "name": "e2e-test",
@@ -274,7 +261,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ needs.release-rules.outputs.release-type == 'dev' && 'manual' || '' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Log in to the Container registry
         uses: docker/login-action@v2
@@ -284,12 +271,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download API image tar
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mlp-api.${{ needs.build-api.outputs.api-version }}.tar
 
       - name: Download MLP UI Dist
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mlp-ui-dist
           path: ui/build
@@ -309,7 +296,7 @@ jobs:
       changed: ${{ steps.changes.outputs.ui-lib }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
         id: changes
         with:
@@ -340,17 +327,17 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ needs.release-rules.outputs.release-type == 'dev' && 'manual' || '' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ui/node_modules
           key: |
