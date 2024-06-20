@@ -62,9 +62,9 @@ func (s *APITestSuite) SetupTest() {
 			Endpoint:         "",
 			PayloadTemplate:  "template-payload",
 			ResponseTemplate: "template-response",
-			LabelsBlacklist: map[string]bool{
-				"label1": true,
-				"label2": true,
+			LabelsBlacklist: []string{
+				"label1",
+				"label2",
 			},
 		},
 		DefaultSecretStorage: &config.SecretStorage{
