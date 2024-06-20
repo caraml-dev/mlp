@@ -49,23 +49,34 @@ func NewProjectsService(
 		return nil, errors.New("default mlflow tracking url should be provided")
 	}
 
+	blacklistMap := make(map[string]bool)
+	for _, key := range updateProjectConfig.LabelsBlacklist {
+		blacklistMap[key] = true
+	}
+
 	return &projectsService{
-		projectRepository:           projectRepository,
-		defaultMlflowTrackingServer: mlflowURL,
-		authEnforcer:                authEnforcer,
-		authEnabled:                 authEnabled,
-		webhookManager:              webhookManager,
-		updateProjectConfig:         updateProjectConfig,
+		projectRepository:             projectRepository,
+		defaultMlflowTrackingServer:   mlflowURL,
+		authEnforcer:                  authEnforcer,
+		authEnabled:                   authEnabled,
+		webhookManager:                webhookManager,
+		updateProjectEndpoint:         updateProjectConfig.Endpoint,
+		updateProjectPayloadTemplate:  updateProjectConfig.PayloadTemplate,
+		updateProjectResponseTemplate: updateProjectConfig.ResponseTemplate,
+		blacklistMap:                  blacklistMap,
 	}, nil
 }
 
 type projectsService struct {
-	projectRepository           repository.ProjectRepository
-	defaultMlflowTrackingServer string
-	authEnforcer                enforcer.Enforcer
-	authEnabled                 bool
-	webhookManager              webhooks.WebhookManager
-	updateProjectConfig         config.UpdateProjectConfig
+	projectRepository             repository.ProjectRepository
+	defaultMlflowTrackingServer   string
+	authEnforcer                  enforcer.Enforcer
+	authEnabled                   bool
+	webhookManager                webhooks.WebhookManager
+	updateProjectEndpoint         string
+	updateProjectPayloadTemplate  string
+	updateProjectResponseTemplate string
+	blacklistMap                  map[string]bool
 }
 
 func (service *projectsService) CreateProject(ctx context.Context, project *models.Project) (*models.Project, error) {
@@ -281,26 +292,26 @@ func (service *projectsService) filterAuthorizedProjects(ctx context.Context, pr
 
 func (service *projectsService) handleUpdateProjectRequest(project *models.Project) (*models.Project,
 	map[string]interface{}, error) {
-	if service.updateProjectConfig.Endpoint == "" {
+	if service.updateProjectEndpoint == "" {
 		return project, nil, nil
 	}
 
-	if service.updateProjectConfig.PayloadTemplate == "" || service.updateProjectConfig.ResponseTemplate == "" {
+	if service.updateProjectPayloadTemplate == "" || service.updateProjectResponseTemplate == "" {
 		return project, nil, nil
 	}
 
-	payload, err := generateRequestPayload(project, service.updateProjectConfig.PayloadTemplate)
+	payload, err := generateRequestPayload(project, service.updateProjectPayloadTemplate)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error generating request payload: %w", err)
 	}
 
-	resp, err := sendUpdateRequest(service.updateProjectConfig.Endpoint, payload)
+	resp, err := sendUpdateRequest(service.updateProjectEndpoint, payload)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error sending update request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	response, err := processResponseTemplate(resp, service.updateProjectConfig.ResponseTemplate)
+	response, err := processResponseTemplate(resp, service.updateProjectResponseTemplate)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error processing response template: %w", err)
 	}
@@ -377,19 +388,13 @@ func (service *projectsService) areBlacklistedLabelsChanged(project *models.Proj
 		return false, fmt.Errorf("error fetching project with id %s: %w", project.ID, err)
 	}
 
-	blacklist := service.updateProjectConfig.LabelsBlacklist
-	blacklistMap := make(map[string]bool)
-	for _, key := range blacklist {
-		blacklistMap[key] = true
-	}
-
 	newLabelsMap := make(map[string]string)
 	for _, newLabel := range project.Labels {
 		newLabelsMap[newLabel.Key] = newLabel.Value
 	}
 
 	for _, existingLabel := range existingProject.Labels {
-		if blacklistMap[existingLabel.Key] {
+		if service.blacklistMap[existingLabel.Key] {
 			newValue, exists := newLabelsMap[existingLabel.Key]
 			if !exists || newValue != existingLabel.Value {
 				return true, nil
