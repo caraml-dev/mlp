@@ -6,7 +6,8 @@ import {
   EuiCode,
   EuiBasicTable,
   EuiFlexItem,
-  EuiFlexGroup
+  EuiFlexGroup,
+  EuiLink
 } from "@elastic/eui";
 import { useNavigate } from "react-router-dom";
 
@@ -30,15 +31,25 @@ const UpdateProjectInfoModal = ({
 
   useEffect(() => {
     if (submissionResponse.isLoaded && !submissionResponse.error) {
+      const response = submissionResponse.data.update_status_url;
       closeModal();
       addToast({
         id: "submit-success-create",
         title: "Project Info Updated!",
         color: "success",
-        iconType: "check"
+        iconType: "check",
+        text: response ? (
+          <p>
+            Your project's resource(s) are currently being redeployed, you can
+            check the workflow here:{" "}
+            <EuiLink href={response} target="_blank">
+              Link
+            </EuiLink>
+          </p>
+        ) : null
       });
       fetchUpdates();
-      navigate(`/projects/${submissionResponse.data.id}/settings/project-info`);
+      navigate(`/projects/${project.id}/settings/project-info`);
     }
   }, [navigate, submissionResponse, project, fetchUpdates, closeModal]);
 

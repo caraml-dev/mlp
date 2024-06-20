@@ -43,7 +43,10 @@ const config = {
       ? getEnv("REACT_APP_ALLOW_CUSTOM_TEAM")
       : true,
   PROJECT_INFO_UPDATE_ENABLED:
-    getEnv("REACT_APP_PROJECT_INFO_UPDATE_ENABLED") || false
+    getEnv("REACT_APP_PROJECT_INFO_UPDATE_ENABLED") || false,
+  LABELS_BLACKLIST: (getEnv("REACT_APP_LABELS_BLACKLIST") || []).map(label =>
+    label.trim()
+  )
 };
 
 export default config;

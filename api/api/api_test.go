@@ -58,6 +58,15 @@ func (s *APITestSuite) SetupTest() {
 		Mlflow: &config.MlflowConfig{
 			TrackingURL: "http://mlflow:5000",
 		},
+		UpdateProjectConfig: &config.UpdateProjectConfig{
+			Endpoint:         "",
+			PayloadTemplate:  "template-payload",
+			ResponseTemplate: "template-response",
+			LabelsBlacklist: []string{
+				"label1",
+				"label2",
+			},
+		},
 		DefaultSecretStorage: &config.SecretStorage{
 			Name: "vault",
 			Type: string(models.VaultSecretStorageType),

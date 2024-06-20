@@ -30,6 +30,16 @@ ui:
   kubeflowUIHomepage: http://kubeflow.org
   projectinfoUpdateEnabled: true
 
+updateProjectConfig:
+  endpoint: http://localhost:3030
+  payloadTemplate: |
+    {"template": "{{.template}}"}
+  responseTemplate: |
+    {"response": "{{.response}}"}
+  labelsBlacklist:
+    - label1
+    - label2
+
 defaultSecretStorage:
   name: default-secret-storage
   type: vault

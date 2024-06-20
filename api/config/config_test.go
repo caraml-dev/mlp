@@ -90,6 +90,12 @@ func TestLoad(t *testing.T) {
 					AllowCustomTeam:   true,
 					AllowCustomStream: true,
 				},
+				UpdateProjectConfig: &config.UpdateProjectConfig{
+					Endpoint:         "",
+					PayloadTemplate:  "",
+					ResponseTemplate: "",
+					LabelsBlacklist:  nil,
+				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",
 					Type: "vault",
@@ -148,6 +154,12 @@ func TestLoad(t *testing.T) {
 					IndexPath:         "index.html",
 					AllowCustomTeam:   true,
 					AllowCustomStream: true,
+				},
+				UpdateProjectConfig: &config.UpdateProjectConfig{
+					Endpoint:         "",
+					PayloadTemplate:  "",
+					ResponseTemplate: "",
+					LabelsBlacklist:  nil,
 				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",
@@ -248,6 +260,17 @@ func TestLoad(t *testing.T) {
 					AllowCustomStream:        true,
 					ProjectInfoUpdateEnabled: true,
 				},
+				UpdateProjectConfig: &config.UpdateProjectConfig{
+					Endpoint: "http://localhost:3030",
+					PayloadTemplate: `{"template": "{{.template}}"}
+`,
+					ResponseTemplate: `{"response": "{{.response}}"}
+`,
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
+					},
+				},
 				DefaultSecretStorage: &config.SecretStorage{
 					Name: "default-secret-storage",
 					Type: "vault",
@@ -332,6 +355,15 @@ func TestValidate(t *testing.T) {
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
 				},
+				UpdateProjectConfig: &config.UpdateProjectConfig{
+					Endpoint:         "http://example-update-project.dev",
+					PayloadTemplate:  "your-payload-template",
+					ResponseTemplate: "your-response-template",
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
+					},
+				},
 			},
 		},
 		"extended | success": {
@@ -378,6 +410,15 @@ func TestValidate(t *testing.T) {
 				},
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
+				},
+				UpdateProjectConfig: &config.UpdateProjectConfig{
+					Endpoint:         "http://example-update-project.dev",
+					PayloadTemplate:  "your-payload-template",
+					ResponseTemplate: "your-response-template",
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
+					},
 				},
 			},
 		},
@@ -430,6 +471,15 @@ func TestValidate(t *testing.T) {
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
 				},
+				UpdateProjectConfig: &config.UpdateProjectConfig{
+					Endpoint:         "http://example-update-project.dev",
+					PayloadTemplate:  "your-payload-template",
+					ResponseTemplate: "your-response-template",
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
+					},
+				},
 			},
 			error: errors.New(
 				"failed to validate configuration: " +
@@ -477,6 +527,15 @@ func TestValidate(t *testing.T) {
 				},
 				UI: &config.UIConfig{
 					ProjectInfoUpdateEnabled: true,
+				},
+				UpdateProjectConfig: &config.UpdateProjectConfig{
+					Endpoint:         "http://example-update-project.dev",
+					PayloadTemplate:  "your-payload-template",
+					ResponseTemplate: "your-response-template",
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
+					},
 				},
 			},
 			error: errors.New(

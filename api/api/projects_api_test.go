@@ -15,6 +15,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/it/database"
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/repository"
@@ -206,7 +207,10 @@ func TestCreateProject(t *testing.T) {
 					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil)
+				projectService, err := service.NewProjectsService(
+					mlflowTrackingURL, prjRepository, nil, false, nil,
+					config.UpdateProjectConfig{},
+				)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
@@ -316,7 +320,10 @@ func TestListProjects(t *testing.T) {
 						assert.NoError(t, err)
 					}
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil)
+				projectService, err := service.NewProjectsService(
+					mlflowTrackingURL, prjRepository, nil, false, nil,
+					config.UpdateProjectConfig{},
+				)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
@@ -369,14 +376,62 @@ func TestListProjects(t *testing.T) {
 
 func TestUpdateProject(t *testing.T) {
 	testCases := []struct {
-		desc             string
-		projectID        models.ID
-		existingProject  *models.Project
-		expectedResponse *Response
-		body             interface{}
+		desc                string
+		projectID           models.ID
+		existingProject     *models.Project
+		expectedResponse    *Response
+		body                interface{}
+		updateProjectConfig config.UpdateProjectConfig
 	}{
 		{
-			desc:      "Should success",
+			desc:      "Should success with update project config",
+			projectID: models.ID(1),
+			existingProject: &models.Project{
+				ID:                models.ID(1),
+				Name:              "Project1",
+				MLFlowTrackingURL: "http://mlflow.com",
+				Administrators:    []string{adminUser},
+				Team:              "dsp",
+				Stream:            "dsp",
+				CreatedUpdated: models.CreatedUpdated{
+					CreatedAt: now,
+					UpdatedAt: now,
+				},
+			},
+			body: &models.Project{
+				Name:           "Project1",
+				Team:           "merlin",
+				Stream:         "dsp",
+				Administrators: []string{adminUser},
+			},
+			expectedResponse: &Response{
+				code: 200,
+				data: map[string]interface{}{
+					"status":  "success",
+					"message": "Project updated successfully",
+				},
+			},
+			updateProjectConfig: config.UpdateProjectConfig{
+				Endpoint: "url",
+				PayloadTemplate: `{
+					"project": "{{.Name}}",
+					"administrators": "{{.Administrators}}",
+					"readers": "{{.Readers}}",
+					"team": "{{.Team}}",
+					"stream": "{{.Stream}}"
+				}`,
+				ResponseTemplate: `{
+					"status": "{{.status}}",
+					"message": "{{.message}}"
+				}`,
+				LabelsBlacklist: []string{
+					"label1",
+					"label2",
+				},
+			},
+		},
+		{
+			desc:      "Should success without update project config",
 			projectID: models.ID(1),
 			existingProject: &models.Project{
 				ID:                models.ID(1),
@@ -411,6 +466,7 @@ func TestUpdateProject(t *testing.T) {
 					},
 				},
 			},
+			updateProjectConfig: config.UpdateProjectConfig{},
 		},
 		{
 			desc:      "Should failed when name is not specified",
@@ -438,6 +494,7 @@ func TestUpdateProject(t *testing.T) {
 					Message: "Name is required",
 				},
 			},
+			updateProjectConfig: config.UpdateProjectConfig{},
 		},
 		{
 			desc:      "Should failed when name project id is not found",
@@ -466,6 +523,52 @@ func TestUpdateProject(t *testing.T) {
 					Message: "project with ID 2 not found",
 				},
 			},
+			updateProjectConfig: config.UpdateProjectConfig{},
+		},
+		{
+			desc:      "Should fail when label in blacklist",
+			projectID: models.ID(1),
+			existingProject: &models.Project{
+				ID:                models.ID(1),
+				Name:              "Project1",
+				MLFlowTrackingURL: "http://mlflow.com",
+				Administrators:    []string{adminUser},
+				Team:              "dsp",
+				Stream:            "dsp",
+				Labels: models.Labels{
+					{
+						Key:   "my-label",
+						Value: "my-value",
+					},
+				},
+				CreatedUpdated: models.CreatedUpdated{
+					CreatedAt: now,
+					UpdatedAt: now,
+				},
+			},
+			body: &models.Project{
+				Name:   "Project1",
+				Team:   "merlin",
+				Stream: "dsp",
+				Labels: models.Labels{
+					{
+						Key:   "my-label",
+						Value: "my-new-value",
+					},
+				},
+				Administrators: []string{adminUser},
+			},
+			expectedResponse: &Response{
+				code: 500,
+				data: ErrorMessage{
+					Message: "one or more labels are blacklisted or have been removed or changed values and cannot be updated",
+				},
+			},
+			updateProjectConfig: config.UpdateProjectConfig{
+				LabelsBlacklist: []string{
+					"my-label",
+				},
+			},
 		},
 	}
 	for _, tC := range testCases {
@@ -476,7 +579,31 @@ func TestUpdateProject(t *testing.T) {
 					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil)
+
+				var server *httptest.Server
+				if tC.updateProjectConfig.Endpoint != "" {
+					server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						var payload map[string]interface{}
+						err := json.NewDecoder(r.Body).Decode(&payload)
+						assert.NoError(t, err)
+
+						w.WriteHeader(http.StatusOK)
+						response := map[string]string{
+							"status":  "success",
+							"message": "Project updated successfully",
+						}
+						err = json.NewEncoder(w).Encode(response)
+						assert.NoError(t, err)
+					}))
+					defer server.Close()
+
+					tC.updateProjectConfig.Endpoint = server.URL
+				}
+
+				projectService, err := service.NewProjectsService(
+					mlflowTrackingURL, prjRepository, nil, false, nil,
+					tC.updateProjectConfig,
+				)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{
@@ -506,14 +633,24 @@ func TestUpdateProject(t *testing.T) {
 
 				assert.Equal(t, tC.expectedResponse.code, rr.Code)
 				if tC.expectedResponse.code >= 200 && tC.expectedResponse.code < 300 {
-					project := &models.Project{}
-					err = json.Unmarshal(rr.Body.Bytes(), &project)
-					assert.NoError(t, err)
+					switch tC.expectedResponse.data.(type) {
+					case *models.Project:
+						project := &models.Project{}
+						err = json.Unmarshal(rr.Body.Bytes(), &project)
+						assert.NoError(t, err)
 
-					project.CreatedAt = now
-					project.UpdatedAt = now
+						project.CreatedAt = now
+						project.UpdatedAt = now
 
-					assert.Equal(t, tC.expectedResponse.data, project)
+						assert.Equal(t, tC.expectedResponse.data, project)
+					case map[string]interface{}:
+						var responseMessage map[string]interface{}
+						err = json.Unmarshal(rr.Body.Bytes(), &responseMessage)
+						assert.NoError(t, err)
+						assert.Equal(t, tC.expectedResponse.data, responseMessage)
+					default:
+						t.Fatal("unexpected type for expectedResponse.data")
+					}
 				} else {
 					e := ErrorMessage{}
 					err = json.Unmarshal(rr.Body.Bytes(), &e)
@@ -595,7 +732,10 @@ func TestGetProject(t *testing.T) {
 					_, err := prjRepository.Save(tC.existingProject)
 					assert.NoError(t, err)
 				}
-				projectService, err := service.NewProjectsService(mlflowTrackingURL, prjRepository, nil, false, nil)
+				projectService, err := service.NewProjectsService(
+					mlflowTrackingURL, prjRepository, nil, false, nil,
+					config.UpdateProjectConfig{},
+				)
 				assert.NoError(t, err)
 
 				appCtx := &AppContext{

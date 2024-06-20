@@ -83,7 +83,8 @@ func startServer(cfg *config.Config) {
 		Docs:          cfg.Docs,
 		MaxAuthzCacheExpiryMinutes: fmt.Sprintf("%.0f",
 			math.Ceil((time.Duration(enforcer.MaxKeyExpirySeconds) * time.Second).Minutes())),
-		UIConfig: cfg.UI,
+		LabelsBlacklist: cfg.UpdateProjectConfig.LabelsBlacklist,
+		UIConfig:        cfg.UI,
 	}
 
 	router.Methods("GET").Path("/env.js").HandlerFunc(uiEnv.handler)
@@ -114,6 +115,7 @@ type uiEnvHandler struct {
 	Streams                    config.Streams        `json:"REACT_APP_STREAMS"`
 	Docs                       config.Documentations `json:"REACT_APP_DOC_LINKS"`
 	MaxAuthzCacheExpiryMinutes string                `json:"REACT_APP_MAX_AUTHZ_CACHE_EXPIRY_MINUTES"`
+	LabelsBlacklist            []string              `json:"REACT_APP_LABELS_BLACKLIST"`
 }
 
 func (h uiEnvHandler) handler(w http.ResponseWriter, r *http.Request) {

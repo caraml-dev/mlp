@@ -9,6 +9,7 @@ import {
   EuiFormRow
 } from "@elastic/eui";
 import { isValidK8sLabelKeyValue } from "../../validation/validation";
+import config from "../../config";
 
 export const Labels = ({
   labels,
@@ -24,7 +25,8 @@ export const Labels = ({
           ...label,
           idx,
           isKeyValid: true,
-          isValueValid: true
+          isValueValid: true,
+          existsBefore: true
         }));
       } else {
         return [];
@@ -38,7 +40,8 @@ export const Labels = ({
       {
         idx: items.length,
         isKeyValid: false,
-        isValueValid: false
+        isValueValid: false,
+        existsBefore: false
       }
     ];
     setItems(newItems);
@@ -103,20 +106,23 @@ export const Labels = ({
       delete element.isKeyValid;
       delete element.isValueValid;
       delete element.idx;
+      delete element.existsBefore;
       return element;
     });
 
     setLabels(newLabels);
-
-    console.log(isDisabled || items.length === 0);
   };
 
   return (
     <EuiFormRow isInvalid={!isValidLabels} error={labelError}>
       <EuiFlexGroup direction="column" gutterSize="m">
         {items.map((element, idx) => {
+          const isFieldDisabled =
+            isDisabled ||
+            (element.existsBefore &&
+              config.LABELS_BLACKLIST.includes(element.key));
           return (
-            <EuiFlexItem>
+            <EuiFlexItem key={idx}>
               <EuiFlexGroup gutterSize="s">
                 <EuiFlexItem grow={1}>
                   <EuiFieldText
@@ -124,7 +130,7 @@ export const Labels = ({
                     value={element.key}
                     onChange={onKeyChange(idx)}
                     isInvalid={!element.isKeyValid}
-                    disabled={isDisabled}
+                    disabled={isFieldDisabled}
                   />
                 </EuiFlexItem>
                 <EuiFlexItem grow={1}>
@@ -133,7 +139,7 @@ export const Labels = ({
                     value={element.value}
                     onChange={onValueChange(idx)}
                     isInvalid={!element.isValueValid}
-                    disabled={isDisabled}
+                    disabled={isFieldDisabled}
                   />
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>
@@ -141,7 +147,7 @@ export const Labels = ({
                     iconType="trash"
                     onClick={removeElement(idx)}
                     color="danger"
-                    disabled={isDisabled}
+                    disabled={isFieldDisabled}
                   />
                 </EuiFlexItem>
               </EuiFlexGroup>

@@ -6,12 +6,17 @@ import (
 	"fmt"
 	"strings"
 
+	"bytes"
+	"html/template"
+	"net/http"
+
 	"golang.org/x/exp/slices"
 
 	"github.com/pkg/errors"
 
 	"github.com/caraml-dev/mlp/api/repository"
 
+	"github.com/caraml-dev/mlp/api/config"
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	"github.com/caraml-dev/mlp/api/pkg/webhooks"
@@ -20,7 +25,7 @@ import (
 type ProjectsService interface {
 	ListProjects(ctx context.Context, name string, user string) ([]*models.Project, error)
 	CreateProject(ctx context.Context, project *models.Project) (*models.Project, error)
-	UpdateProject(ctx context.Context, project *models.Project) (*models.Project, error)
+	UpdateProject(ctx context.Context, project *models.Project) (*models.Project, map[string]interface{}, error)
 	FindByID(projectID models.ID) (*models.Project, error)
 	FindByName(projectName string) (*models.Project, error)
 }
@@ -38,26 +43,40 @@ func NewProjectsService(
 	projectRepository repository.ProjectRepository,
 	authEnforcer enforcer.Enforcer,
 	authEnabled bool,
-	webhookManager webhooks.WebhookManager) (ProjectsService, error) {
+	webhookManager webhooks.WebhookManager,
+	updateProjectConfig config.UpdateProjectConfig) (ProjectsService, error) {
 	if strings.TrimSpace(mlflowURL) == "" {
 		return nil, errors.New("default mlflow tracking url should be provided")
 	}
 
+	labelsBlacklistMap := make(map[string]bool)
+	for _, key := range updateProjectConfig.LabelsBlacklist {
+		labelsBlacklistMap[key] = true
+	}
+
 	return &projectsService{
-		projectRepository:           projectRepository,
-		defaultMlflowTrackingServer: mlflowURL,
-		authEnforcer:                authEnforcer,
-		authEnabled:                 authEnabled,
-		webhookManager:              webhookManager,
+		projectRepository:             projectRepository,
+		defaultMlflowTrackingServer:   mlflowURL,
+		authEnforcer:                  authEnforcer,
+		authEnabled:                   authEnabled,
+		webhookManager:                webhookManager,
+		updateProjectEndpoint:         updateProjectConfig.Endpoint,
+		updateProjectPayloadTemplate:  updateProjectConfig.PayloadTemplate,
+		updateProjectResponseTemplate: updateProjectConfig.ResponseTemplate,
+		labelsBlacklistMap:            labelsBlacklistMap,
 	}, nil
 }
 
 type projectsService struct {
-	projectRepository           repository.ProjectRepository
-	defaultMlflowTrackingServer string
-	authEnforcer                enforcer.Enforcer
-	authEnabled                 bool
-	webhookManager              webhooks.WebhookManager
+	projectRepository             repository.ProjectRepository
+	defaultMlflowTrackingServer   string
+	authEnforcer                  enforcer.Enforcer
+	authEnabled                   bool
+	webhookManager                webhooks.WebhookManager
+	updateProjectEndpoint         string
+	updateProjectPayloadTemplate  string
+	updateProjectResponseTemplate string
+	labelsBlacklistMap            map[string]bool
 }
 
 func (service *projectsService) CreateProject(ctx context.Context, project *models.Project) (*models.Project, error) {
@@ -116,35 +135,55 @@ func (service *projectsService) ListProjects(ctx context.Context, name string, u
 	return allProjects, nil
 }
 
-func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project, error) {
+func (service *projectsService) UpdateProject(ctx context.Context, project *models.Project) (*models.Project,
+	map[string]interface{}, error) {
 	if service.authEnabled {
 		err := service.updateAuthorizationPolicy(ctx, project)
 		if err != nil {
-			return nil, fmt.Errorf("error while updating authorization policy for project %s", project.Name)
+			return nil, nil, fmt.Errorf("error while updating authorization policy for project %s", project.Name)
 		}
 	}
-	if service.webhookManager == nil || !service.webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
-		return service.save(project)
-	}
-	err := service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
-		// Expects webhook output to be a project object
-		var tmpproject models.Project
-		var err error
-		if err := json.Unmarshal(p, &tmpproject); err != nil {
-			return err
-		}
-		project, err = service.save(&tmpproject)
-		if err != nil {
-			return err
-		}
-		return nil
-	}, webhooks.NoOpErrorHandler)
+
+	blacklistedLabelsChanged, err := service.areBlacklistedLabelsChanged(project)
 	if err != nil {
-		return project,
-			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
-				ProjectCreatedEvent, err.Error())
+		return nil, nil, err
 	}
-	return project, nil
+	if blacklistedLabelsChanged {
+		return nil, nil,
+			fmt.Errorf("one or more labels are blacklisted or have been removed or changed values and cannot be updated")
+	}
+
+	if service.webhookManager != nil && service.webhookManager.IsEventConfigured(ProjectUpdatedEvent) {
+		err = service.webhookManager.InvokeWebhooks(ctx, ProjectUpdatedEvent, project, func(p []byte) error {
+			// Expects webhook output to be a project object
+			var tmpproject models.Project
+			if err := json.Unmarshal(p, &tmpproject); err != nil {
+				return err
+			}
+			project, err = service.save(&tmpproject)
+			if err != nil {
+				return err
+			}
+			return nil
+		}, webhooks.NoOpErrorHandler)
+		if err != nil {
+			return project, nil,
+				fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
+					ProjectUpdatedEvent, err.Error())
+		}
+	} else {
+		project, err = service.save(project)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	project, response, err := service.handleUpdateProjectRequest(project)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return project, response, nil
 }
 
 func (service *projectsService) FindByID(projectID models.ID) (*models.Project, error) {
@@ -249,4 +288,119 @@ func (service *projectsService) filterAuthorizedProjects(ctx context.Context, pr
 		}
 	}
 	return authorizedProjects, nil
+}
+
+func (service *projectsService) handleUpdateProjectRequest(project *models.Project) (*models.Project,
+	map[string]interface{}, error) {
+	if service.updateProjectEndpoint == "" {
+		return project, nil, nil
+	}
+
+	if service.updateProjectPayloadTemplate == "" || service.updateProjectResponseTemplate == "" {
+		return project, nil, nil
+	}
+
+	payload, err := generateRequestPayload(project, service.updateProjectPayloadTemplate)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error generating request payload: %w", err)
+	}
+
+	resp, err := sendUpdateRequest(service.updateProjectEndpoint, payload)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error sending update request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	response, err := processResponseTemplate(resp, service.updateProjectResponseTemplate)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error processing response template: %w", err)
+	}
+
+	return project, response, nil
+}
+
+func generateRequestPayload(project *models.Project, templateString string) (map[string]interface{}, error) {
+	tmpl, err := template.New("requestPayload").Parse(templateString)
+	if err != nil {
+		return nil, err
+	}
+	var payload bytes.Buffer
+	if err := tmpl.Execute(&payload, project); err != nil {
+		return nil, err
+	}
+	var result map[string]interface{}
+	if err := json.Unmarshal(payload.Bytes(), &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func sendUpdateRequest(url string, payload map[string]interface{}) (*http.Response, error) {
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func processResponseTemplate(response *http.Response, templateString string) (map[string]interface{}, error) {
+	var data map[string]interface{}
+	if err := json.NewDecoder(response.Body).Decode(&data); err != nil {
+		return nil, err
+	}
+
+	tmpl, err := template.New("responsePayload").Parse(templateString)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseText bytes.Buffer
+	if err := tmpl.Execute(&responseText, data); err != nil {
+		return nil, err
+	}
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(responseText.Bytes(), &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// areBlacklistedLabelsChanged check if any key in labels is blacklisted
+func (service *projectsService) areBlacklistedLabelsChanged(project *models.Project) (bool, error) {
+	existingProject, err := service.FindByID(project.ID)
+	if err != nil {
+		return false, fmt.Errorf("error fetching project with id %s: %w", project.ID, err)
+	}
+
+	newLabelsMap := make(map[string]string)
+	for _, newLabel := range project.Labels {
+		newLabelsMap[newLabel.Key] = newLabel.Value
+	}
+
+	for _, existingLabel := range existingProject.Labels {
+		if service.labelsBlacklistMap[existingLabel.Key] {
+			newValue, exists := newLabelsMap[existingLabel.Key]
+			if !exists || newValue != existingLabel.Value {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
