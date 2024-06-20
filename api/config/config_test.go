@@ -266,9 +266,9 @@ func TestLoad(t *testing.T) {
 `,
 					ResponseTemplate: `{"response": "{{.response}}"}
 `,
-					LabelsBlacklist: map[string]bool{
-						"label1": true,
-						"label2": true,
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
 					},
 				},
 				DefaultSecretStorage: &config.SecretStorage{
@@ -359,9 +359,9 @@ func TestValidate(t *testing.T) {
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
-					LabelsBlacklist: map[string]bool{
-						"label1": true,
-						"label2": true,
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
 					},
 				},
 			},
@@ -415,9 +415,9 @@ func TestValidate(t *testing.T) {
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
-					LabelsBlacklist: map[string]bool{
-						"label1": true,
-						"label2": true,
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
 					},
 				},
 			},
@@ -475,9 +475,9 @@ func TestValidate(t *testing.T) {
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
-					LabelsBlacklist: map[string]bool{
-						"label1": true,
-						"label2": true,
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
 					},
 				},
 			},
@@ -532,9 +532,9 @@ func TestValidate(t *testing.T) {
 					Endpoint:         "http://example-update-project.dev",
 					PayloadTemplate:  "your-payload-template",
 					ResponseTemplate: "your-response-template",
-					LabelsBlacklist: map[string]bool{
-						"label1": true,
-						"label2": true,
+					LabelsBlacklist: []string{
+						"label1",
+						"label2",
 					},
 				},
 			},

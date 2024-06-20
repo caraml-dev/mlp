@@ -37,8 +37,8 @@ updateProjectConfig:
   responseTemplate: |
     {"response": "{{.response}}"}
   labelsBlacklist:
-    label1: true
-    label2: true
+    - label1
+    - label2
 
 defaultSecretStorage:
   name: default-secret-storage

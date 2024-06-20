@@ -424,9 +424,9 @@ func TestUpdateProject(t *testing.T) {
 					"status": "{{.status}}",
 					"message": "{{.message}}"
 				}`,
-				LabelsBlacklist: map[string]bool{
-					"label1": true,
-					"label2": true,
+				LabelsBlacklist: []string{
+					"label1",
+					"label2",
 				},
 			},
 		},
@@ -565,8 +565,8 @@ func TestUpdateProject(t *testing.T) {
 				},
 			},
 			updateProjectConfig: config.UpdateProjectConfig{
-				LabelsBlacklist: map[string]bool{
-					"my-label": true,
+				LabelsBlacklist: []string{
+					"my-label",
 				},
 			},
 		},

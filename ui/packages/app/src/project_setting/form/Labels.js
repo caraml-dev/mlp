@@ -119,7 +119,8 @@ export const Labels = ({
         {items.map((element, idx) => {
           const isFieldDisabled =
             isDisabled ||
-            (element.existsBefore && config.LABELS_BLACKLIST[element.key]);
+            (element.existsBefore &&
+              config.LABELS_BLACKLIST.includes(element.key));
           return (
             <EuiFlexItem key={idx}>
               <EuiFlexGroup gutterSize="s">

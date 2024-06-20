@@ -115,7 +115,7 @@ type uiEnvHandler struct {
 	Streams                    config.Streams        `json:"REACT_APP_STREAMS"`
 	Docs                       config.Documentations `json:"REACT_APP_DOC_LINKS"`
 	MaxAuthzCacheExpiryMinutes string                `json:"REACT_APP_MAX_AUTHZ_CACHE_EXPIRY_MINUTES"`
-	LabelsBlacklist            map[string]bool       `json:"REACT_APP_LABELS_BLACKLIST"`
+	LabelsBlacklist            []string              `json:"REACT_APP_LABELS_BLACKLIST"`
 }
 
 func (h uiEnvHandler) handler(w http.ResponseWriter, r *http.Request) {

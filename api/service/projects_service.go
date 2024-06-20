@@ -133,12 +133,11 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 		}
 	}
 
-	areBlacklistedLabelsChanged, err := service.areBlacklistedLabelsChanged(project.ID, project.Labels,
-		service.updateProjectConfig.LabelsBlacklist)
+	blacklistedLabelsChanged, err := service.areBlacklistedLabelsChanged(project)
 	if err != nil {
 		return nil, nil, err
 	}
-	if areBlacklistedLabelsChanged {
+	if blacklistedLabelsChanged {
 		return nil, nil,
 			fmt.Errorf("one or more labels are blacklisted or have been removed or changed values and cannot be updated")
 	}
@@ -372,25 +371,27 @@ func processResponseTemplate(response *http.Response, templateString string) (ma
 }
 
 // areBlacklistedLabelsChanged check if any key in labels is blacklisted
-func (service *projectsService) areBlacklistedLabelsChanged(projectID models.ID, newLabels []models.Label,
-	blacklist map[string]bool) (bool, error) {
-	existingProject, err := service.FindByID(projectID)
+func (service *projectsService) areBlacklistedLabelsChanged(project *models.Project) (bool, error) {
+	existingProject, err := service.FindByID(project.ID)
 	if err != nil {
-		return false, fmt.Errorf("error fetching project with id %s: %w", projectID, err)
+		return false, fmt.Errorf("error fetching project with id %s: %w", project.ID, err)
+	}
+
+	blacklist := service.updateProjectConfig.LabelsBlacklist
+	blacklistMap := make(map[string]bool)
+	for _, key := range blacklist {
+		blacklistMap[key] = true
+	}
+
+	newLabelsMap := make(map[string]string)
+	for _, newLabel := range project.Labels {
+		newLabelsMap[newLabel.Key] = newLabel.Value
 	}
 
 	for _, existingLabel := range existingProject.Labels {
-		if blacklist[existingLabel.Key] {
-			found := false
-			for _, newLabel := range newLabels {
-				if newLabel.Key == existingLabel.Key {
-					found = true
-					if newLabel.Value != existingLabel.Value {
-						return true, nil
-					}
-				}
-			}
-			if !found {
+		if blacklistMap[existingLabel.Key] {
+			newValue, exists := newLabelsMap[existingLabel.Key]
+			if !exists || newValue != existingLabel.Value {
 				return true, nil
 			}
 		}

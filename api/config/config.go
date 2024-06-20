@@ -136,7 +136,7 @@ type UpdateProjectConfig struct {
 	// through the template that should be sent back to the user
 	ResponseTemplate string
 	// labels blacklist that hides/prevents labels contained within to not be modifiable
-	LabelsBlacklist map[string]bool
+	LabelsBlacklist []string
 }
 
 // Transform env variables to the format consumed by koanf.

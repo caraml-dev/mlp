@@ -156,7 +156,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 		updateProjectEndpoint string
 		updateProjectPayload  string
 		updateProjectResponse string
-		labelsBlacklist       map[string]bool
+		labelsBlacklist       []string
 	}{
 		{
 			"success: auth enabled with update endpoint",
@@ -198,7 +198,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 			"endpoint-url",
 			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
 			`{"status": "{{.status}}", "message": "{{.message}}"}`,
-			map[string]bool{"label1": true, "label2": true},
+			[]string{"label1", "label2"},
 		},
 		{
 			"success: auth enabled without update endpoint",
@@ -240,7 +240,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 			"",
 			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
 			`{"status": "{{.status}}", "message": "{{.message}}"}`,
-			map[string]bool{"label1": true, "label2": true},
+			[]string{"label1", "label2"},
 		},
 		{
 			"success: auth disabled without endpoint",
@@ -269,7 +269,7 @@ func TestProjectsService_UpdateProject(t *testing.T) {
 			"",
 			"",
 			"",
-			map[string]bool{"label1": true, "label2": true},
+			[]string{"label1", "label2"},
 		},
 	}
 	for _, tt := range tests {
@@ -578,7 +578,7 @@ func TestProjectsService_UpdateProjectWithWebhook(t *testing.T) {
 		updateProjectEndpoint string
 		updateProjectPayload  string
 		updateProjectResponse string
-		labelsBlacklist       map[string]bool
+		labelsBlacklist       []string
 	}{
 		{
 			"success: webhook update with update endpoint",
@@ -618,7 +618,7 @@ func TestProjectsService_UpdateProjectWithWebhook(t *testing.T) {
 			"endpoint-url",
 			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
 			`{"status": "{{.status}}", "message": "{{.message}}"}`,
-			map[string]bool{"label1": true, "label2": true},
+			[]string{"label1", "label2"},
 		},
 		{
 			"success: webhook update without update endpoint",
@@ -658,7 +658,7 @@ func TestProjectsService_UpdateProjectWithWebhook(t *testing.T) {
 			"",
 			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
 			`{"status": "{{.status}}", "message": "{{.message}}"}`,
-			map[string]bool{"label1": true, "label2": true},
+			[]string{"label1", "label2"},
 		},
 	}
 	for _, tt := range tests {
@@ -744,7 +744,7 @@ func TestProjectsService_UpdateProjectWithWebhookEventNotSet(t *testing.T) {
 		updateProjectEndpoint string
 		updateProjectPayload  string
 		updateProjectResponse string
-		labelsBlacklist       map[string]bool
+		labelsBlacklist       []string
 	}{
 		{
 			"success: webhook event ignored with endpoint",
@@ -783,7 +783,7 @@ func TestProjectsService_UpdateProjectWithWebhookEventNotSet(t *testing.T) {
 			"endpoint-url",
 			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
 			`{"status": "{{.status}}", "message": "{{.message}}"}`,
-			map[string]bool{"label1": true, "label2": true},
+			[]string{"label1", "label2"},
 		},
 		{
 			"success: webhook event ignored without endpoint",
@@ -822,7 +822,7 @@ func TestProjectsService_UpdateProjectWithWebhookEventNotSet(t *testing.T) {
 			"",
 			`{"project": "{{.Name}}", "administrators": "{{.Administrators}}"}`,
 			`{"status": "{{.status}}", "message": "{{.message}}"}`,
-			map[string]bool{"label1": true, "label2": true},
+			[]string{"label1", "label2"},
 		},
 	}
 	for _, tt := range tests {
