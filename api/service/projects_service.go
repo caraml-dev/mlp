@@ -49,9 +49,9 @@ func NewProjectsService(
 		return nil, errors.New("default mlflow tracking url should be provided")
 	}
 
-	blacklistMap := make(map[string]bool)
+	labelsBlacklistMap := make(map[string]bool)
 	for _, key := range updateProjectConfig.LabelsBlacklist {
-		blacklistMap[key] = true
+		labelsBlacklistMap[key] = true
 	}
 
 	return &projectsService{
@@ -63,7 +63,7 @@ func NewProjectsService(
 		updateProjectEndpoint:         updateProjectConfig.Endpoint,
 		updateProjectPayloadTemplate:  updateProjectConfig.PayloadTemplate,
 		updateProjectResponseTemplate: updateProjectConfig.ResponseTemplate,
-		blacklistMap:                  blacklistMap,
+		labelsBlacklistMap:            labelsBlacklistMap,
 	}, nil
 }
 
@@ -76,7 +76,7 @@ type projectsService struct {
 	updateProjectEndpoint         string
 	updateProjectPayloadTemplate  string
 	updateProjectResponseTemplate string
-	blacklistMap                  map[string]bool
+	labelsBlacklistMap            map[string]bool
 }
 
 func (service *projectsService) CreateProject(ctx context.Context, project *models.Project) (*models.Project, error) {
@@ -394,7 +394,7 @@ func (service *projectsService) areBlacklistedLabelsChanged(project *models.Proj
 	}
 
 	for _, existingLabel := range existingProject.Labels {
-		if service.blacklistMap[existingLabel.Key] {
+		if service.labelsBlacklistMap[existingLabel.Key] {
 			newValue, exists := newLabelsMap[existingLabel.Key]
 			if !exists || newValue != existingLabel.Value {
 				return true, nil
