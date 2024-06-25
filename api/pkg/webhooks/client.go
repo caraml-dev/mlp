@@ -152,4 +152,7 @@ func setDefaults(webhookConfig *WebhookConfig) {
 		def := 10
 		webhookConfig.Timeout = &def
 	}
+	if webhookConfig.NumRetries == 0 {
+		webhookConfig.NumRetries = 3
+	}
 }
