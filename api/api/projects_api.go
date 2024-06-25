@@ -9,6 +9,7 @@ import (
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
 	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
+	"github.com/caraml-dev/mlp/api/pkg/webhooks"
 )
 
 type ProjectsController struct {
@@ -51,7 +52,18 @@ func (c *ProjectsController) CreateProject(r *http.Request, vars map[string]stri
 	user := vars["user"]
 	project.Administrators = addRequester(user, project.Administrators)
 	project, err = c.ProjectsService.CreateProject(r.Context(), project)
+	var webhookError *webhooks.WebhookError
 	if err != nil {
+		// NOTE: Here we are checking if the error is a WebhookError
+		// This is to improve the error message shared with the user,
+		// since the current logic creates the Project first before firing
+		// the ProjectCreatedEvent webhook.
+		if errors.As(err, &webhookError) {
+			err := fmt.Errorf(`Project %s was created, 
+			but not all webhooks were correctly invoked. 
+			Some additional resources may not have been created successfully : %s`, project.Name, err)
+			return FromError(err)
+		}
 		log.Errorf("error creating project %s: %s", project.Name, err)
 		return FromError(err)
 	}
