@@ -1,6 +1,6 @@
 {
   "name": "@caraml-dev/ui-lib",
-  "version": "1.7.6",
+  "version": "1.13.0",
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -53,7 +53,7 @@
     "@elastic/eui": "^94.5.2",
     "@emotion/css": "^11.11.2",
     "@emotion/react": "^11.11.4",
-    "@sentry/browser": "5.15.5",
+    "@sentry/browser": "8.5.0",
     "moment": "^2.30.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
