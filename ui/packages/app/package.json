@@ -1,10 +1,10 @@
 {
   "name": "mlp-ui",
-  "version": "1.7.6",
+  "version": "1.13.0",
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "@caraml-dev/ui-lib": "^1.7.5-build.5-59f13e1",
+    "@caraml-dev/ui-lib": "^1.13.0-build.1-d1f1876",
     "@elastic/datemath": "^5.0.3",
     "@elastic/eui": "^94.5.2",
     "@emotion/css": "^11.11.2",
