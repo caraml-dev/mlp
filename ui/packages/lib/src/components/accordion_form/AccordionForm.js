@@ -25,7 +25,7 @@ export const AccordionForm = ({
   return (
     <EuiFlexGroup direction="row" gutterSize="none" className="accordionForm">
       <EuiFlexItem grow={false} className="accordionForm--sideNavContainer">
-        <Sticky enabled={true}>
+        <Sticky enabled={true} top={".euiHeader"}>
           <AccordionFormSideNav name={name} sections={sections} />
         </Sticky>
       </EuiFlexItem>
