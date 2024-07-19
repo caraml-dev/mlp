@@ -47,6 +47,12 @@ applications:
     homepage: /pipeline
     configuration:
       iconName: pipelineApp
+  - name: CaraML AI
+    description: Gateway for accessing LLM models
+    homepage: /caraml-ai
+    configuration:
+      iconName: timelionApp
+
 
 database:
   host: "localhost"
