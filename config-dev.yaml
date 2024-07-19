@@ -50,6 +50,7 @@ applications:
   - name: CaraML AI
     description: Gateway for accessing LLM models
     homepage: /caraml-ai
+    isProjectAgnostic: true
     configuration:
       iconName: timelionApp
 
