@@ -59,10 +59,11 @@ func (c *ProjectsController) CreateProject(r *http.Request, vars map[string]stri
 		// since the current logic creates the Project first before firing
 		// the ProjectCreatedEvent webhook.
 		if errors.As(err, &webhookError) {
-			err := fmt.Errorf(`Project %s was created, 
+			errMsg := fmt.Errorf(`Project %s was created, 
 			but not all webhooks were correctly invoked. 
-			Some additional resources may not have been created successfully : %s`, project.Name, err)
-			return FromError(err)
+			Some additional resources may not have been created successfully`, project.Name)
+			log.Errorf("%s, %s", errMsg, err)
+			return FromError(errMsg)
 		}
 		log.Errorf("error creating project %s: %s", project.Name, err)
 		return FromError(err)
