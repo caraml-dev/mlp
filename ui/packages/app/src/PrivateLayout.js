@@ -20,7 +20,8 @@ export const PrivateLayout = () => {
             {({ currentApp }) => (
               <Header
                 onProjectSelect={pId =>
-                  navigate(urlJoin(currentApp?.homepage, "projects", pId))
+                  // Return user to /projects/:projectId (MLP project landing page) if app is project agnostic
+                  navigate(urlJoin(currentApp?.is_project_agnostic ? "" : currentApp?.homepage, "projects", pId))
                 }
                 docLinks={config.DOC_LINKS}
               />

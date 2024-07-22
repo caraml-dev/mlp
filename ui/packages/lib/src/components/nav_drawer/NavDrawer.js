@@ -55,13 +55,12 @@ export const NavDrawer = ({ docLinks }) => {
         className: isAppActive
           ? "euiTreeView__node---small---active"
           : "euiTreeView__node---small",
-
         callback: () =>
-          !children || !currentProject
+          a.is_project_agnostic ? (window.location.href = a.homepage) : (!children || !currentProject
             ? (window.location.href = !!currentProject
               ? urlJoin(a.homepage, "projects", currentProject.id)
               : a.homepage)
-            : {},
+            : {}),
         children: children
       };
     });

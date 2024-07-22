@@ -119,8 +119,9 @@ type UIConfig struct {
 	StaticPath string `validated:"required"`
 	IndexPath  string `validated:"required"`
 
-	ClockworkUIHomepage string `json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
-	KubeflowUIHomepage  string `json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`
+	ClockworkUIHomepage       string `json:"REACT_APP_CLOCKWORK_UI_HOMEPAGE"`
+	KubeflowUIHomepage        string `json:"REACT_APP_KUBEFLOW_UI_HOMEPAGE"`
+	CaramlAIStreamlitHomepage string `json:"REACT_APP_CARAML_AI_STREAMLIT_HOMEPAGE"`
 
 	AllowCustomStream        bool `json:"REACT_APP_ALLOW_CUSTOM_STREAM"`
 	AllowCustomTeam          bool `json:"REACT_APP_ALLOW_CUSTOM_TEAM"`
