@@ -11,7 +11,6 @@ export const AppRoutes = () => {
 
   // If the apps have not been loaded yet, we do not render any of the app related routes - the additional streamlit
   // apps need to be retrieved from the MLP API v2/applications endpoint first before we generate each route for them.
-  // Once those apps are loaded, AppRoutes will be re-rendered,
   return isLoaded && (
     <Routes>
       {/* LANDING */}
