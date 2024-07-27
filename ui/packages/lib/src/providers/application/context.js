@@ -9,7 +9,7 @@ const ApplicationsContext = React.createContext({
 
 export const ApplicationsContextProvider = ({ children }) => {
   const location = useLocation();
-  const [{ data: apps }] = useMlpApi("/v2/applications", {}, []);
+  const [{ data: apps, isLoaded }] = useMlpApi("/v2/applications", {}, []);
 
   const currentApp = useMemo(
     () => apps.find(a => location.pathname.startsWith(a.homepage)),
@@ -17,7 +17,7 @@ export const ApplicationsContextProvider = ({ children }) => {
   );
 
   return (
-    <ApplicationsContext.Provider value={{ currentApp, apps }}>
+    <ApplicationsContext.Provider value={{ currentApp, apps, isLoaded }}>
       {children}
     </ApplicationsContext.Provider>
   );

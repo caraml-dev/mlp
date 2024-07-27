@@ -1,9 +1,8 @@
 import React from "react";
 import { EuiPageTemplate } from "@elastic/eui";
-import config from "./../config";
 
-export const CaraMLAIPage = () => {
-  const iframe = `<iframe src=${config.CARAML_AI_STREAMLIT_HOMEPAGE} style="height: 80vh; width: 100%;"></iframe>`
+export const StreamlitPlaceholderPage = ({ app }) => {
+  const iframe = `<iframe src=${app.streamlit_placeholder_page_config.streamlit_url} style="height: 80vh; width: 100%;"></iframe>`
 
   function Iframe(props) {
     return (<div dangerouslySetInnerHTML={ {__html:  props.iframe?props.iframe:""}} />);
@@ -12,8 +11,8 @@ export const CaraMLAIPage = () => {
     <EuiPageTemplate restrictWidth="90%" panelled={false}>
       <EuiPageTemplate.Header
         bottomBorder={false}
-        iconType="timelionApp"
-        pageTitle="CaraML AI"
+        iconType={app.config.icon}
+        pageTitle={app.name}
       />
 
       <EuiPageTemplate.Section paddingSize="none">

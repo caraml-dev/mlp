@@ -3,6 +3,7 @@ import {
   ErrorBoundary,
   Login,
   MlpApiContextProvider,
+  ApplicationsContextProvider,
   Page404,
   Toast
 } from "@caraml-dev/ui-lib";
@@ -12,7 +13,6 @@ import { Route, Routes } from "react-router-dom";
 import AppRoutes from "./AppRoutes";
 import { PrivateLayout } from "./PrivateLayout";
 import config from "./config";
-import { CaraMLAIPage } from "./caraml_ai/CaraMLAIPage";
 
 const App = () => (
   <EuiProvider>
@@ -26,17 +26,11 @@ const App = () => (
             <Route path="/login" element={<Login />} />
 
             <Route element={<PrivateLayout />}>
-              <Route path="/*" element={<AppRoutes />} />
+              <Route path="/*" element={<ApplicationsContextProvider><AppRoutes /></ApplicationsContextProvider>} />
             </Route>
 
             <Route path="/pages/404" element={<Page404 />} />
 
-            {
-              config.CARAML_AI_STREAMLIT_HOMEPAGE &&
-              <Route element={<PrivateLayout />}>
-                <Route path="/caraml-ai" element={<CaraMLAIPage />} />
-              </Route>
-            }
           </Routes>
           <Toast />
         </AuthProvider>
