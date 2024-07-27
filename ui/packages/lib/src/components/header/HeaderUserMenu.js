@@ -86,7 +86,6 @@ export const HeaderUserMenu = ({ profileObj, logout, children }) => {
         <EuiContextMenuItem
           key="log_out"
           icon="exit"
-          toolTipPosition="right"
           onClick={logout}>
           Log out
         </EuiContextMenuItem>
