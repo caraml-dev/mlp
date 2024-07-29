@@ -1,8 +1,8 @@
 import React from "react";
 import { EuiPageTemplate } from "@elastic/eui";
 
-export const StreamlitPlaceholderPage = ({ app }) => {
-  const iframe = `<iframe src=${app.streamlit_placeholder_page_config.streamlit_url} style="height: 80vh; width: 100%;"></iframe>`
+export const PlaceholderPage = ({ app }) => {
+  const iframe = `<iframe src=${app.placeholder_page_config.url} style="height: 80vh; width: 100%;"></iframe>`
 
   function Iframe(props) {
     return (<div dangerouslySetInnerHTML={ {__html:  props.iframe?props.iframe:""}} />);
