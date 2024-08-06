@@ -17,6 +17,7 @@ import (
 	"github.com/caraml-dev/mlp/api/repository"
 
 	"github.com/caraml-dev/mlp/api/config"
+	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
 	"github.com/caraml-dev/mlp/api/pkg/webhooks"
@@ -107,18 +108,21 @@ func (service *projectsService) CreateProject(ctx context.Context, project *mode
 		// Expects webhook output to be a project object
 		var tmpproject models.Project
 		if err := json.Unmarshal(p, &tmpproject); err != nil {
-			return err
+			return webhooks.NewWebhookError(err)
 		}
 		project, err = service.save(&tmpproject)
 		if err != nil {
-			return err
+			return webhooks.NewWebhookError(err)
 		}
 		return nil
-	}, webhooks.NoOpErrorHandler)
+	}, func(err error) error {
+		// Print error and return
+		log.Errorf("error calling webhook - %s, err: %s", ProjectCreatedEvent, err.Error())
+		return err
+	},
+	)
 	if err != nil {
-		return project,
-			fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
-				ProjectCreatedEvent, err.Error())
+		return project, err
 	}
 	return project, nil
 }
@@ -165,11 +169,14 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 				return err
 			}
 			return nil
-		}, webhooks.NoOpErrorHandler)
+		}, func(err error) error {
+			// Print error and return
+			log.Errorf("error calling webhook - %s, err: %s", ProjectCreatedEvent, err.Error())
+			return err
+		},
+		)
 		if err != nil {
-			return project, nil,
-				fmt.Errorf("error while invoking %s webhooks or on success callback function, err: %s",
-					ProjectUpdatedEvent, err.Error())
+			return project, nil, err
 		}
 	} else {
 		project, err = service.save(project)

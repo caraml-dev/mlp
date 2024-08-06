@@ -103,14 +103,14 @@ func (g *simpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byt
 			}
 			// check http status code
 			if resp.StatusCode != http.StatusOK {
-				return fmt.Errorf("response status code %d not 200", resp.StatusCode)
+				return fmt.Errorf("response status code %d not 200, err: %s", resp.StatusCode, content)
 			}
 			return nil
 
-		}, retry.Attempts(uint(g.NumRetries)), retry.Context(ctx),
+		}, retry.Attempts(uint(g.NumRetries)), retry.Context(ctx), retry.LastErrorOnly(true),
 	)
 	if err != nil {
-		return nil, err
+		return nil, NewWebhookError(err)
 	}
 	return content, nil
 }
@@ -151,5 +151,8 @@ func setDefaults(webhookConfig *WebhookConfig) {
 	if webhookConfig.Timeout == nil {
 		def := 10
 		webhookConfig.Timeout = &def
+	}
+	if webhookConfig.NumRetries == 0 {
+		webhookConfig.NumRetries = 3
 	}
 }
