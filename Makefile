@@ -149,27 +149,27 @@ local-env: local-db start-keto start-vault
 .PHONY: local-db
 local-db:
 	@echo "> Starting up DB ..."
-	@docker-compose up -d postgres
+	@docker compose up -d postgres
 
 .PHONY: start-keto
 start-keto:
 	@echo "> Starting up keto server ..."
-	@docker-compose up -d keto
+	@docker compose up -d keto
 
 .PHONY: start-vault
 start-vault:
 	@echo "> Starting up vault server ..."
-	@docker-compose up -d vault
+	@docker compose up -d vault
 
 .PHONY: stop-docker
 stop-docker:
 	@echo "> Stopping Docker compose ..."
-	@docker-compose down
+	@docker compose down
 
 .PHONY: swagger-ui
 swagger-ui:
 	@echo "> Starting up Swagger UI ..."
-	@docker-compose up -d swagger-ui
+	@docker compose up -d swagger-ui
 
 .PHONY: version
 version:
