@@ -90,7 +90,7 @@ func (g *simpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byt
 			}
 			resp, err := client.Do(req)
 			if err != nil {
-				log.Errorf("Error making client request %s", err)
+				log.Errorf("Error making client request to webhook %s, err: %s", g.Name, err)
 				return err
 			}
 			defer resp.Body.Close()
@@ -103,7 +103,7 @@ func (g *simpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byt
 			}
 			// check http status code
 			if resp.StatusCode != http.StatusOK {
-				return fmt.Errorf("response status code %d not 200, err: %s", resp.StatusCode, content)
+				return fmt.Errorf("response from %s, status code %d not 200, err: %s", g.Name, resp.StatusCode, content)
 			}
 			return nil
 
