@@ -88,7 +88,7 @@ func (w *SimpleWebhookManager) InvokeWebhooks(
 	for _, client := range asyncClients {
 		go func(client WebhookClient) {
 			// Ignore the response from async webhooks
-			if _, err := client.Invoke(ctx, originalPayload); err != nil {
+			if _, err := client.Invoke(context.Background(), originalPayload); err != nil {
 				return
 			}
 		}(client)
