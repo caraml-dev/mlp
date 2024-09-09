@@ -5,6 +5,8 @@ package mocks
 import (
 	context "context"
 
+	artifact "github.com/caraml-dev/mlp/api/pkg/artifact"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -29,6 +31,54 @@ func (_m *Service) DeleteArtifact(ctx context.Context, url string) error {
 	}
 
 	return r0
+}
+
+// GetURLScheme provides a mock function with given fields:
+func (_m *Service) GetURLScheme() string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetURLScheme")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// ParseURL provides a mock function with given fields: gsURL
+func (_m *Service) ParseURL(gsURL string) (*artifact.URL, error) {
+	ret := _m.Called(gsURL)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ParseURL")
+	}
+
+	var r0 *artifact.URL
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) (*artifact.URL, error)); ok {
+		return rf(gsURL)
+	}
+	if rf, ok := ret.Get(0).(func(string) *artifact.URL); ok {
+		r0 = rf(gsURL)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*artifact.URL)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(gsURL)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // ReadArtifact provides a mock function with given fields: ctx, url
