@@ -1,13 +1,17 @@
 package artifact
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"io"
 	"net/url"
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"google.golang.org/api/iterator"
 )
 
@@ -23,33 +27,26 @@ type URL struct {
 	Object string
 }
 
-type Service interface {
+type URLScheme string
+
+type SchemeInterface interface {
+	GetURLScheme() string
 	ParseURL(gsURL string) (*URL, error)
-
-	ReadArtifact(ctx context.Context, url string) ([]byte, error)
-	WriteArtifact(ctx context.Context, url string, content []byte) error
-	DeleteArtifact(ctx context.Context, url string) error
 }
 
-type GcsArtifactClient struct {
-	API *storage.Client
+func (urlScheme URLScheme) GetURLScheme() string {
+	return string(urlScheme)
 }
 
-func NewGcsArtifactClient(api *storage.Client) Service {
-	return &GcsArtifactClient{
-		API: api,
-	}
-}
-
-// Parse parses a Google Cloud Storage string into a URL struct. The expected
-// format of the string is gs://[bucket-name]/[object-path]. If the provided
+// ParseURL parses an artifact storage string into a URL struct. The expected
+// format of the string is [url-scheme]://[bucket-name]/[object-path]. If the provided
 // URL is formatted incorrectly an error will be returned.
-func (gac *GcsArtifactClient) ParseURL(gsURL string) (*URL, error) {
+func (urlScheme URLScheme) ParseURL(gsURL string) (*URL, error) {
 	u, err := url.Parse(gsURL)
 	if err != nil {
 		return nil, err
 	}
-	if u.Scheme != "gs" {
+	if u.Scheme != string(urlScheme) {
 		return nil, err
 	}
 
@@ -66,6 +63,28 @@ func (gac *GcsArtifactClient) ParseURL(gsURL string) (*URL, error) {
 	return &URL{
 		Bucket: bucket,
 		Object: object,
+	}, nil
+}
+
+type Service interface {
+	ReadArtifact(ctx context.Context, url string) ([]byte, error)
+	WriteArtifact(ctx context.Context, url string, content []byte) error
+	DeleteArtifact(ctx context.Context, url string) error
+}
+
+type GcsArtifactClient struct {
+	URLScheme
+	API *storage.Client
+}
+
+func NewGcsArtifactClient() (Service, error) {
+	api, err := storage.NewClient(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("%s,failed initializing gcs for the artifact client", err.Error())
+	}
+	return &GcsArtifactClient{
+		URLScheme: "gs",
+		API:       api,
 	}, nil
 }
 
@@ -133,24 +152,96 @@ func (gac *GcsArtifactClient) DeleteArtifact(ctx context.Context, url string) er
 	return nil
 }
 
+type S3ArtifactClient struct {
+	URLScheme
+	client *s3.Client
+}
+
+func NewS3ArtifactClient() (Service, error) {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("%s,failed loading s3 config for the artifact client", err.Error())
+	}
+	client := s3.NewFromConfig(cfg)
+	return &S3ArtifactClient{
+		URLScheme: "s3",
+		client:    client,
+	}, nil
+}
+
+func (s3c *S3ArtifactClient) ReadArtifact(ctx context.Context, url string) ([]byte, error) {
+	u, err := s3c.ParseURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	reader, err := s3c.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(u.Bucket),
+		Key:    aws.String(u.Object),
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Body.Close() //nolint:errcheck
+
+	bytes, err := io.ReadAll(reader.Body)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
+func (s3c *S3ArtifactClient) WriteArtifact(ctx context.Context, url string, content []byte) error {
+	u, err := s3c.ParseURL(url)
+	if err != nil {
+		return err
+	}
+
+	_, err = s3c.client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket: aws.String(u.Bucket),
+		Key:    aws.String(u.Object),
+		Body:   bytes.NewReader(content),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s3c *S3ArtifactClient) DeleteArtifact(ctx context.Context, url string) error {
+	u, err := s3c.ParseURL(url)
+	if err != nil {
+		return err
+	}
+
+	// TODO: To confirm and refactor if versioning is enabled on S3 and to specify the versionId to be deleted
+	input := &s3.DeleteObjectInput{
+		Bucket: aws.String(u.Bucket),
+		Key:    aws.String(u.Object),
+	}
+
+	_, err = s3c.client.DeleteObject(ctx, input)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type NopArtifactClient struct{}
 
 func NewNopArtifactClient() Service {
 	return &NopArtifactClient{}
 }
 
-func (nac *NopArtifactClient) ParseURL(gsURL string) (*URL, error) {
+func (nac *NopArtifactClient) ReadArtifact(_ context.Context, _ string) ([]byte, error) {
 	return nil, nil
 }
 
-func (nac *NopArtifactClient) ReadArtifact(ctx context.Context, url string) ([]byte, error) {
-	return nil, nil
-}
-
-func (nac *NopArtifactClient) WriteArtifact(ctx context.Context, url string, content []byte) error {
+func (nac *NopArtifactClient) WriteArtifact(_ context.Context, _ string, _ []byte) error {
 	return nil
 }
 
-func (nac *NopArtifactClient) DeleteArtifact(ctx context.Context, url string) error {
+func (nac *NopArtifactClient) DeleteArtifact(_ context.Context, _ string) error {
 	return nil
 }
