@@ -104,7 +104,7 @@ func (c *ProjectsController) UpdateProject(r *http.Request, vars map[string]stri
 	return Ok(updatedProject)
 }
 
-func (c *ProjectsController) GetProject(r *http.Request, vars map[string]string, body interface{}) *Response {
+func (c *ProjectsController) GetProject(_ *http.Request, vars map[string]string, _ interface{}) *Response {
 	projectID, _ := models.ParseID(vars["project_id"])
 	project, err := c.ProjectsService.FindByID(projectID)
 	if err != nil {

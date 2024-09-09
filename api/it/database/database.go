@@ -32,7 +32,7 @@ func create(conn *sql.DB, dbName string) (*sql.DB, error) {
 			log.Fatalf("Failed to cleanup integration test database: \n%s", err)
 		}
 		return nil, err
-	} else {
+	} else { //nolint:revive // https://github.com/mgechev/revive/issues/564 (false positive)
 		return testDb, nil
 	}
 }
@@ -87,7 +87,7 @@ func CreateTestDatabase() (*gorm.DB, func(), error) {
 	} else if gormDb, err := gorm.Open("postgres", testDb); err != nil {
 		cleanup()
 		return nil, nil, err
-	} else {
+	} else { //nolint:revive // https://github.com/mgechev/revive/issues/564 (false positive)
 		return gormDb, cleanup, nil
 	}
 }

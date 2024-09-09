@@ -45,7 +45,7 @@ type mockCounterVec struct {
 	counter *mockCounter
 }
 
-func (m mockCounterVec) GetMetricWith(labels prometheus.Labels) (prometheus.Counter, error) {
+func (m mockCounterVec) GetMetricWith(_ prometheus.Labels) (prometheus.Counter, error) {
 	return m.counter, nil
 }
 
@@ -95,7 +95,7 @@ type mockGaugeVec struct {
 	gauge *mockGauge
 }
 
-func (g *mockGaugeVec) GetMetricWith(labels prometheus.Labels) (prometheus.Gauge, error) {
+func (g *mockGaugeVec) GetMetricWith(_ prometheus.Labels) (prometheus.Gauge, error) {
 	return g.gauge, nil
 }
 
@@ -105,7 +105,7 @@ func createMockGaugeVec(testValue float64) *mockGaugeVec {
 	gauge := &mockGauge{
 		value: 0,
 	}
-	gauge.On("Set", mock.Anything).Run(func(args mock.Arguments) {
+	gauge.On("Set", mock.Anything).Run(func(_ mock.Arguments) {
 		gauge.value = testValue
 	}).Return(nil)
 	gaugeVec := &mockGaugeVec{
@@ -145,7 +145,7 @@ type mockHistogramVec struct {
 	histogram *mockHistogram
 }
 
-func (h *mockHistogramVec) GetMetricWith(labels prometheus.Labels) (prometheus.Observer, error) {
+func (h *mockHistogramVec) GetMetricWith(_ prometheus.Labels) (prometheus.Observer, error) {
 	return h.histogram, nil
 }
 
@@ -207,7 +207,7 @@ func createMockHistVec(testDuration float64) *mockHistogramVec {
 	hist := &mockHistogram{
 		duration: 0,
 	}
-	hist.On("Observe", mock.Anything).Run(func(args mock.Arguments) {
+	hist.On("Observe", mock.Anything).Run(func(_ mock.Arguments) {
 		hist.duration = testDuration
 	}).Return(nil)
 	return &mockHistogramVec{

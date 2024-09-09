@@ -7,12 +7,12 @@ import raven "github.com/getsentry/raven-go"
 type NoopClient struct{}
 
 // Capture implements Client interface.
-func (nc *NoopClient) Capture(packet *raven.Packet, captureTags map[string]string) (eventID string, ch chan error) {
+func (nc *NoopClient) Capture(_ *raven.Packet, _ map[string]string) (eventID string, ch chan error) {
 	return "", nil
 }
 
 // CaptureError implements Client interface.
-func (nc *NoopClient) CaptureError(err error, tags map[string]string, interfaces ...raven.Interface) string {
+func (nc *NoopClient) CaptureError(_ error, _ map[string]string, _ ...raven.Interface) string {
 	return ""
 }
 

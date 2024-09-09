@@ -28,7 +28,7 @@ var (
 	serveCmd    = &cobra.Command{
 		Use:   "serve",
 		Short: "Start MLP API server",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			serveConfig, err := config.LoadAndValidate(configFiles...)
 			if err != nil {
 				log.Fatalf("failed initializing config: %v", err)
@@ -118,7 +118,7 @@ type uiEnvHandler struct {
 	LabelsBlacklist            []string              `json:"REACT_APP_LABELS_BLACKLIST"`
 }
 
-func (h uiEnvHandler) handler(w http.ResponseWriter, r *http.Request) {
+func (h uiEnvHandler) handler(w http.ResponseWriter, _ *http.Request) {
 	envJSON, err := json.Marshal(h)
 	if err != nil {
 		envJSON = []byte("{}")

@@ -8,7 +8,7 @@ import (
 	newrelic "github.com/newrelic/go-agent"
 )
 
-func TestNoopApp(t *testing.T) {
+func TestNoopApp(_ *testing.T) {
 	na := NoopApp{}
 	_ = na.StartTransaction("test", httptest.NewRecorder(), &http.Request{})
 	_ = na.RecordCustomEvent("test", nil)
@@ -17,7 +17,7 @@ func TestNoopApp(t *testing.T) {
 	na.Shutdown(0)
 }
 
-func TestNoopTx(t *testing.T) {
+func TestNoopTx(_ *testing.T) {
 	nt := NoopTx{
 		w: httptest.NewRecorder(),
 	}
