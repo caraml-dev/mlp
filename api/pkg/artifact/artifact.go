@@ -241,10 +241,7 @@ func (nac *NopArtifactClient) GetURLScheme() string {
 	return ""
 }
 
-// ParseURL parses an artifact storage string into a URL struct. The expected
-// format of the string is [url-scheme]://[bucket-name]/[object-path]. If the provided
-// URL is formatted incorrectly an error will be returned.
-func (nac *NopArtifactClient) ParseURL(gsURL string) (*URL, error) {
+func (nac *NopArtifactClient) ParseURL(_ string) (*URL, error) {
 	return nil, nil
 }
 
