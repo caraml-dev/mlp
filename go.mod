@@ -1,14 +1,13 @@
 module github.com/caraml-dev/mlp
 
-go 1.21
-
-toolchain go1.22.5
+go 1.22
 
 require (
 	cloud.google.com/go/storage v1.29.0
 	github.com/antihax/optional v1.0.0
 	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 	github.com/avast/retry-go/v4 v4.6.0
+	github.com/aws/aws-sdk-go-v2 v1.30.6-0.20240906182417-827d25db0048
 	github.com/aws/aws-sdk-go-v2/config v1.8.3
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.61.2
 	github.com/gavv/httpexpect/v2 v2.15.0
@@ -58,7 +57,6 @@ require (
 	cloud.google.com/go/iam v0.8.0 // indirect
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.30.6-0.20240906182417-827d25db0048 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.4 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.4.3 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.6.0 // indirect
