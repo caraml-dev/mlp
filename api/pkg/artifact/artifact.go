@@ -68,6 +68,8 @@ func (urlScheme URLScheme) ParseURL(gsURL string) (*URL, error) {
 }
 
 type Service interface {
+	GetURLScheme() string
+	ParseURL(gsURL string) (*URL, error)
 	ReadArtifact(ctx context.Context, url string) ([]byte, error)
 	WriteArtifact(ctx context.Context, url string, content []byte) error
 	DeleteArtifact(ctx context.Context, url string) error
@@ -233,6 +235,17 @@ type NopArtifactClient struct{}
 
 func NewNopArtifactClient() Service {
 	return &NopArtifactClient{}
+}
+
+func (nac *NopArtifactClient) GetURLScheme() string {
+	return ""
+}
+
+// ParseURL parses an artifact storage string into a URL struct. The expected
+// format of the string is [url-scheme]://[bucket-name]/[object-path]. If the provided
+// URL is formatted incorrectly an error will be returned.
+func (nac *NopArtifactClient) ParseURL(gsURL string) (*URL, error) {
+	return nil, nil
 }
 
 func (nac *NopArtifactClient) ReadArtifact(_ context.Context, _ string) ([]byte, error) {
