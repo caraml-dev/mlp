@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"cloud.google.com/go/storage"
-
 	"github.com/caraml-dev/mlp/api/pkg/artifact"
 )
 
@@ -25,14 +23,20 @@ type mlflowService struct {
 
 func NewMlflowService(httpClient *http.Client, config Config) (Service, error) {
 	var artifactService artifact.Service
+	var err error
+	// TODO: To consider removing since it doesn't make sense to have nop artifact service
 	if config.ArtifactServiceType == "nop" {
 		artifactService = artifact.NewNopArtifactClient()
 	} else if config.ArtifactServiceType == "gcs" {
-		api, err := storage.NewClient(context.Background())
+		artifactService, err = artifact.NewGcsArtifactClient()
 		if err != nil {
 			return &mlflowService{}, fmt.Errorf("failed initializing gcs for mlflow delete package")
 		}
-		artifactService = artifact.NewGcsArtifactClient(api)
+	} else if config.ArtifactServiceType == "s3" {
+		artifactService, err = artifact.NewS3ArtifactClient()
+		if err != nil {
+			return &mlflowService{}, fmt.Errorf("failed initializing s3 for mlflow delete package")
+		}
 	} else {
 		return &mlflowService{}, fmt.Errorf("invalid artifact service type")
 	}
@@ -115,7 +119,6 @@ func (mfs *mlflowService) searchRunData(RunID string) (SearchRunResponse, error)
 }
 
 func (mfs *mlflowService) DeleteExperiment(ctx context.Context, ExperimentID string, deleteArtifact bool) error {
-
 	relatedRunData, err := mfs.searchRunsForExperiment(ExperimentID)
 	if err != nil {
 		return err

@@ -247,6 +247,16 @@ func TestNewMlflowService(t *testing.T) {
 			},
 		},
 		{
+			name:          "Mlflow Service with s3 Artifact",
+			artifactType:  "s3",
+			expectedError: nil,
+			expectedResult: &mlflowService{
+				API:             &httpClient,
+				Config:          Config{TrackingURL: "", ArtifactServiceType: "s3"},
+				ArtifactService: &artifact.S3ArtifactClient{},
+			},
+		},
+		{
 			name:          "Mlflow Service with nop Artifact",
 			artifactType:  "nop",
 			expectedError: nil,
