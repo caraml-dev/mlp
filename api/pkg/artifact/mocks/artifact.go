@@ -33,6 +33,24 @@ func (_m *Service) DeleteArtifact(ctx context.Context, url string) error {
 	return r0
 }
 
+// GetType provides a mock function with given fields:
+func (_m *Service) GetType() string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetType")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // GetURLScheme provides a mock function with given fields:
 func (_m *Service) GetURLScheme() string {
 	ret := _m.Called()
