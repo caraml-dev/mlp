@@ -16,6 +16,13 @@ import (
 	"google.golang.org/api/iterator"
 )
 
+const (
+	gcsArtifactClientType = "gcs"
+	gcsURLScheme          = "gs"
+	s3ArtifactClientType  = "s3"
+	s3URLScheme           = "s3"
+)
+
 // URL contains the information needed to identify the location of an object
 // located in Google Cloud Storage.
 type URL struct {
@@ -68,6 +75,7 @@ func (urlScheme URLScheme) ParseURL(gsURL string) (*URL, error) {
 }
 
 type Service interface {
+	GetType() string
 	GetURLScheme() string
 	ParseURL(gsURL string) (*URL, error)
 	ReadArtifact(ctx context.Context, url string) ([]byte, error)
@@ -77,7 +85,8 @@ type Service interface {
 
 type GcsArtifactClient struct {
 	URLScheme
-	API *storage.Client
+	Type string
+	API  *storage.Client
 }
 
 func NewGcsArtifactClient() (Service, error) {
@@ -86,9 +95,14 @@ func NewGcsArtifactClient() (Service, error) {
 		return nil, fmt.Errorf("%s,failed initializing gcs for the artifact client", err.Error())
 	}
 	return &GcsArtifactClient{
-		URLScheme: "gs",
+		Type:      gcsArtifactClientType,
+		URLScheme: gcsURLScheme,
 		API:       api,
 	}, nil
+}
+
+func (gac *GcsArtifactClient) GetType() string {
+	return gac.Type
 }
 
 func (gac *GcsArtifactClient) ReadArtifact(ctx context.Context, url string) ([]byte, error) {
@@ -157,6 +171,7 @@ func (gac *GcsArtifactClient) DeleteArtifact(ctx context.Context, url string) er
 
 type S3ArtifactClient struct {
 	URLScheme
+	Type   string
 	client *s3.Client
 }
 
@@ -167,9 +182,14 @@ func NewS3ArtifactClient() (Service, error) {
 	}
 	client := s3.NewFromConfig(cfg)
 	return &S3ArtifactClient{
-		URLScheme: "s3",
+		Type:      s3ArtifactClientType,
+		URLScheme: s3URLScheme,
 		client:    client,
 	}, nil
+}
+
+func (s3c *S3ArtifactClient) GetType() string {
+	return s3c.Type
 }
 
 func (s3c *S3ArtifactClient) ReadArtifact(ctx context.Context, url string) ([]byte, error) {
@@ -235,6 +255,10 @@ type NopArtifactClient struct{}
 
 func NewNopArtifactClient() Service {
 	return &NopArtifactClient{}
+}
+
+func (nac *NopArtifactClient) GetType() string {
+	return ""
 }
 
 func (nac *NopArtifactClient) GetURLScheme() string {
