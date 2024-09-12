@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 
 	"io"
 	"net/url"
@@ -180,7 +181,9 @@ func NewS3ArtifactClient() (Service, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s,failed loading s3 config for the artifact client", err.Error())
 	}
-	client := s3.NewFromConfig(cfg)
+	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.BaseEndpoint = aws.String(os.Getenv("AWS_ENDPOINT_URL"))
+	})
 	return &S3ArtifactClient{
 		Type:      s3ArtifactClientType,
 		URLScheme: s3URLScheme,
