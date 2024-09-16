@@ -3,7 +3,9 @@ package artifact
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"os"
 
 	"io"
@@ -23,6 +25,8 @@ const (
 	s3ArtifactClientType  = "s3"
 	s3URLScheme           = "s3"
 )
+
+var ErrObjectNotExist = errors.New("storage: object doesn't exist")
 
 // URL contains the information needed to identify the location of an object
 // located in Google Cloud Storage.
@@ -114,6 +118,9 @@ func (gac *GcsArtifactClient) ReadArtifact(ctx context.Context, url string) ([]b
 
 	reader, err := gac.API.Bucket(u.Bucket).Object(u.Object).NewReader(ctx)
 	if err != nil {
+		if !errors.Is(err, storage.ErrObjectNotExist) {
+			return nil, ErrObjectNotExist
+		}
 		return nil, err
 	}
 	defer reader.Close() //nolint:errcheck
@@ -206,6 +213,10 @@ func (s3c *S3ArtifactClient) ReadArtifact(ctx context.Context, url string) ([]by
 		Key:    aws.String(u.Object),
 	})
 	if err != nil {
+		var nsk *types.NoSuchKey
+		if !errors.As(err, &nsk) {
+			return nil, ErrObjectNotExist
+		}
 		return nil, err
 	}
 	defer reader.Body.Close() //nolint:errcheck
