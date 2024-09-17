@@ -118,7 +118,7 @@ func (gac *GcsArtifactClient) ReadArtifact(ctx context.Context, url string) ([]b
 
 	reader, err := gac.API.Bucket(u.Bucket).Object(u.Object).NewReader(ctx)
 	if err != nil {
-		if !errors.Is(err, storage.ErrObjectNotExist) {
+		if errors.Is(err, storage.ErrObjectNotExist) {
 			return nil, ErrObjectNotExist
 		}
 		return nil, err
@@ -214,7 +214,7 @@ func (s3c *S3ArtifactClient) ReadArtifact(ctx context.Context, url string) ([]by
 	})
 	if err != nil {
 		var nsk *types.NoSuchKey
-		if !errors.As(err, &nsk) {
+		if errors.As(err, &nsk) {
 			return nil, ErrObjectNotExist
 		}
 		return nil, err
