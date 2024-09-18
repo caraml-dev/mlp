@@ -60,17 +60,17 @@ func (urlScheme URLScheme) ParseURL(gsURL string) (*URL, error) {
 		return nil, err
 	}
 	if u.Scheme != string(urlScheme) {
-		return nil, err
+		return nil, fmt.Errorf("the scheme specified in the given URL is '%s' but the expected scheme is '%s'", u.Scheme, urlScheme)
 	}
 
 	bucket, object := u.Host, strings.TrimLeft(u.Path, "/")
 
 	if bucket == "" {
-		return nil, err
+		return nil, fmt.Errorf("the bucket in the given URL is an empty string")
 	}
 
 	if object == "" {
-		return nil, err
+		return nil, fmt.Errorf("the object in the given URL is an empty string")
 	}
 
 	return &URL{

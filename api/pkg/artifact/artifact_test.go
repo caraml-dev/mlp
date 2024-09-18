@@ -71,6 +71,38 @@ func TestURLScheme_ParseURL(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:      "invalid url",
+			urlScheme: "gs",
+			args: args{
+				gsURL: "!@#$%^&*()",
+			},
+			wantErr: true,
+		},
+		{
+			name:      "invalid scheme",
+			urlScheme: "gs",
+			args: args{
+				gsURL: "s3://bucket-name/object-path/object-path-2/object-path-3/file-1.txt",
+			},
+			wantErr: true,
+		},
+		{
+			name:      "empty bucket",
+			urlScheme: "gs",
+			args: args{
+				gsURL: "gs:///object-path/object-path-2/object-path-3/file-1.txt",
+			},
+			wantErr: true,
+		},
+		{
+			name:      "empty object",
+			urlScheme: "gs",
+			args: args{
+				gsURL: "gs://bucket-name/",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
