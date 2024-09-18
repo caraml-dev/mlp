@@ -60,7 +60,8 @@ func (urlScheme URLScheme) ParseURL(gsURL string) (*URL, error) {
 		return nil, err
 	}
 	if u.Scheme != string(urlScheme) {
-		return nil, fmt.Errorf("the scheme specified in the given URL is '%s' but the expected scheme is '%s'", u.Scheme, urlScheme)
+		return nil, fmt.Errorf("the scheme specified in the given URL is '%s' but the expected scheme is '%s'",
+			u.Scheme, urlScheme)
 	}
 
 	bucket, object := u.Host, strings.TrimLeft(u.Path, "/")
