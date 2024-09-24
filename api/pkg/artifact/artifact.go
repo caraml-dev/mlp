@@ -249,19 +249,32 @@ func (s3c *S3ArtifactClient) DeleteArtifact(ctx context.Context, url string) err
 		return err
 	}
 
-	// TODO: To confirm and refactor if versioning is enabled on S3 and to specify the versionId to be deleted
-	input := &s3.DeleteObjectInput{
+	out, err := s3c.client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 		Bucket: aws.String(u.Bucket),
-		Key:    aws.String(u.Object),
+		Prefix: aws.String(u.Object),
+	})
+	if err != nil {
+		return err
 	}
 
-	_, err = s3c.client.DeleteObject(ctx, input)
-	if err != nil {
-		var nsk *types.NoSuchKey
-		if errors.As(err, &nsk) {
-			return ErrObjectNotExist
+	// TODO: To confirm and refactor if versioning is enabled on S3 and to specify the versionId to be deleted
+	var objects []types.ObjectIdentifier
+	for _, item := range out.Contents {
+		objects = append(objects, types.ObjectIdentifier{
+			Key: item.Key,
+		})
+	}
+	if objects != nil {
+		_, err = s3c.client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+			Bucket: aws.String(u.Bucket),
+			Delete: &types.Delete{
+				Objects: objects,
+				Quiet:   aws.Bool(true),
+			},
+		})
+		if err != nil {
+			return err
 		}
-		return err
 	}
 	return nil
 }
