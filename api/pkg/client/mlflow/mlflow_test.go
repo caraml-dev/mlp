@@ -7,8 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"cloud.google.com/go/storage"
-
 	"github.com/caraml-dev/mlp/api/pkg/artifact"
 
 	"github.com/stretchr/testify/assert"
@@ -225,8 +223,6 @@ var DeleteRunAlreadyDeleted = `
 
 func TestNewMlflowService(t *testing.T) {
 	httpClient := http.Client{}
-	ctx := context.Background()
-	api, _ := storage.NewClient(ctx)
 
 	tests := []struct {
 		name           string
@@ -239,11 +235,9 @@ func TestNewMlflowService(t *testing.T) {
 			artifactType:  "gcs",
 			expectedError: nil,
 			expectedResult: &mlflowService{
-				API:    &httpClient,
-				Config: Config{TrackingURL: "", ArtifactServiceType: "gcs"},
-				ArtifactService: &artifact.GcsArtifactClient{
-					API: api,
-				},
+				API:             &httpClient,
+				Config:          Config{TrackingURL: "", ArtifactServiceType: "gcs"},
+				ArtifactService: &artifact.GcsArtifactClient{},
 			},
 		},
 		{
