@@ -91,24 +91,22 @@ type Service interface {
 
 type GcsArtifactClient struct {
 	URLScheme
-	Type string
-	API  *storage.Client
+	api *storage.Client
 }
 
 func NewGcsArtifactClient() (Service, error) {
 	api, err := storage.NewClient(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("%s,failed initializing gcs for the artifact client", err.Error())
+		return nil, fmt.Errorf("failed initializing gcs for the artifact client with error: %s", err.Error())
 	}
 	return &GcsArtifactClient{
-		Type:      gcsArtifactClientType,
 		URLScheme: gcsURLScheme,
-		API:       api,
+		api:       api,
 	}, nil
 }
 
 func (gac *GcsArtifactClient) GetType() string {
-	return gac.Type
+	return gcsArtifactClientType
 }
 
 func (gac *GcsArtifactClient) ReadArtifact(ctx context.Context, url string) ([]byte, error) {
@@ -117,7 +115,7 @@ func (gac *GcsArtifactClient) ReadArtifact(ctx context.Context, url string) ([]b
 		return nil, err
 	}
 
-	reader, err := gac.API.Bucket(u.Bucket).Object(u.Object).NewReader(ctx)
+	reader, err := gac.api.Bucket(u.Bucket).Object(u.Object).NewReader(ctx)
 	if err != nil {
 		if errors.Is(err, storage.ErrObjectNotExist) {
 			return nil, ErrObjectNotExist
@@ -138,7 +136,7 @@ func (gac *GcsArtifactClient) WriteArtifact(ctx context.Context, url string, con
 	if err != nil {
 		return err
 	}
-	w := gac.API.Bucket(u.Bucket).Object(u.Object).NewWriter(ctx)
+	w := gac.api.Bucket(u.Bucket).Object(u.Object).NewWriter(ctx)
 
 	if _, err := fmt.Fprintf(w, "%s", content); err != nil {
 		return err
@@ -158,7 +156,7 @@ func (gac *GcsArtifactClient) DeleteArtifact(ctx context.Context, url string) er
 	}
 
 	// Sets the name for the bucket.
-	bucket := gac.API.Bucket(u.Bucket)
+	bucket := gac.api.Bucket(u.Bucket)
 
 	it := bucket.Objects(ctx, &storage.Query{
 		Prefix: u.Object,
@@ -180,7 +178,6 @@ func (gac *GcsArtifactClient) DeleteArtifact(ctx context.Context, url string) er
 
 type S3ArtifactClient struct {
 	URLScheme
-	Type   string
 	client *s3.Client
 }
 
@@ -193,14 +190,13 @@ func NewS3ArtifactClient() (Service, error) {
 		o.BaseEndpoint = aws.String(os.Getenv("AWS_ENDPOINT_URL"))
 	})
 	return &S3ArtifactClient{
-		Type:      s3ArtifactClientType,
 		URLScheme: s3URLScheme,
 		client:    client,
 	}, nil
 }
 
 func (s3c *S3ArtifactClient) GetType() string {
-	return s3c.Type
+	return s3ArtifactClientType
 }
 
 func (s3c *S3ArtifactClient) ReadArtifact(ctx context.Context, url string) ([]byte, error) {
@@ -261,6 +257,10 @@ func (s3c *S3ArtifactClient) DeleteArtifact(ctx context.Context, url string) err
 
 	_, err = s3c.client.DeleteObject(ctx, input)
 	if err != nil {
+		var nsk *types.NoSuchKey
+		if errors.As(err, &nsk) {
+			return ErrObjectNotExist
+		}
 		return err
 	}
 	return nil

@@ -15,7 +15,6 @@ func TestArtifactClient_GetURLScheme(t *testing.T) {
 			name: "gcs client",
 			artifactClient: &GcsArtifactClient{
 				URLScheme: "gs",
-				API:       nil,
 			},
 			want: "gs",
 		},
