@@ -130,7 +130,7 @@ func TestInitializeWebhooks(t *testing.T) {
 			expectedError: true,
 		},
 		{
-			name: "Config enabled with multiple webhooks",
+			name: "Config enabled with multiple webhooks all sync",
 			cfg: &Config{
 				Enabled: true,
 				Config: map[EventType][]WebhookConfig{
@@ -145,6 +145,30 @@ func TestInitializeWebhooks(t *testing.T) {
 							Name:   "webhook2",
 							URL:    "http://example.com",
 							Method: "POST",
+						},
+					},
+				},
+			},
+			eventList:     []EventType{"event1"},
+			expectedError: false,
+		},
+		{
+			name: "Config enabled with multiple webhooks all async",
+			cfg: &Config{
+				Enabled: true,
+				Config: map[EventType][]WebhookConfig{
+					"event1": {
+						{
+							Name:   "webhook1",
+							URL:    "http://example.com",
+							Method: "POST",
+							Async:  true,
+						},
+						{
+							Name:   "webhook2",
+							URL:    "http://example.com",
+							Method: "POST",
+							Async:  true,
 						},
 					},
 				},
@@ -248,17 +272,40 @@ func TestInitializeWebhooks(t *testing.T) {
 			expectedError: true,
 		},
 		{
+			name: "Config enabled with multiple webhooks with sync and async",
+			cfg: &Config{
+				Enabled: true,
+				Config: map[EventType][]WebhookConfig{
+					"event1": {
+						{
+							Name:   "webhook2",
+							URL:    "http://example.com",
+							Method: "POST",
+							Async:  true,
+						},
+						{
+							Name:          "webhook1",
+							URL:           "http://example.com",
+							Method:        "POST",
+							FinalResponse: true,
+						},
+					},
+				},
+			},
+			eventList:     []EventType{"event1"},
+			expectedError: false,
+		},
+		{
 			name: "Config enabled with multiple webhooks with sync and async, fail with duplicate names",
 			cfg: &Config{
 				Enabled: true,
 				Config: map[EventType][]WebhookConfig{
 					"event1": {
 						{
-							Name:        "webhook2",
-							URL:         "http://example.com",
-							Method:      "POST",
-							UseDataFrom: "webhook1",
-							Async:       true,
+							Name:   "webhook2",
+							URL:    "http://example.com",
+							Method: "POST",
+							Async:  true,
 						},
 						{
 							Name:          "webhook1",
@@ -271,6 +318,31 @@ func TestInitializeWebhooks(t *testing.T) {
 							URL:    "http://example.com",
 							Method: "POST",
 							Async:  true,
+						},
+					},
+				},
+			},
+			eventList:     []EventType{"event1"},
+			expectedError: true,
+		},
+		{
+			name: "Config enabled with multiple webhooks fail (no final response set for sync webhook)",
+			cfg: &Config{
+				Enabled: true,
+				Config: map[EventType][]WebhookConfig{
+					"event1": {
+						{
+							Name:          "webhook1",
+							URL:           "http://example.com",
+							Method:        "POST",
+							FinalResponse: true,
+							Async:         true,
+						},
+						{
+							Name:   "webhook2",
+							URL:    "http://example.com",
+							Method: "POST",
+							Async:  false,
 						},
 					},
 				},
