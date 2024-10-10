@@ -132,6 +132,9 @@ func parseAndValidateConfig(
 		if err := validateClients(allClients); err != nil {
 			return nil, err
 		}
+		if err := validateSyncClients(syncClients); err != nil {
+			return nil, err
+		}
 		syncClientMap[eventType] = syncClients
 		asyncClientMap[eventType] = asyncClients
 	}
@@ -153,22 +156,39 @@ func validateWebhookResponse(content []byte) error {
 	return fmt.Errorf("webhook response is not a valid json object and not empty")
 }
 
+// validateClients ensures that there are no duplicate webhook names
 func validateClients(webhookClients []WebhookClient) error {
-	// ensure that only 1 sync client has finalResponse set to true
+	existingWebhooks := make(map[string]bool)
+	for _, client := range webhookClients {
+		if existingWebhooks[client.GetName()] {
+			return fmt.Errorf("duplicate webhook name")
+		}
+		existingWebhooks[client.GetName()] = true
+	}
+
+	return nil
+}
+
+// validateSyncClients ensures that only 1 sync client has finalResponse set to true;
+// and for clients that use the response from another client, the used client is
+// defined before the client that uses it
+func validateSyncClients(webhookClients []WebhookClient) error {
+	if len(webhookClients) == 0 {
+		return nil
+	}
+
 	isFinalResponseSet := false
-	// Check for duplicate webhook names
-	webhookNames := make(map[string]int)
-	for idx, client := range webhookClients {
+	existingWebhooks := make(map[string]bool)
+
+	for _, client := range webhookClients {
 		if client.IsFinalResponse() {
 			if isFinalResponseSet {
 				return fmt.Errorf("only 1 sync client can have finalResponse set to true")
 			}
 			isFinalResponseSet = true
 		}
-		if _, ok := webhookNames[client.GetName()]; ok {
-			return fmt.Errorf("duplicate webhook name")
-		}
-		webhookNames[client.GetName()] = idx
+
+		existingWebhooks[client.GetName()] = true
 		// Ensure that if a client uses the response from another client, that client exists
 		// If a client uses the response from another client, it must be defined before it
 		if client.GetUseDataFrom() == "" {
@@ -177,16 +197,9 @@ func validateClients(webhookClients []WebhookClient) error {
 			// since the payload used will be the user's payload
 			continue
 		}
-		useIdx, ok := webhookNames[client.GetUseDataFrom()]
-		if !ok {
+
+		if client.GetName() == client.GetUseDataFrom() || !existingWebhooks[client.GetUseDataFrom()] {
 			return fmt.Errorf("webhook name %s not found", client.GetUseDataFrom())
-		}
-		if useIdx > idx {
-			return fmt.Errorf(
-				"webhook name %s must be defined before %s",
-				client.GetUseDataFrom(),
-				client.GetName(),
-			)
 		}
 	}
 	if !isFinalResponseSet {
