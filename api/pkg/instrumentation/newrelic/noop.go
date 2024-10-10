@@ -12,25 +12,25 @@ import (
 type NoopApp struct{}
 
 // StartTransaction implements newrelic.Application interface.
-func (na NoopApp) StartTransaction(name string, w http.ResponseWriter, r *http.Request) newrelic.Transaction {
+func (na NoopApp) StartTransaction(_ string, w http.ResponseWriter, _ *http.Request) newrelic.Transaction {
 	return &NoopTx{
 		w: w,
 	}
 }
 
 // RecordCustomEvent implements newrelic.Application interface.
-func (na NoopApp) RecordCustomEvent(eventType string, params map[string]interface{}) error {
+func (na NoopApp) RecordCustomEvent(_ string, _ map[string]interface{}) error {
 	return nil
 }
 
 // RecordCustomMetric implements newrelic.Application interface.
-func (na NoopApp) RecordCustomMetric(name string, value float64) error { return nil }
+func (na NoopApp) RecordCustomMetric(_ string, _ float64) error { return nil }
 
 // WaitForConnection implements newrelic.Application interface.
-func (na NoopApp) WaitForConnection(timeout time.Duration) error { return nil }
+func (na NoopApp) WaitForConnection(_ time.Duration) error { return nil }
 
 // Shutdown implements newrelic.Application interface.
-func (na NoopApp) Shutdown(timeout time.Duration) {
+func (na NoopApp) Shutdown(_ time.Duration) {
 	// Do nothing
 }
 
@@ -55,17 +55,17 @@ func (nt *NoopTx) Ignore() error {
 }
 
 // SetName implements newrelic.Transaction interface.
-func (nt *NoopTx) SetName(name string) error {
+func (nt *NoopTx) SetName(_ string) error {
 	return nil
 }
 
 // NoticeError implements newrelic.Transaction interface.
-func (nt *NoopTx) NoticeError(err error) error {
+func (nt *NoopTx) NoticeError(_ error) error {
 	return nil
 }
 
 // AddAttribute implements newrelic.Transaction interface.
-func (nt *NoopTx) AddAttribute(key string, value interface{}) error {
+func (nt *NoopTx) AddAttribute(_ string, _ interface{}) error {
 	return nil
 }
 
@@ -90,7 +90,7 @@ func (nt *NoopTx) CreateDistributedTracePayload() newrelic.DistributedTracePaylo
 }
 
 // AcceptDistributedTracePayload implements newrelic.Transaction interface.
-func (nt *NoopTx) AcceptDistributedTracePayload(t newrelic.TransportType, payload interface{}) error {
+func (nt *NoopTx) AcceptDistributedTracePayload(_ newrelic.TransportType, _ interface{}) error {
 	return nil
 }
 

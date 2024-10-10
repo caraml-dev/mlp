@@ -35,6 +35,6 @@ func (NopMetricsCollector) RecordGauge(MetricName, float64, map[string]string) e
 }
 
 // Inc satisfies the Collector interface
-func (c NopMetricsCollector) Inc(key MetricName, labels map[string]string) error {
+func (c NopMetricsCollector) Inc(_ MetricName, _ map[string]string) error {
 	return nil
 }

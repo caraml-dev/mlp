@@ -898,7 +898,7 @@ func Test_sendUpdateRequest(t *testing.T) {
 		"stream":     "team-2",
 	}
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte(`{"status":"success","message":"success-message"}`))
 		assert.NoError(t, err)

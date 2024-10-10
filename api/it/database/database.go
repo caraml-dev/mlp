@@ -25,16 +25,19 @@ func connectionString(db string) string {
 }
 
 func create(conn *sql.DB, dbName string) (*sql.DB, error) {
+	var err error
 	if _, err := conn.Exec("CREATE DATABASE " + dbName); err != nil {
 		return nil, err
-	} else if testDb, err := sql.Open("postgres", connectionString(dbName)); err != nil {
+	}
+
+	var testDb *sql.DB
+	if testDb, err = sql.Open("postgres", connectionString(dbName)); err != nil {
 		if _, err := conn.Exec("DROP DATABASE " + dbName); err != nil {
 			log.Fatalf("Failed to cleanup integration test database: \n%s", err)
 		}
 		return nil, err
-	} else {
-		return testDb, nil
 	}
+	return testDb, nil
 }
 
 func migrate(db *sql.DB, dbName string) (*sql.DB, error) {
@@ -84,12 +87,14 @@ func CreateTestDatabase() (*gorm.DB, func(), error) {
 
 		cleanup()
 		return nil, nil, err
-	} else if gormDb, err := gorm.Open("postgres", testDb); err != nil {
+	}
+
+	var gormDb *gorm.DB
+	if gormDb, err = gorm.Open("postgres", testDb); err != nil {
 		cleanup()
 		return nil, nil, err
-	} else {
-		return gormDb, cleanup, nil
 	}
+	return gormDb, cleanup, nil
 }
 
 func WithTestDatabase(t *testing.T, test func(t *testing.T, db *gorm.DB)) {

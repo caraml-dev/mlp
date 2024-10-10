@@ -7,8 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"cloud.google.com/go/storage"
-
 	"github.com/caraml-dev/mlp/api/pkg/artifact"
 
 	"github.com/stretchr/testify/assert"
@@ -225,8 +223,6 @@ var DeleteRunAlreadyDeleted = `
 
 func TestNewMlflowService(t *testing.T) {
 	httpClient := http.Client{}
-	ctx := context.Background()
-	api, _ := storage.NewClient(ctx)
 
 	tests := []struct {
 		name           string
@@ -239,11 +235,19 @@ func TestNewMlflowService(t *testing.T) {
 			artifactType:  "gcs",
 			expectedError: nil,
 			expectedResult: &mlflowService{
-				API:    &httpClient,
-				Config: Config{TrackingURL: "", ArtifactServiceType: "gcs"},
-				ArtifactService: &artifact.GcsArtifactClient{
-					API: api,
-				},
+				API:             &httpClient,
+				Config:          Config{TrackingURL: "", ArtifactServiceType: "gcs"},
+				ArtifactService: &artifact.GcsArtifactClient{},
+			},
+		},
+		{
+			name:          "Mlflow Service with s3 Artifact",
+			artifactType:  "s3",
+			expectedError: nil,
+			expectedResult: &mlflowService{
+				API:             &httpClient,
+				Config:          Config{TrackingURL: "", ArtifactServiceType: "s3"},
+				ArtifactService: &artifact.S3ArtifactClient{},
 			},
 		},
 		{
@@ -338,7 +342,7 @@ func TestMlflowClient_SearchRunForExperiment(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 
 				w.WriteHeader(http.StatusOK)
 				_, err := w.Write([]byte(tc.expectedRespJSON))
@@ -406,7 +410,7 @@ func TestMlflowClient_SearchRunData(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 
 				w.WriteHeader(tc.httpStatus)
 				_, err := w.Write([]byte(tc.expectedRespJSON))
@@ -467,13 +471,13 @@ func TestMlflowClient_DeleteExperiment(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mux := http.NewServeMux()
-			mux.HandleFunc("/api/2.0/mlflow/runs/delete", func(w http.ResponseWriter, r *http.Request) {
+			mux.HandleFunc("/api/2.0/mlflow/runs/delete", func(w http.ResponseWriter, _ *http.Request) {
 
 				w.WriteHeader(tc.httpStatus)
 				_, err := w.Write([]byte(tc.expectedRespJSON))
 				require.NoError(t, err)
 			})
-			mux.HandleFunc("/api/2.0/mlflow/runs/search", func(w http.ResponseWriter, r *http.Request) {
+			mux.HandleFunc("/api/2.0/mlflow/runs/search", func(w http.ResponseWriter, _ *http.Request) {
 
 				w.WriteHeader(tc.httpStatus)
 				_, err := w.Write([]byte(tc.expectedRunsRespJSON))
@@ -594,13 +598,13 @@ func TestMlflowClient_DeleteRun(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mux := http.NewServeMux()
-			mux.HandleFunc("/api/2.0/mlflow/runs/delete", func(w http.ResponseWriter, r *http.Request) {
+			mux.HandleFunc("/api/2.0/mlflow/runs/delete", func(w http.ResponseWriter, _ *http.Request) {
 
 				w.WriteHeader(tc.httpStatus)
 				_, err := w.Write([]byte(tc.expectedRespJSON))
 				require.NoError(t, err)
 			})
-			mux.HandleFunc("/api/2.0/mlflow/runs/get", func(w http.ResponseWriter, r *http.Request) {
+			mux.HandleFunc("/api/2.0/mlflow/runs/get", func(w http.ResponseWriter, _ *http.Request) {
 
 				w.WriteHeader(tc.httpStatus)
 				_, err := w.Write([]byte(tc.expectedRunRespJSON))

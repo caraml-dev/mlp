@@ -84,7 +84,7 @@ func TestInitNewRelic(t *testing.T) {
 }
 
 func TestWrapHandleFunc(t *testing.T) {
-	pattern, handler := WrapHandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+	pattern, handler := WrapHandleFunc("/ping", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte("pong"))
 	})
 
@@ -133,6 +133,6 @@ func TestRecordCustomMetric(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestShutdown(t *testing.T) {
+func TestShutdown(_ *testing.T) {
 	Shutdown(100)
 }

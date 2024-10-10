@@ -1,4 +1,4 @@
-FROM golang:1.20-alpine as go-builder
+FROM golang:1.22-alpine as go-builder
 
 WORKDIR /src/api
 

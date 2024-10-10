@@ -25,7 +25,7 @@ var (
 	bootstrapCmd        = &cobra.Command{
 		Use:   "bootstrap",
 		Short: "Start bootstrap job to populate Keto",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			bootstrapConfig, err := loadBootstrapConfig(bootstrapConfigFile)
 			if err != nil {
 				log.Panicf("unable to load role members from input file: %v", err)

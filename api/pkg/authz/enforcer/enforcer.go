@@ -158,7 +158,7 @@ func (e *enforcer) GetUserPermissions(ctx context.Context, user string) ([]strin
 		return nil, err
 	}
 	permissions := make([]string, 0)
-	permissionSet.Range(func(key, value interface{}) bool {
+	permissionSet.Range(func(key, _ interface{}) bool {
 		permissions = append(permissions, key.(string))
 		return true
 	})

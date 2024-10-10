@@ -60,7 +60,7 @@ func TestSentry(t *testing.T) {
 	sentry := Sentry()
 	assert.NotNil(t, sentry)
 
-	panicHandler := RecoveryHandler(func(w http.ResponseWriter, r *http.Request) {
+	panicHandler := RecoveryHandler(func(_ http.ResponseWriter, _ *http.Request) {
 		panic("at the disco")
 	})
 	assert.NotNil(t, panicHandler)

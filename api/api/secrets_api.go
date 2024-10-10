@@ -14,7 +14,7 @@ type SecretsController struct {
 	*AppContext
 }
 
-func (c *SecretsController) GetSecret(r *http.Request, vars map[string]string, _ interface{}) *Response {
+func (c *SecretsController) GetSecret(_ *http.Request, vars map[string]string, _ interface{}) *Response {
 	projectID, _ := models.ParseID(vars["project_id"])
 	secretID, _ := models.ParseID(vars["secret_id"])
 	if projectID <= 0 || secretID <= 0 {
@@ -31,7 +31,7 @@ func (c *SecretsController) GetSecret(r *http.Request, vars map[string]string, _
 	return Ok(secret)
 }
 
-func (c *SecretsController) CreateSecret(r *http.Request, vars map[string]string, body interface{}) *Response {
+func (c *SecretsController) CreateSecret(_ *http.Request, vars map[string]string, body interface{}) *Response {
 	projectID, _ := models.ParseID(vars["project_id"])
 	_, err := c.ProjectsService.FindByID(projectID)
 	if err != nil {
@@ -56,7 +56,7 @@ func (c *SecretsController) CreateSecret(r *http.Request, vars map[string]string
 	return Created(secret)
 }
 
-func (c *SecretsController) UpdateSecret(r *http.Request, vars map[string]string, body interface{}) *Response {
+func (c *SecretsController) UpdateSecret(_ *http.Request, vars map[string]string, body interface{}) *Response {
 	updateRequest, ok := body.(*models.Secret)
 	if !ok {
 		return BadRequest("Invalid request body")
@@ -87,7 +87,7 @@ func (c *SecretsController) UpdateSecret(r *http.Request, vars map[string]string
 	return Ok(updatedSecret)
 }
 
-func (c *SecretsController) DeleteSecret(r *http.Request, vars map[string]string, _ interface{}) *Response {
+func (c *SecretsController) DeleteSecret(_ *http.Request, vars map[string]string, _ interface{}) *Response {
 	projectID, _ := models.ParseID(vars["project_id"])
 	secretID, _ := models.ParseID(vars["secret_id"])
 	if projectID <= 0 || secretID <= 0 {
@@ -102,7 +102,7 @@ func (c *SecretsController) DeleteSecret(r *http.Request, vars map[string]string
 	return NoContent()
 }
 
-func (c *SecretsController) ListSecret(r *http.Request, vars map[string]string, body interface{}) *Response {
+func (c *SecretsController) ListSecret(_ *http.Request, vars map[string]string, _ interface{}) *Response {
 	projectID, _ := models.ParseID(vars["project_id"])
 	_, err := c.ProjectsService.FindByID(projectID)
 	if err != nil {
