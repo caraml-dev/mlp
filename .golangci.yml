@@ -2,8 +2,9 @@ run:
   build-tags:
     - integration
 
-exclude:
-  - api/client
+issues:
+  exclude-dirs:
+    - api/client
 
 linters:
   enable:
