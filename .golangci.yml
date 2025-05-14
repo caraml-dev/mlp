@@ -1,8 +1,6 @@
 run:
   build-tags:
     - integration
-skip-dirs:
-  - api/client
 
 linters:
   enable:
@@ -19,6 +17,9 @@ linters:
     - revive
     - staticcheck
     - unused
+  exclusions:
+    paths:
+      - api/client
 
 linters-settings:
   gocyclo:
