@@ -2,6 +2,9 @@ run:
   build-tags:
     - integration
 
+exclude:
+  - api/client
+
 linters:
   enable:
     - bodyclose
@@ -17,9 +20,6 @@ linters:
     - revive
     - staticcheck
     - unused
-  exclusions:
-    paths:
-      - api/client
 
 linters-settings:
   gocyclo:
