@@ -1,7 +1,9 @@
 run:
   build-tags:
     - integration
-  skip-dirs:
+
+issues:
+  exclude-dirs:
     - api/client
 
 linters:
