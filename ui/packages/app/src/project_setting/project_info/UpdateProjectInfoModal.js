@@ -75,11 +75,11 @@ const UpdateProjectInfoModal = ({
     }
   ];
 
-  const rows = project.labels.map(label => ({
+  const rows = (project.labels || []).map(label => ({
     ...label
   }));
 
-  const originalRows = originalProject.labels.map(label => ({
+  const originalRows = (originalProject.labels || []).map(label => ({
     ...label
   }));
 
