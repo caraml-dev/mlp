@@ -137,11 +137,12 @@ jobs:
         uses: AbsaOSS/k3d-action@v2.1.0
         with:
           cluster-name: mlp-e2e
+          k3d-version: v5.6.0
           args: >-
             --agents 1
             --port 80:80@agent:*
             --registry-create ${{ env.LOCAL_REGISTRY }}
-            --k3s-arg "--no-deploy=metrics-server@server:*"
+            --k3s-arg "--disable=metrics-server@server:*"
 
       - name: Download API image tar
         uses: actions/download-artifact@v4
@@ -150,7 +151,9 @@ jobs:
 
       - name: Publish image to the local registry
         env:
-          DOCKER_REPOSITORY: ${{ env.LOCAL_REGISTRY }}/${{ github.repository }}
+          # Push via the loopback IP: Docker always allows plain HTTP for 127.0.0.0/8, but not for
+          # the registry.localhost hostname. It is the same k3d registry the cluster pulls from.
+          DOCKER_REPOSITORY: 127.0.0.1:5000/${{ github.repository }}
         shell: bash
         run: |
           docker image load --input mlp-api.${{ needs.build-api.outputs.api-version }}.tar

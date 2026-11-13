@@ -98,6 +98,15 @@ func (g *simpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byt
 			if err != nil {
 				return err
 			}
+			// A 4xx reply means the webhook rejected the request, so retrying won't help.
+			// Keep the status and the webhook's message so callers can explain it to the user.
+			if resp.StatusCode >= http.StatusBadRequest && resp.StatusCode < http.StatusInternalServerError {
+				return retry.Unrecoverable(&ResponseError{
+					WebhookName: g.Name,
+					StatusCode:  resp.StatusCode,
+					Message:     webhookErrorMessage(content),
+				})
+			}
 			if err := validateWebhookResponse(content); err != nil {
 				return err
 			}

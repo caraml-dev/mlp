@@ -14,6 +14,11 @@ deployment:
     key: password
 
 postgresql:
+  # The chart's default bitnami/postgresql:11.5.0-debian-9-r84 is no longer on Docker Hub.
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/postgresql
+    tag: 11.22.0
   resources:
     requests:
       cpu: 25m
