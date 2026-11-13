@@ -20,6 +20,7 @@ import (
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
+	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
 	"github.com/caraml-dev/mlp/api/pkg/webhooks"
 )
 
@@ -171,8 +172,8 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 			return nil
 		}, func(err error) error {
 			// Print error and return
-			log.Errorf("error calling webhook - %s, err: %s", ProjectCreatedEvent, err.Error())
-			return err
+			log.Errorf("error calling webhook - %s, err: %s", ProjectUpdatedEvent, err.Error())
+			return teamNotRegisteredError(err, project)
 		},
 		)
 		if err != nil {
@@ -191,6 +192,21 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 	}
 
 	return project, response, nil
+}
+
+// teamNotRegisteredError turns the webhook's 404 "team not found" reply (the team is
+// missing in Warden) into a 400 that tells the user what to change. Other errors pass through.
+func teamNotRegisteredError(err error, project *models.Project) error {
+	var respErr *webhooks.ResponseError
+	if errors.As(err, &respErr) &&
+		respErr.StatusCode == http.StatusNotFound &&
+		strings.Contains(strings.ToLower(respErr.Message), "team not found") {
+		return apperror.NewInvalidArgumentErrorf(
+			"team %q is not registered in Warden, please change the stream and team before saving",
+			project.Team,
+		)
+	}
+	return err
 }
 
 func (service *projectsService) FindByID(projectID models.ID) (*models.Project, error) {
