@@ -151,7 +151,9 @@ jobs:
 
       - name: Publish image to the local registry
         env:
-          DOCKER_REPOSITORY: ${{ env.LOCAL_REGISTRY }}/${{ github.repository }}
+          # Push via the loopback IP: Docker always allows plain HTTP for 127.0.0.0/8, but not for
+          # the registry.localhost hostname. It is the same k3d registry the cluster pulls from.
+          DOCKER_REPOSITORY: 127.0.0.1:5000/${{ github.repository }}
         shell: bash
         run: |
           docker image load --input mlp-api.${{ needs.build-api.outputs.api-version }}.tar
