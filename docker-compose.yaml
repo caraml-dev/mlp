@@ -15,7 +15,7 @@ services:
     restart: on-failure
 
   postgres:
-    image: bitnami/postgresql:14.5.0
+    image: bitnamilegacy/postgresql:14.5.0
     ports:
       - 5432:5432
     environment:
