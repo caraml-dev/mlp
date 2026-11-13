@@ -137,11 +137,12 @@ jobs:
         uses: AbsaOSS/k3d-action@v2.1.0
         with:
           cluster-name: mlp-e2e
+          k3d-version: v5.6.0
           args: >-
             --agents 1
             --port 80:80@agent:*
             --registry-create ${{ env.LOCAL_REGISTRY }}
-            --k3s-arg "--no-deploy=metrics-server@server:*"
+            --k3s-arg "--disable=metrics-server@server:*"
 
       - name: Download API image tar
         uses: actions/download-artifact@v4
