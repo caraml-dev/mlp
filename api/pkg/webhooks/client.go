@@ -54,6 +54,7 @@ import (
 
 	"github.com/avast/retry-go/v4"
 	"github.com/caraml-dev/mlp/api/log"
+	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -97,6 +98,13 @@ func (g *simpleWebhookClient) Invoke(ctx context.Context, payload []byte) ([]byt
 			content, err = io.ReadAll(resp.Body)
 			if err != nil {
 				return err
+			}
+			// A 4xx reply means the webhook rejected the request, so retrying won't help.
+			// Return the webhook's own message as an invalid-argument error so the user sees it.
+			if resp.StatusCode >= http.StatusBadRequest && resp.StatusCode < http.StatusInternalServerError {
+				return retry.Unrecoverable(apperror.NewInvalidArgumentErrorf(
+					"%s rejected the request (status %d): %s", g.Name, resp.StatusCode, webhookErrorMessage(content),
+				))
 			}
 			if err := validateWebhookResponse(content); err != nil {
 				return err
