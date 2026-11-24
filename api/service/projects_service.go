@@ -171,7 +171,7 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 			return nil
 		}, func(err error) error {
 			// Print error and return
-			log.Errorf("error calling webhook - %s, err: %s", ProjectCreatedEvent, err.Error())
+			log.Errorf("error calling webhook - %s, err: %s", ProjectUpdatedEvent, err.Error())
 			return err
 		},
 		)

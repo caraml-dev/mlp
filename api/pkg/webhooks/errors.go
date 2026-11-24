@@ -1,16 +1,25 @@
 package webhooks
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
 
 type WebhookError struct {
-	msg string
-	err error
+	msg         string
+	err         error
+	ReferenceID string
 }
 
+// NewWebhookError wraps a failed webhook call. Each error gets its own reference id, which is part of
+// the message, so a user can quote it and the platform owner can find the matching log line.
 func NewWebhookError(err error) *WebhookError {
+	referenceID := uuid.New().String()
 	return &WebhookError{
-		msg: "error invoking webhook",
-		err: err,
+		msg:         fmt.Sprintf("error invoking webhook. Please contact the platform owner (reference id: %s)", referenceID),
+		err:         err,
+		ReferenceID: referenceID,
 	}
 }
 
