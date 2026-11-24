@@ -1,10 +1,6 @@
 package webhooks
 
-import (
-	"encoding/json"
-	"fmt"
-	"strings"
-)
+import "fmt"
 
 type WebhookError struct {
 	msg string
@@ -13,7 +9,7 @@ type WebhookError struct {
 
 func NewWebhookError(err error) *WebhookError {
 	return &WebhookError{
-		msg: "error invoking webhook",
+		msg: "error invoking webhook. Please contact the platform owner",
 		err: err,
 	}
 }
@@ -30,18 +26,4 @@ func (e *WebhookError) Unwrap() error {
 func (e *WebhookError) Is(target error) bool {
 	_, ok := target.(*WebhookError)
 	return ok
-}
-
-// webhookErrorMessage returns the "error" field of a JSON error body.
-func webhookErrorMessage(content []byte) string {
-	var body struct {
-		Error string `json:"error"`
-	}
-	if err := json.Unmarshal(content, &body); err == nil && body.Error != "" {
-		return body.Error
-	}
-	if msg := strings.TrimSpace(string(content)); msg != "" {
-		return msg
-	}
-	return "no error message returned"
 }

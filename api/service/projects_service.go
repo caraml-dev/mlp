@@ -20,7 +20,6 @@ import (
 	"github.com/caraml-dev/mlp/api/log"
 	"github.com/caraml-dev/mlp/api/models"
 	"github.com/caraml-dev/mlp/api/pkg/authz/enforcer"
-	apperror "github.com/caraml-dev/mlp/api/pkg/errors"
 	"github.com/caraml-dev/mlp/api/pkg/webhooks"
 )
 
@@ -173,14 +172,6 @@ func (service *projectsService) UpdateProject(ctx context.Context, project *mode
 		}, func(err error) error {
 			// Print error and return
 			log.Errorf("error calling webhook - %s, err: %s", ProjectUpdatedEvent, err.Error())
-			// The webhook rejected the request: add the project's team and stream so the user knows what to check.
-			if errors.Is(err, &apperror.InvalidArgumentError{}) {
-				return apperror.NewInvalidArgumentErrorf(
-					"%s (project team %q, stream %q). Check that the team and stream are valid, "+
-						"and change them on the Project Info page if needed",
-					err, project.Team, project.Stream,
-				)
-			}
 			return err
 		},
 		)
